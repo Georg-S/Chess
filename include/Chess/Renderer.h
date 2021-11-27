@@ -13,23 +13,23 @@ public:
 	//		void renderPromotionSelection(PieceColor color);
 //	int getWindowWidth();
 //	int getWindowHeight();
-	void updateQuit();
-	bool isQuit();
+	bool update_quit();
+	bool is_quit();
 	void quit();
 
 private:
-	void renderChessBoard();
-	void renderPieces(const Board& board);
+	void render_chess_board();
+	void render_pieces(const Board& board);
+	void render_piece(const Board& board, int x, int y);
 //	void renderPiecesWithSelectedOnMousePosition(const RenderInformation& renderInfo);
 //	void renderPreviousMove(const Move& previousMove);
-	void renderPiece(const Board& board, int x, int y);
 //	void renderPieceOnMousePosition(Piece* piece, int mouseX, int mouseY);
 	std::string get_color_string(uint32_t piece) const;
 	std::string get_piece_type_string(uint32_t piece) const;
 
-	const int windowWidth = 800;
-	const int windowHeight = 800;
-	int pieceWidth;
-	int pieceHeight;
-	std::unique_ptr<SDLHandler> sdlHandler;
+	const int window_width = 800;
+	const int window_height = 800;
+	int piece_width;
+	int piece_height;
+	std::unique_ptr<SDLHandler> sdl_handler;
 };

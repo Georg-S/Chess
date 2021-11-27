@@ -10,7 +10,7 @@ void Chess::play_vs_AI()
 	Board board;
 	board.init_board();
 
-	while (true) 
+	while (!renderer->update_quit()) 
 	{
 		renderer->render(RenderInformation{board});
 	}
