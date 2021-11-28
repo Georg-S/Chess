@@ -11,8 +11,8 @@ public:
 	Renderer();
 	void render(const RenderInformation& renderInfo);
 	//		void renderPromotionSelection(PieceColor color);
-//	int getWindowWidth();
-//	int getWindowHeight();
+	int getWindowWidth();
+	int getWindowHeight();
 	bool update_quit();
 	bool is_quit();
 	void quit();
@@ -21,9 +21,10 @@ private:
 	void render_chess_board();
 	void render_pieces(const Board& board);
 	void render_piece(const Board& board, int x, int y);
-//	void renderPiecesWithSelectedOnMousePosition(const RenderInformation& renderInfo);
+	void render_pieces_with_selected_on_mouse_position(const RenderInformation& renderInfo);
 //	void renderPreviousMove(const Move& previousMove);
-//	void renderPieceOnMousePosition(Piece* piece, int mouseX, int mouseY);
+	void render_piece_on_mouse_position(uint32_t piece, int mouseX, int mouseY);
+	std::string get_file_string(uint32_t piece) const;
 	std::string get_color_string(uint32_t piece) const;
 	std::string get_piece_type_string(uint32_t piece) const;
 

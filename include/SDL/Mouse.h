@@ -6,7 +6,6 @@
 class Mouse
 {
 public:
-	Mouse();
 	void update();
 	bool isLeftPressed();
 	bool isRightPressed();

@@ -2,14 +2,33 @@
 #include <memory>
 #include "Board.h"
 #include "Renderer.h"
+#include "GameLogic.h"
+#include "SDL/Mouse.h"
 
-class Chess 
+class Chess
 {
 public:
 	Chess();
 
-	void play_vs_AI();
-
+	void game_loop();
 private:
+	void update_1_player_game();
+	void update_2_player_game();
+	void update_ai_move();
+	void update_human_move();
+	Move get_human_move();
+	bool is_valid_move(const Move& move);
+	bool is_valid_board_pos(int x, int y);
+	void handle_promo_selection(Board& board, int posx, int posy);
+	void handle_game_over();
+	int convert_mouse_position_x_to_board_position(int mouse_x);
+	int convert_mouse_position_y_to_board_position(int mouse_y);
+
+	Board board;
 	std::unique_ptr<Renderer> renderer;
+	int player_count = 2;
+	PieceColor current_player = PieceColor::WHITE;
+	Move previous_move{-1, -1, -1, -1};
+	Move pending_move{-1, -1};
+	Mouse mouse;
 };

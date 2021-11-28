@@ -13,16 +13,15 @@ void Renderer::render(const RenderInformation& renderInfo)
 	sdl_handler->clear();
 	render_chess_board();
 
-	render_pieces(renderInfo.board);
 	/*
 	if (renderInfo.previousMove.fromX != -1)
 		renderPreviousMove(renderInfo.previousMove);
+	*/
 
 	if (renderInfo.selectedPieceY == -1 || renderInfo.selectedPieceX == -1)
-		renderPieces(renderInfo.board);
+		render_pieces(renderInfo.board);
 	else
-		renderPiecesWithSelectedOnMousePosition(renderInfo);
-	*/
+		render_pieces_with_selected_on_mouse_position(renderInfo);
 
 	sdl_handler->updateRendering();
 }
@@ -47,8 +46,13 @@ void Renderer::render_pieces(const Board& board)
 void Renderer::render_piece(const Board& board, int x, int y)
 {
 	auto piece = board[x][y];
-	std::string fileString = "Images/" + get_piece_type_string(piece) + "_" + get_color_string(piece) + ".png";
+	std::string fileString = get_file_string(piece);
 	sdl_handler->createAndPushBackRenderElement(fileString, piece_width * x, piece_height * y, piece_width, piece_height);
+}
+
+std::string Renderer::get_file_string(uint32_t piece) const
+{
+	return "Images/" + get_piece_type_string(piece) + "_" + get_color_string(piece) + ".png";
 }
 
 std::string Renderer::get_color_string(uint32_t piece) const
@@ -73,27 +77,34 @@ std::string Renderer::get_piece_type_string(uint32_t piece) const
 	case king:		return "King";
 	case bishop:	return "Bishop";
 	case rook:		return "Rook";
-	default: assert(0);
+	default:		assert(0);
 	}
 }
-/*
-void Renderer::renderPiecesWithSelectedOnMousePosition(const RenderInformation& renderInfo)
+
+void Renderer::render_pieces_with_selected_on_mouse_position(const RenderInformation& renderInfo)
 {
-	Piece* foreGroundPiece = nullptr;
+	uint32_t foreGroundPiece;
 
 	for (int x = 0; x < 8; x++)
 	{
 		for (int y = 0; y < 8; y++)
 		{
 			if (x == renderInfo.selectedPieceX && y == renderInfo.selectedPieceY)
-				foreGroundPiece = renderInfo.board.board[x][y];
-			else if (renderInfo.board.board[x][y] != nullptr)
-				renderPiece(renderInfo.board, x, y);
+				foreGroundPiece = renderInfo.board[x][y];
+			else if (is_field_occupied(renderInfo.board, x, y))
+				render_piece(renderInfo.board, x, y);
 		}
 	}
-	renderPieceOnMousePosition(foreGroundPiece, renderInfo.mousePositionX, renderInfo.mousePositionY);
+	render_piece_on_mouse_position(foreGroundPiece, renderInfo.mousePositionX, renderInfo.mousePositionY);
 }
 
+void Renderer::render_piece_on_mouse_position(uint32_t piece, int mouseX, int mouseY)
+{
+	std::string fileString = get_file_string(piece);
+	sdl_handler->createAndPushBackRenderElement(fileString, mouseX - (piece_width / 2), mouseY - (piece_height / 2), piece_width, piece_height);
+}
+
+/*
 void Renderer::renderPreviousMove(const Move& previousMove)
 {
 	sdlHandler->createAndPushBackRenderElement("Images/Chess/PreviousMove.png", pieceWidth * previousMove.fromX, pieceHeight * previousMove.fromY
@@ -105,22 +116,18 @@ void Renderer::renderPreviousMove(const Move& previousMove)
 */
 
 
-/*
 int Renderer::getWindowWidth()
 {
-	return this->windowWidth;
+	return this->window_width;
 }
 
 int Renderer::getWindowHeight()
 {
-	return this->windowHeight;
+	return this->window_height;
 }
 
-void Renderer::renderPieceOnMousePosition(Piece* piece, int mouseX, int mouseY)
-{
-	std::string fileString = getFileString(piece);
-	sdlHandler->createAndPushBackRenderElement(fileString, mouseX - (pieceWidth / 2), mouseY - (pieceHeight / 2), pieceWidth, pieceHeight);
-}
+/*
+
 
 void Renderer::renderPromotionSelection(PieceColor color)
 {

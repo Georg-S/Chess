@@ -8,7 +8,7 @@
 int main(int argc, char* argv[])
 {
 	Chess chess;
-	chess.play_vs_AI();
+	chess.game_loop();
 
 	return 0;
 }
