@@ -2,7 +2,7 @@
 
 inline bool is_occupied(uint32_t field)
 {
-	return field & field_is_occupied;
+	return field & occupied_bit;
 }
 
 bool is_field_occupied(const Board& board, int x, int y)
@@ -14,7 +14,7 @@ PieceColor get_piece_color(uint32_t piece)
 {
 	assert(is_occupied(piece));
 
-	if (piece & color_is_black)
+	if (piece & color_black_bit)
 		return PieceColor::BLACK;
 	else
 		return PieceColor::WHITE;
@@ -28,10 +28,21 @@ PieceColor get_piece_color(const Board& board, int x, int y)
 uint32_t get_piece_type_value(uint32_t piece)
 {
 	assert(is_occupied(piece));
-	uint32_t val = piece & piece_mask;
+	uint32_t val = piece & piece_bit_mask;
 	assert(val);
 
 	return val;
+}
+
+bool pieces_have_different_color(const Board& board, const Move& move)
+{
+	assert(is_field_occupied(board, move.fromX, move.fromY));
+	assert(is_field_occupied(board, move.toX, move.toY));
+
+	const auto from_color = get_piece_color(board, move.fromX, move.fromY);
+	const auto to_color = get_piece_color(board, move.toX, move.toY);
+
+	return from_color != to_color;
 }
 
 bool is_move_valid(const Board& board, const Move& move)
@@ -44,7 +55,7 @@ void make_move(Board& board, Move& move)
 	uint32_t piece = board[move.fromX][move.fromY];
 	assert(piece);
 	board[move.fromX][move.fromY] = 0;
-	board[move.toX][move.toY] = piece | moved;
+	board[move.toX][move.toY] = piece | moved_bit;
 }
 
 bool has_pawn_reached_end_of_board(const Board& board)
@@ -85,9 +96,7 @@ bool direct_move_possible(const Board& board, const Move& move, int dir_x, int d
 {
 	if (is_field_occupied(board, move.toX, move.toY))
 	{
-		const auto from_color = get_piece_color(board, move.fromX, move.fromY);
-		const auto to_color = get_piece_color(board, move.toX, move.toY);
-		if (from_color == to_color)
+		if (!pieces_have_different_color(board, move))
 			return false;
 	}
 
@@ -119,7 +128,7 @@ std::pair<int, int> get_direction(const Move& move)
 
 bool direct_move_possible(const Board& board, const Move& move)
 {
-	auto [dir_x, dir_y] = get_direction(move);
+	const auto [dir_x, dir_y] = get_direction(move);
 
 	return direct_move_possible(board, move, dir_x, dir_y);
 }

@@ -71,12 +71,12 @@ std::string Renderer::get_piece_type_string(uint32_t piece) const
 
 	switch (piece_type)
 	{
-	case pawn:		return "Pawn";
-	case knight:	return "Knight";
-	case queen:		return "Queen";
-	case king:		return "King";
-	case bishop:	return "Bishop";
-	case rook:		return "Rook";
+	case pawn_bit:		return "Pawn";
+	case knight_bit:	return "Knight";
+	case queen_bit:		return "Queen";
+	case king_bit:		return "King";
+	case bishop_bit:	return "Bishop";
+	case rook_bit:		return "Rook";
 	default:		assert(0);
 	}
 }

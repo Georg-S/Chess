@@ -12,12 +12,7 @@ static bool is_normal_move_possible(const Board& board, const Move& move)
 	if(!is_field_occupied(board, move.toX, move.toY))
 		return true;
 	
-	const auto from_color = get_piece_color(board, move.fromX, move.fromY);
-	const auto to_color = get_piece_color(board, move.toX, move.toY);
-	if (from_color != to_color)
-		return true;
-
-	return false;
+	return pieces_have_different_color(board, move);
 }
 
 static bool is_castling_possible(const Board& board, const Move& move) 

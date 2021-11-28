@@ -4,19 +4,19 @@
 constexpr int board_width = 8;
 constexpr int board_height = 8;
 
-constexpr uint32_t field_is_occupied =		0b1;
-constexpr uint32_t color_is_black =			0b10;
-constexpr uint32_t moved =					0b100;
-constexpr uint32_t king =					0b1000;
-constexpr uint32_t queen =					0b10000;
-constexpr uint32_t rook =					0b100000;
-constexpr uint32_t bishop =					0b1000000;
-constexpr uint32_t knight =					0b10000000;
-constexpr uint32_t pawn =					0b100000000;
-constexpr uint32_t en_paasant_x_negative =	0b1000000000;
-constexpr uint32_t en_passant_x_positive =	0b10000000000;
+constexpr uint32_t occupied_bit =				0b1;
+constexpr uint32_t color_black_bit =			0b10;
+constexpr uint32_t moved_bit =					0b100;
+constexpr uint32_t king_bit =					0b1000;
+constexpr uint32_t queen_bit =					0b10000;
+constexpr uint32_t rook_bit =					0b100000;
+constexpr uint32_t bishop_bit =					0b1000000;
+constexpr uint32_t knight_bit =					0b10000000;
+constexpr uint32_t pawn_bit =					0b100000000;
+constexpr uint32_t en_paasant_x_negative_bit =	0b1000000000;
+constexpr uint32_t en_passant_x_positive_bit =	0b10000000000;
 
-constexpr uint32_t piece_mask = king | queen | rook | bishop | knight | pawn;
+constexpr uint32_t piece_bit_mask = king_bit | queen_bit | rook_bit | bishop_bit | knight_bit | pawn_bit;
 
 struct Move
 {
@@ -45,4 +45,3 @@ private:
 
 	uint32_t board[board_width][board_height]{};
 };
-
