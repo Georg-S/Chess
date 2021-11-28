@@ -106,8 +106,10 @@ SDL_Texture* SDLHandler::createAndReturnTexture(std::string fileName)
 
 void SDLHandler::clear()
 {
-	if (useCaching)
+	if (useCaching) 
+	{
 		elements.clear();
+	}
 	else
 	{
 		for (std::shared_ptr<RenderingElement> element : elements)

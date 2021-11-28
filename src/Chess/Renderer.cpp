@@ -13,15 +13,18 @@ void Renderer::render(const RenderInformation& renderInfo)
 	sdl_handler->clear();
 	render_chess_board();
 
-	/*
 	if (renderInfo.previousMove.fromX != -1)
-		renderPreviousMove(renderInfo.previousMove);
-	*/
+		render_previous_move(renderInfo.previousMove);
 
-	if (renderInfo.selectedPieceY == -1 || renderInfo.selectedPieceX == -1)
+	if (renderInfo.selectedPieceY == -1 || renderInfo.selectedPieceX == -1) 
+	{
 		render_pieces(renderInfo.board);
-	else
+	}
+	else 
+	{
 		render_pieces_with_selected_on_mouse_position(renderInfo);
+		render_all_possible_moves_for_selected_piece(renderInfo.board, renderInfo.selectedPieceX, renderInfo.selectedPieceY);
+	}
 
 	sdl_handler->updateRendering();
 }
@@ -104,17 +107,26 @@ void Renderer::render_piece_on_mouse_position(uint32_t piece, int mouseX, int mo
 	sdl_handler->createAndPushBackRenderElement(fileString, mouseX - (piece_width / 2), mouseY - (piece_height / 2), piece_width, piece_height);
 }
 
-/*
-void Renderer::renderPreviousMove(const Move& previousMove)
+void Renderer::render_all_possible_moves_for_selected_piece(const Board& board, int selected_x, int selected_y)
 {
-	sdlHandler->createAndPushBackRenderElement("Images/Chess/PreviousMove.png", pieceWidth * previousMove.fromX, pieceHeight * previousMove.fromY
-		, pieceWidth, pieceHeight);
+	std::vector<Move> possible_moves;
+	get_all_possible_moves_for_piece(board, possible_moves, selected_x, selected_y);
 
-	sdlHandler->createAndPushBackRenderElement("Images/Chess/PreviousMove.png", pieceWidth * previousMove.toX, pieceHeight * previousMove.toY
-		, pieceWidth, pieceHeight);
+	for (const auto& move : possible_moves) 
+	{
+		sdl_handler->createAndPushBackRenderElement("Images/PossibleMove.png", piece_width * move.toX, piece_height * move.toY
+			, piece_width, piece_height);
+	}
 }
-*/
 
+void Renderer::render_previous_move(const Move& previousMove)
+{
+	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.fromX, piece_height * previousMove.fromY
+		, piece_width, piece_height);
+
+	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.toX, piece_height * previousMove.toY
+		, piece_width, piece_height);
+}
 
 int Renderer::getWindowWidth()
 {

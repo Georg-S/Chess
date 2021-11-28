@@ -20,7 +20,7 @@ static bool is_normal_move_possible(const Board& board, const Move& move)
 	const int x_distance = abs(get_x_distance(move));
 	const int y_distance = abs(get_y_distance(move));
 
-	if (x_direction == 0) 
+	if (x_distance == 0)
 	{
 		if (is_field_occupied(board, move.fromX, move.fromY + y_direction))
 			return false;
@@ -33,11 +33,11 @@ static bool is_normal_move_possible(const Board& board, const Move& move)
 			if (has_moved(board, move.fromX, move.fromY))
 				return false;
 
-			return is_field_occupied(board, move.toX, move.toY);
+			return !is_field_occupied(board, move.toX, move.toY);
 		}
 	}
 
-	if (y_distance == 1 && is_field_occupied(board, move.toX, move.toY) && pieces_have_different_color(board, move));
+	if ((y_distance == 1) && is_field_occupied(board, move.toX, move.toY) && pieces_have_different_color(board, move))
 		return true;
 
 	return false;

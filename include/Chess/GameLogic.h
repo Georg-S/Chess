@@ -1,7 +1,14 @@
 #pragma once
 #include <cassert>
 #include <algorithm>
+#include <vector>
 #include "Board.h"
+#include "Chess/Pieces/King.h"
+#include "Chess/Pieces/Queen.h"
+#include "Chess/Pieces/Rook.h"
+#include "Chess/Pieces/Bishop.h"
+#include "Chess/Pieces/Knight.h"
+#include "Chess/Pieces/Pawn.h"
 
 inline bool is_occupied(uint32_t field);
 inline bool has_moved(uint32_t field);
@@ -29,3 +36,5 @@ std::pair<int,int> get_direction(const Move& move);
 int get_x_distance(const Move& move);
 int get_y_distance(const Move& move);
 std::pair<int, int> get_distance(const Move& move);
+void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out_vec, int x, int y);
+std::vector<int> get_all_possible_moves(const Board& board);

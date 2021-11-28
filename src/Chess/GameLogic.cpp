@@ -66,7 +66,35 @@ bool pieces_have_different_color(const Board& board, const Move& move)
 
 bool is_move_valid(const Board& board, const Move& move)
 {
-	return true;
+	uint32_t piece = get_piece_type_value(board[move.fromX][move.fromY]);
+	bool move_valid = true;
+
+	switch (piece)
+	{
+	case pawn_bit:		
+		move_valid &= Pawn::is_move_valid(board, move);
+		break;
+	case knight_bit:	
+		move_valid &= Knight::is_move_valid(board, move);
+		break;
+	case queen_bit:		
+		move_valid &= Queen::is_move_valid(board, move);
+		break;
+	case king_bit:		
+		move_valid &= King::is_move_valid(board, move);
+		break;
+	case bishop_bit:	
+		move_valid &= Bishop::is_move_valid(board, move);
+		break;
+	case rook_bit:	
+		move_valid &= Rook::is_move_valid(board, move);
+		break;
+	default:		
+		assert(0);
+	}
+	PieceColor color = get_piece_color(board, move.fromX, move.fromY);
+
+	return move_valid && !is_check(board, color);
 }
 
 void make_move(Board& board, Move& move)
@@ -127,7 +155,7 @@ bool direct_move_possible(const Board& board, const Move& move, int dir_x, int d
 	int x = move.fromX + dir_x;
 	int y = move.fromY + dir_y;
 
-	while ((x != move.toX) && (y != move.toY))
+	while ((x != move.toX) || (y != move.toY))
 	{
 		if (is_field_occupied(board, x, y))
 			return false;
@@ -174,6 +202,24 @@ int get_y_distance(const Move& move)
 std::pair<int, int> get_distance(const Move& move)
 {
 	return std::pair<int, int>(get_x_distance(move), get_y_distance(move));
+}
+
+void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out_vec, int x, int y)
+{
+	for (int board_x = 0; board_x < board_width; board_x++)
+	{
+		for (int board_y = 0; board_y < board_width; board_y++)
+		{
+			Move move = Move{ x, y, board_x, board_y };
+			if (is_move_valid(board, move))
+				out_vec.push_back(std::move(move));
+		}
+	}
+}
+
+std::vector<int> get_all_possible_moves(const Board& board)
+{
+	return std::vector<int>();
 }
 
 bool direct_move_possible(const Board& board, const Move& move)
