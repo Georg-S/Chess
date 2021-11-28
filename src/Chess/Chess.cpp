@@ -4,13 +4,14 @@ Chess::Chess()
 {
 	renderer = std::make_unique<Renderer>();
 	board.init_board();
+	render_info = std::make_unique<RenderInformation>(board);
 }
 
 void Chess::game_loop()
 {
 	while (!renderer->update_quit())
 	{
-//		renderer->render(RenderInformation{ board, previous_move });
+		renderer->render(*render_info);
 		if (player_count == 1)
 			update_1_player_game();
 		else
@@ -39,12 +40,11 @@ void Chess::update_human_move()
 
 	make_move(board, move);
 	previous_move = move;
-	renderer->render(RenderInformation{ board, previous_move });
+	render_info = std::make_unique<RenderInformation>(board, previous_move);
 
 	if (has_pawn_reached_end_of_board(board))
-	{
 		handle_promo_selection(board, move.toX, move.toY);
-	}
+
 	current_player = get_next_player(current_player);
 
 	if (is_game_over(board, current_player))
@@ -55,24 +55,22 @@ Move Chess::get_human_move()
 {
 	mouse.update();
 	Move move = Move{ -1, -1, -1, -1 };
-	RenderInformation renderInfo = RenderInformation(board);
+	render_info = std::make_unique<RenderInformation>(board, previous_move);
 	const bool piece_selected = (pending_move.fromX != -1) && (pending_move.fromY != -1);
 
 	if (piece_selected)
 	{
-		renderInfo.selectedPieceX = pending_move.fromX;
-		renderInfo.selectedPieceY = pending_move.fromY;
-		renderInfo.mousePositionX = mouse.getMousePositionX();
-		renderInfo.mousePositionY = mouse.getMousePositionY();
-		renderInfo.previousMove = previous_move;
-		renderer->render(renderInfo);
+		render_info->selectedPieceX = pending_move.fromX;
+		render_info->selectedPieceY = pending_move.fromY;
+		render_info->mousePositionX = mouse.getMousePositionX();
+		render_info->mousePositionY = mouse.getMousePositionY();
+		render_info->previousMove = previous_move;
 	}
 
 	if (mouse.isRightPressed())
 	{
 		pending_move.fromX = -1;
 		pending_move.fromY = -1;
-		renderer->render(renderInfo);
 		return move;
 	}
 
@@ -98,9 +96,6 @@ Move Chess::get_human_move()
 		move = Move{ pending_move.fromX, pending_move.fromY, boardX, boardY };
 		pending_move.fromX = -1;
 		pending_move.fromY = -1;
-
-		if (!is_move_valid(board, move))
-			renderer->render(board);
 	}
 
 	return move;

@@ -26,9 +26,10 @@ private:
 
 	Board board;
 	std::unique_ptr<Renderer> renderer;
+	std::unique_ptr<RenderInformation> render_info;
 	int player_count = 2;
 	PieceColor current_player = PieceColor::WHITE;
 	Move previous_move{-1, -1, -1, -1};
-	Move pending_move{-1, -1};
+	Move pending_move{-1, -1, -1, -1};
 	Mouse mouse;
 };

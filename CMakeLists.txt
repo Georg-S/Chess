@@ -3,6 +3,15 @@ project(Chess_4.0)
 set(CMAKE_CXX_STANDARD 17)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(PIECES_HEADER
+	"include/Chess/Pieces/King.h"
+	"include/Chess/Pieces/Queen.h"
+	"include/Chess/Pieces/Rook.h"
+	"include/Chess/Pieces/Bishop.h"
+	"include/Chess/Pieces/Knight.h"
+	"include/Chess/Pieces/Pawn.h"
+)
+
 set(CHESS_HEADER
 	"include/Chess/Chess.h"
 	"include/Chess/Board.h"
@@ -15,6 +24,15 @@ set(SDL_HEADER
 	"include/SDL/Mouse.h"
 	"include/SDL/MouseInformation.h"
 	"include/SDL/SDLHandler.h"
+)
+
+set(PIECES_SOURCE
+	"src/Chess/Pieces/King.cpp"
+	"src/Chess/Pieces/Queen.cpp"
+	"src/Chess/Pieces/Rook.cpp"
+	"src/Chess/Pieces/Bishop.cpp"
+	"src/Chess/Pieces/Knight.cpp"
+	"src/Chess/Pieces/Pawn.cpp"
 )
 
 set(CHESS_SOURCE
@@ -33,10 +51,12 @@ set(SOURCES
 	"src/main.cpp")
 
 source_group("\\Header Files\\Chess" FILES ${CHESS_HEADER})
+source_group("\\Header Files\\Chess\\Pieces" FILES ${PIECES_HEADER})
 source_group("\\Header Files\\SDL" FILES ${SDL_HEADER})
 
 source_group("\\Source Files\\Chess" FILES ${CHESS_SOURCE})
 source_group("\\Source Files\\SDL" FILES ${SDL_SOURCE})
+source_group("\\Source Files\\Chess\\Pieces" FILES ${PIECES_SOURCE})
 
 
 add_executable(Chess_4.0 "src/main.cpp"
@@ -44,6 +64,8 @@ add_executable(Chess_4.0 "src/main.cpp"
 						${CHESS_HEADER}
 						${SDL_SOURCE}
 						${CHESS_SOURCE}
+						${PIECES_HEADER}
+						${PIECES_SOURCE}
 						)
 if	(WIN32)
 	set(SDL2_INCLUDE_DIRS $ENV{SDL2_INCLUDE})
