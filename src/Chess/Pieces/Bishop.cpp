@@ -13,4 +13,5 @@ bool Bishop::is_move_valid(const Board& board, const Move& move)
 
 void Bishop::make_move(Board& board, const Move& move)
 {
+	move_piece_to_position(board, move);
 }

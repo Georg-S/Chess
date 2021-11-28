@@ -17,4 +17,5 @@ bool Knight::is_move_valid(const Board& board, const Move& move)
 
 void Knight::make_move(Board& board, const Move& move)
 {
+	move_piece_to_position(board, move);
 }

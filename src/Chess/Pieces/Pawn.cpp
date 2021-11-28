@@ -61,3 +61,27 @@ bool Pawn::is_move_valid(const Board& board, const Move& move)
 
 	return is_normal_move_possible(board, move) || en_passant_possible(board, move);
 }
+
+void Pawn::make_move(Board& board, const Move& move)
+{
+	if (is_en_passant_move(board, move)) 
+	{
+		board[move.toX][move.toY] = board[move.fromX][move.fromY] | moved_bit;
+		board[move.fromX][move.fromY] = 0;
+		board[move.toX][move.fromY] = 0;
+	}
+	else 
+	{
+		move_piece_to_position(board, move);
+	}
+}
+
+bool Pawn::is_en_passant_move(const Board& board,const Move& move)
+{
+	auto [distance_x, distance_y] = get_distance(move);
+
+	if ((abs(distance_x) == 1) && (abs(distance_y) == 1) && !is_field_occupied(board, move.toX, move.toY))
+		return true;
+
+	return false;
+}

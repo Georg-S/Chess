@@ -65,11 +65,32 @@ static bool is_castling_possible(const Board& board, const Move& move)
 	return true;
 }
 
+static bool is_castling_move(const Move& move) 
+{
+	return (abs(move.fromX - move.toX) == 2);
+}
+
 bool King::is_move_valid(const Board& board, const Move& move)
 {
 	return is_normal_move_possible(board, move) || is_castling_possible(board, move);
 }
 
+static void make_castle_move(Board& board, const Move& move) 
+{
+	board[move.toX][move.toY] = board[move.fromX][move.fromY] | moved_bit;
+	board[move.fromX][move.fromY] = 0;
+
+	const int direction_x = get_x_direction(move);
+	const int rook_x = (direction_x < 0) ? 0 : 7;
+
+	board[move.toX - direction_x][move.toY] = board[rook_x][move.fromY] | moved_bit;
+	board[rook_x][move.fromY] = 0;
+}
+
 void King::make_move(Board& board, const Move& move)
 {
+	if (is_castling_move(move))
+		make_castle_move(board, move);
+	else
+		move_piece_to_position(board, move);
 }

@@ -10,3 +10,8 @@ bool Queen::is_move_valid(const Board& board, const Move& move)
 
     return false;
 }
+
+void Queen::make_move(Board& board, const Move& move)
+{
+    move_piece_to_position(board, move);
+}

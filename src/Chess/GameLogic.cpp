@@ -64,45 +64,82 @@ bool pieces_have_different_color(const Board& board, const Move& move)
 	return from_color != to_color;
 }
 
-bool is_move_valid(const Board& board, const Move& move)
+static bool is_piece_move_valid(const Board& board, const Move& move)
 {
 	uint32_t piece = get_piece_type_value(board[move.fromX][move.fromY]);
-	bool move_valid = true;
 
 	switch (piece)
 	{
-	case pawn_bit:		
-		move_valid &= Pawn::is_move_valid(board, move);
+	case pawn_bit:
+		return Pawn::is_move_valid(board, move);
 		break;
-	case knight_bit:	
-		move_valid &= Knight::is_move_valid(board, move);
+	case knight_bit:
+		return Knight::is_move_valid(board, move);
 		break;
-	case queen_bit:		
-		move_valid &= Queen::is_move_valid(board, move);
+	case queen_bit:
+		return Queen::is_move_valid(board, move);
 		break;
-	case king_bit:		
-		move_valid &= King::is_move_valid(board, move);
+	case king_bit:
+		return King::is_move_valid(board, move);
 		break;
-	case bishop_bit:	
-		move_valid &= Bishop::is_move_valid(board, move);
+	case bishop_bit:
+		return Bishop::is_move_valid(board, move);
 		break;
-	case rook_bit:	
-		move_valid &= Rook::is_move_valid(board, move);
+	case rook_bit:
+		return Rook::is_move_valid(board, move);
 		break;
-	default:		
+	default:
 		assert(0);
 	}
-	PieceColor color = get_piece_color(board, move.fromX, move.fromY);
-
-	return move_valid && !is_check(board, color);
+	return false;
 }
 
-void make_move(Board& board, Move& move)
+bool is_move_valid(const Board& board, const Move& move)
 {
-	uint32_t piece = board[move.fromX][move.fromY];
+	if (!is_piece_move_valid(board, move))
+		return false;
+
+	PieceColor color = get_piece_color(board, move.fromX, move.fromY);
+	Board board_copy = board;
+	make_move(board_copy, move);
+
+	return !is_check(board_copy, color);
+}
+
+void make_move(Board& board, const Move& move)
+{
+	uint32_t piece = get_piece_type_value(board[move.fromX][move.fromY]);
 	assert(piece);
+
+	switch (piece)
+	{
+	case pawn_bit:
+		Pawn::make_move(board, move);
+		break;
+	case knight_bit:
+		Knight::make_move(board, move);
+		break;
+	case queen_bit:
+		Queen::make_move(board, move);
+		break;
+	case king_bit:
+		King::make_move(board, move);
+		break;
+	case bishop_bit:
+		Bishop::make_move(board, move);
+		break;
+	case rook_bit:
+		Rook::make_move(board, move);
+		break;
+	default:
+		assert(0);
+	}
+}
+
+void move_piece_to_position(Board& board, const Move& move)
+{
+	board[move.toX][move.toY] = board[move.fromX][move.fromY] | moved_bit;
 	board[move.fromX][move.fromY] = 0;
-	board[move.toX][move.toY] = piece | moved_bit;
 }
 
 bool has_pawn_reached_end_of_board(const Board& board)
@@ -126,11 +163,32 @@ bool is_game_over(const Board& board, PieceColor color)
 
 bool is_check(const Board& board, PieceColor color)
 {
-	return false;
+	auto [king_x, king_y] = get_king_pos(board, color);
+	assert(king_x != -1);
+
+	return is_check(board, king_x, king_y);
 }
 
 bool is_check(const Board& board, int king_x, int king_y)
 {
+	PieceColor king_color = get_piece_color(board, king_x, king_y);
+
+	for (int x = 0; x < board_width; x++)
+	{
+		for (int y = 0; y < board_height; y++)
+		{
+			if (!is_occupied(board[x][y]))
+				continue;
+
+			PieceColor piece_color = get_piece_color(board, x, y);
+			if (piece_color == king_color)
+				continue;
+
+			if (is_piece_move_valid(board, { x, y, king_x, king_y }))
+				return true;
+		}
+	}
+
 	return false;
 }
 
@@ -199,6 +257,26 @@ int get_y_distance(const Move& move)
 	return move.toY - move.fromY;
 }
 
+std::pair<int, int> get_king_pos(const Board& board, PieceColor color)
+{
+	for (int x = 0; x < board_width; x++)
+	{
+		for (int y = 0; y < board_height; y++)
+		{
+			if (!is_occupied(board[x][y]))
+				continue;
+
+			PieceColor piece_color = get_piece_color(board, x, y);
+			if (piece_color != color)
+				continue;
+
+			if (board[x][y] & king_bit)
+				return std::pair<int, int>(x, y);
+		}
+	}
+	return std::pair<int, int>(-1, -1);
+}
+
 std::pair<int, int> get_distance(const Move& move)
 {
 	return std::pair<int, int>(get_x_distance(move), get_y_distance(move));
@@ -208,7 +286,7 @@ void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out
 {
 	for (int board_x = 0; board_x < board_width; board_x++)
 	{
-		for (int board_y = 0; board_y < board_width; board_y++)
+		for (int board_y = 0; board_y < board_height; board_y++)
 		{
 			Move move = Move{ x, y, board_x, board_y };
 			if (is_move_valid(board, move))
@@ -217,9 +295,59 @@ void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out
 	}
 }
 
-std::vector<int> get_all_possible_moves(const Board& board)
+std::vector<Move> get_all_possible_moves(const Board& board, PieceColor color)
 {
-	return std::vector<int>();
+	std::vector<Move> possible_moves;
+
+	for (int from_x = 0; from_x < board_width; from_x++)
+	{
+		for (int from_y = 0; from_y < board_height; from_y++)
+		{
+			if (!is_occupied(board[from_x][from_y]))
+				continue;
+			PieceColor piece_color = get_piece_color(is_occupied(board[from_x][from_y]));
+			if (piece_color != color)
+				continue;
+
+			get_all_possible_moves_for_piece(board, possible_moves, from_x, from_y);
+		}
+	}
+	
+	return possible_moves;
+}
+
+bool any_move_possible_for_piece(const Board& board, int x, int y)
+{
+	for (int board_x = 0; board_x < board_width; board_x++)
+	{
+		for (int board_y = 0; board_y < board_height; board_y++)
+		{
+			Move move = Move{ x, y, board_x, board_y };
+			if (is_move_valid(board, move))
+				return true;
+		}
+	}
+	return false;
+}
+
+bool any_move_possible(const Board& board, PieceColor color)
+{
+	for (int from_x = 0; from_x < board_width; from_x++)
+	{
+		for (int from_y = 0; from_y < board_height; from_y++)
+		{
+			if (!is_occupied(board[from_x][from_y]))
+				continue;
+			PieceColor piece_color = get_piece_color(is_occupied(board[from_x][from_y]));
+			if (piece_color != color)
+				continue;
+
+			if (any_move_possible_for_piece(board, from_x, from_y))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 bool direct_move_possible(const Board& board, const Move& move)
