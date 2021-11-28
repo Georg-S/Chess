@@ -3,12 +3,12 @@
 
 bool Bishop::is_move_valid(const Board& board, const Move& move)
 {
-	auto [dir_x, dir_y] = get_direction(move);
+	const auto [distance_x, distance_y] = get_distance(move);
 
-	if ((abs(dir_x) != 1) || (abs(dir_y) != 1))
+	if (abs(distance_x) != abs(distance_y))
 		return false;
 
-	return direct_move_possible(board, move, dir_x, dir_y);
+	return direct_move_possible(board, move);
 }
 
 void Bishop::make_move(Board& board, const Move& move)

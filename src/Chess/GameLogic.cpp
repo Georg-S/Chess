@@ -5,9 +5,28 @@ inline bool is_occupied(uint32_t field)
 	return field & occupied_bit;
 }
 
+inline bool has_moved(uint32_t field)
+{
+	return field & moved_bit;
+}
+
 bool is_field_occupied(const Board& board, int x, int y)
 {
 	return is_occupied(board[x][y]);
+}
+
+bool has_moved(const Board& board, int x, int y)
+{
+	return has_moved(board[x][y]);
+}
+
+int get_en_passant_direction(const Board& board, int x, int y)
+{
+	if (board[x][y] & en_paasant_x_negative_bit)
+		return -1;
+	if (board[x][y] & en_passant_x_positive_bit)
+		return 1;
+	return 0;
 }
 
 PieceColor get_piece_color(uint32_t piece)
@@ -82,6 +101,11 @@ bool is_check(const Board& board, PieceColor color)
 	return false;
 }
 
+bool is_check(const Board& board, int king_x, int king_y)
+{
+	return false;
+}
+
 bool is_check_mate(const Board& board, PieceColor color)
 {
 	return false;
@@ -115,15 +139,41 @@ bool direct_move_possible(const Board& board, const Move& move, int dir_x, int d
 	return true;
 }
 
+int get_x_direction(const Move& move)
+{
+	return std::max(-1, std::min(move.toX - move.fromX, 1));
+}
+
+int get_y_direction(const Move& move)
+{
+	return std::max(-1, std::min(move.toY - move.fromY, 1));
+}
+
 std::pair<int, int> get_direction(const Move& move)
 {
+	/*
 	int dir_x = move.toX - move.fromX;
 	int dir_y = move.toY - move.fromY;
 
 	dir_x = std::max(-1, std::min(dir_x, 1));
 	dir_y = std::max(-1, std::min(dir_y, 1));
+	*/
+	return std::pair<int, int>(get_x_direction(move), get_y_direction(move));
+}
 
-	return std::pair<int, int>(dir_x, dir_y);
+int get_x_distance(const Move& move)
+{
+	return move.toX - move.fromX;
+}
+
+int get_y_distance(const Move& move)
+{
+	return move.toY - move.fromY;
+}
+
+std::pair<int, int> get_distance(const Move& move)
+{
+	return std::pair<int, int>(get_x_distance(move), get_y_distance(move));
 }
 
 bool direct_move_possible(const Board& board, const Move& move)

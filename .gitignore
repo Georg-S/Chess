@@ -1,4 +1,5 @@
 /[Bb]uild/
+/gimp
 
 # Visual Studio cache directory
 .vs/

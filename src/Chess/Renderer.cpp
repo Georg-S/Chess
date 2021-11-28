@@ -85,9 +85,9 @@ void Renderer::render_pieces_with_selected_on_mouse_position(const RenderInforma
 {
 	uint32_t foreGroundPiece;
 
-	for (int x = 0; x < 8; x++)
+	for (int x = 0; x < board_width; x++)
 	{
-		for (int y = 0; y < 8; y++)
+		for (int y = 0; y < board_height; y++)
 		{
 			if (x == renderInfo.selectedPieceX && y == renderInfo.selectedPieceY)
 				foreGroundPiece = renderInfo.board[x][y];
