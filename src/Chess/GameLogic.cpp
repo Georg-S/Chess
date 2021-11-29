@@ -106,10 +106,26 @@ bool is_move_valid(const Board& board, const Move& move)
 	return !is_check(board_copy, color);
 }
 
+void reset_en_passant_direction_for_color(Board& board, PieceColor color)
+{
+	for (int x = 0; x < board_width; x++) 
+	{
+		for (int y = 0; y < board_height; y++) 
+		{
+			if (!is_field_occupied(board, x, y))
+				continue;
+			if (get_piece_color(board, x, y) == color)
+				board[x][y] = board[x][y] & en_passant_clear_mask;
+		}
+	}
+}
+
 void make_move(Board& board, const Move& move)
 {
-	uint32_t piece = get_piece_type_value(board[move.fromX][move.fromY]);
+	const uint32_t piece = get_piece_type_value(board[move.fromX][move.fromY]);
 	assert(piece);
+	PieceColor color = get_piece_color(board, move.fromX, move.fromY);
+	reset_en_passant_direction_for_color(board, color);
 
 	switch (piece)
 	{
@@ -144,6 +160,12 @@ void move_piece_to_position(Board& board, const Move& move)
 
 bool has_pawn_reached_end_of_board(const Board& board)
 {
+	for (int x = 0; x < board_width; x++) 
+	{
+		if ((board[x][0] & pawn_bit) || (board[x][board_height-1] & pawn_bit))
+			return true;
+	}
+
 	return false;
 }
 
@@ -338,7 +360,7 @@ bool any_move_possible(const Board& board, PieceColor color)
 		{
 			if (!is_occupied(board[from_x][from_y]))
 				continue;
-			PieceColor piece_color = get_piece_color(is_occupied(board[from_x][from_y]));
+			PieceColor piece_color = get_piece_color(board[from_x][from_y]);
 			if (piece_color != color)
 				continue;
 

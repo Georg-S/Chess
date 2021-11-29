@@ -20,6 +20,7 @@ PieceColor get_piece_color(const Board& board, int x, int y);
 uint32_t get_piece_type_value(uint32_t piece);
 bool pieces_have_different_color(const Board& board, const Move& move);
 bool is_move_valid(const Board& board, const Move& move);
+void reset_en_passant_direction_for_color(Board& board, PieceColor color);
 void make_move(Board& board, const Move& move);
 void move_piece_to_position(Board& board, const Move& move);
 bool has_pawn_reached_end_of_board(const Board& board);

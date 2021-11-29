@@ -43,6 +43,35 @@ static bool is_normal_move_possible(const Board& board, const Move& move)
 	return false;
 }
 
+static void set_en_passant_direction(const Board& board, const Move& move) 
+{
+	auto set_en_passant_direction = [](const Board& board, PieceColor color, int x, int y, bool x_negative)
+	{
+		if ((x < 0) || (x >= board_width))
+			return;
+
+		if (!(board[x][y] & pawn_bit))
+			return;
+
+		auto piece_color = get_piece_color(board, x, y);
+		if (color == piece_color)
+			return;
+
+		if (x_negative)
+			board[x][y] = board[x][y] | en_paasant_x_negative_bit;
+		else
+			board[x][y] = board[x][y] | en_passant_x_positive_bit;
+	};
+
+	int y_distance = get_y_distance(move);
+	if (abs(y_distance) != 2)
+		return;
+
+	auto color = get_piece_color(board[move.toX][move.toY]);
+	set_en_passant_direction(board, color, move.toX + 1, move.toY, true);
+	set_en_passant_direction(board, color, move.toX - 1, move.toY, false);
+}
+
 bool Pawn::is_move_valid(const Board& board, const Move& move)
 {
 	const PieceColor color = get_piece_color(board, move.fromX, move.fromY);
@@ -50,7 +79,7 @@ bool Pawn::is_move_valid(const Board& board, const Move& move)
 	if (abs(x_distance) > 1)
 		return false;
 
-	if (y_distance == 0 || abs(y_distance) > 2)
+	if ((y_distance == 0) || abs(y_distance) > 2)
 		return false;
 	
 	if ((y_distance > 0) && color != PieceColor::BLACK)
@@ -73,6 +102,7 @@ void Pawn::make_move(Board& board, const Move& move)
 	else 
 	{
 		move_piece_to_position(board, move);
+		set_en_passant_direction(board, move);
 	}
 }
 

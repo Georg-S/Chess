@@ -17,6 +17,7 @@ constexpr uint32_t en_paasant_x_negative_bit =	0b1000000000;
 constexpr uint32_t en_passant_x_positive_bit =	0b10000000000;
 
 constexpr uint32_t piece_bit_mask = king_bit | queen_bit | rook_bit | bishop_bit | knight_bit | pawn_bit;
+constexpr uint32_t en_passant_clear_mask = ~(en_passant_x_positive_bit | en_paasant_x_negative_bit);
 
 struct Move
 {
