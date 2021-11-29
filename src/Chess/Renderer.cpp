@@ -3,9 +3,12 @@
 Renderer::Renderer()
 {
 	sdl_handler = std::make_unique<SDLHandler>(window_width, window_height, true);
-	piece_width = window_width / board_width;
-	piece_height = window_height / board_height;
 	sdl_handler->start("Chess");
+}
+
+Renderer::Renderer(std::unique_ptr<SDLHandler> handler)
+{
+	sdl_handler = std::move(handler);
 }
 
 void Renderer::render(const RenderInformation& renderInfo)

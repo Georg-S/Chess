@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "Chess/Chess.h"
 #include "Chess/Constant.h"
 #include "Chess/PlayerCountSelection.h"
@@ -9,22 +10,25 @@
 
 int main(int argc, char* argv[])
 {
-	SDLHandler* handler = new SDLHandler(window_width, window_height, true);
+	auto handler = std::make_unique<SDLHandler>(window_width, window_height, true);
 	handler->start("Chess");
 
-	PlayerCountSelection selection = PlayerCountSelection(handler);
+	PlayerCountSelection selection = PlayerCountSelection(handler.get());
 	selection.createPlayerSelection();
 
 	int player_count = -1;
 	while (!handler->exit && player_count == -1) 
 	{
-		player_count = selection.getSelectedPlayerCount();
+		if (player_count == -1) 
+		{
+			player_count = selection.getSelectedPlayerCount();
+		}
 	}
 	selection.destroy();
-	handler->close();
 
 
-	Chess chess;
+
+	Chess chess = Chess(std::move(handler), player_count);
 	chess.game_loop();
 
 	return 0;

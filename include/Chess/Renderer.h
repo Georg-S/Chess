@@ -10,6 +10,7 @@ class Renderer
 {
 public:
 	Renderer();
+	Renderer(std::unique_ptr<SDLHandler> handler);
 	void render(const RenderInformation& renderInfo);
 	void render_promotion_selection(PieceColor color);
 	int getWindowWidth();
@@ -30,7 +31,7 @@ private:
 	std::string get_color_string(PieceColor color) const;
 	std::string get_piece_type_string(uint32_t piece_type) const;
 
-	int piece_width;
-	int piece_height;
+	int piece_width = window_width / board_width;
+	int piece_height = window_height / board_height;
 	std::unique_ptr<SDLHandler> sdl_handler;
 };

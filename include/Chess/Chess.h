@@ -9,6 +9,7 @@ class Chess
 {
 public:
 	Chess();
+	Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, PieceColor player_color = PieceColor::WHITE);
 
 	void game_loop();
 private:

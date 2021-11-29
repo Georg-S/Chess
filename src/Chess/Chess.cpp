@@ -2,8 +2,15 @@
 
 Chess::Chess()
 {
-	renderer = std::make_unique<Renderer>();
 	board.init_board();
+	renderer = std::make_unique<Renderer>();
+	render_info = std::make_unique<RenderInformation>(board);
+}
+
+Chess::Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, PieceColor player_color)
+{
+	board.init_board();
+	renderer = std::make_unique<Renderer>(std::move(sdl_handler));
 	render_info = std::make_unique<RenderInformation>(board);
 }
 
