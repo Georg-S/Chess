@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include "Chess/Constant.h"
 #include "SDL/SDLHandler.h"
 #include "SDL/SDLButton.h"
 #include "SDL/Mouse.h"
@@ -8,7 +9,7 @@
 class PlayerCountSelection
 {
 public:
-	PlayerCountSelection(SDLHandler* sdlHandler, int windowWidth, int windowHeight);
+	PlayerCountSelection(SDLHandler* sdlHandler);
 	void createPlayerSelection();
 	int getSelectedPlayerCount();
 	void destroy();
@@ -27,7 +28,4 @@ private:
 	const std::string onePlayerSelectedPath = "Images/PlayerCountSelection/1Player_Selected.png";
 	const std::string twoPlayerSelectedPath = "Images/PlayerCountSelection/2Player_Selected.png";
 	const std::string twoPlayerUnselectedPath = "Images/PlayerCountSelection/2Player_Unselected.png";
-
-	int windowWidth;
-	int windowHeight;
 };

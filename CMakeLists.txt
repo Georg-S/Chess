@@ -20,6 +20,7 @@ set(CHESS_HEADER
 	"include/Chess/GameLogic.h"
 	"include/Chess/PlayerCountSelection.h"
 	"include/Chess/PlayerColorSelection.h"
+	"include/Chess/Constant.h"
 )
 
 set(SDL_HEADER

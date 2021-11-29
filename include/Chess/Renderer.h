@@ -4,6 +4,7 @@
 #include "SDL/SDLHandler.h"
 #include "Board.h"
 #include "RenderInformation.h"
+#include "Constant.h"
 
 class Renderer
 {
@@ -13,7 +14,6 @@ public:
 	void render_promotion_selection(PieceColor color);
 	int getWindowWidth();
 	int getWindowHeight();
-	bool update_quit();
 	bool is_quit();
 	void quit();
 
@@ -30,8 +30,6 @@ private:
 	std::string get_color_string(PieceColor color) const;
 	std::string get_piece_type_string(uint32_t piece_type) const;
 
-	const int window_width = 800;
-	const int window_height = 800;
 	int piece_width;
 	int piece_height;
 	std::unique_ptr<SDLHandler> sdl_handler;

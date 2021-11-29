@@ -26,7 +26,7 @@ void Renderer::render(const RenderInformation& renderInfo)
 		render_all_possible_moves_for_selected_piece(renderInfo.board, renderInfo.selectedPieceX, renderInfo.selectedPieceY);
 	}
 
-	sdl_handler->updateRendering();
+	sdl_handler->update();
 }
 
 void Renderer::render_chess_board()
@@ -135,12 +135,12 @@ void Renderer::render_previous_move(const Move& previousMove)
 
 int Renderer::getWindowWidth()
 {
-	return this->window_width;
+	return window_width;
 }
 
 int Renderer::getWindowHeight()
 {
-	return this->window_height;
+	return window_height;
 }
 
 void Renderer::render_promotion_selection(PieceColor color)
@@ -158,16 +158,7 @@ void Renderer::render_promotion_selection(PieceColor color)
 	sdl_handler->createAndPushBackRenderElement(knightStr, 0, window_height / 2, window_width / 2, window_height / 2);
 	sdl_handler->createAndPushBackRenderElement(bishopStr, window_width / 2, window_height / 2, window_width / 2, window_height / 2);
 
-	sdl_handler->updateRendering();
-}
-
-bool Renderer::update_quit()
-{
-	sdl_handler->updateQuit();
-	if (sdl_handler->exit)
-		sdl_handler->close();
-
-	return sdl_handler->exit;
+	sdl_handler->update();
 }
 
 bool Renderer::is_quit()

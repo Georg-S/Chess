@@ -9,7 +9,7 @@ Chess::Chess()
 
 void Chess::game_loop()
 {
-	while (!renderer->update_quit())
+	while (!renderer->is_quit())
 	{
 		renderer->render(*render_info);
 		if (player_count == 1)

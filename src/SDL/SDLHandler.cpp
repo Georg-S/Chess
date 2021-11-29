@@ -19,6 +19,12 @@ bool SDLHandler::start(const std::string& windowName)
 	return true;
 }
 
+void SDLHandler::update()
+{
+	updateQuit();
+	updateRendering();
+}
+
 std::shared_ptr<RenderingElement> SDLHandler::createAndPushBackRenderElement(std::string fileName, int x, int y, int width, int height)
 {
 	std::shared_ptr<RenderingElement> element = std::make_shared<RenderingElement>();

@@ -22,7 +22,7 @@ class SDLHandler
 public:
 	SDLHandler(int screenWidth, int screenHeight, bool useCaching = false);
 	bool start(const std::string& windowName);
-	void updateRendering();
+	void update();
 	std::shared_ptr<RenderingElement> createAndPushFrontRenderElement(std::string fileName, int x, int y, int width, int height);
 	std::shared_ptr<RenderingElement> createAndPushBackRenderElement(std::string fileName, int x, int y, int width, int height);
 	void clear();
@@ -31,12 +31,13 @@ public:
 	void close();
 	void setToForeground(std::shared_ptr<RenderingElement> element);
 	void getWindowPosition(int* x, int* y);
-	void updateQuit();
 
 	bool exit = false;
 	SDL_Event event;
 
 private:
+	void updateQuit();
+	void updateRendering();
 	void deleteCache();
 	SDL_Texture* createAndReturnTexture(std::string fileName);
 	bool initialize(const std::string& windowName);
