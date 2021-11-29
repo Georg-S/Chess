@@ -55,23 +55,27 @@ void Renderer::render_piece(const Board& board, int x, int y)
 
 std::string Renderer::get_file_string(uint32_t piece) const
 {
-	return "Images/" + get_piece_type_string(piece) + "_" + get_color_string(piece) + ".png";
+	uint32_t piece_type = get_piece_type_value(piece);
+	PieceColor color = get_piece_color(piece);
+
+	return "Images/" + get_piece_type_string(piece_type) + "_" + get_color_string(color) + ".png";
 }
 
-std::string Renderer::get_color_string(uint32_t piece) const
+std::string Renderer::get_file_string(uint32_t piece_type, PieceColor piece_color)
 {
-	PieceColor piece_color = get_piece_color(piece);
+	return "Images/" + get_piece_type_string(piece_type) + "_" + get_color_string(piece_color) + ".png";
+}
 
-	if (piece_color == PieceColor::WHITE)
+std::string Renderer::get_color_string(PieceColor color) const
+{
+	if (color == PieceColor::WHITE)
 		return "white";
-	else if (piece_color == PieceColor::BLACK)
+	else if (color == PieceColor::BLACK)
 		return "black";
 }
 
-std::string Renderer::get_piece_type_string(uint32_t piece) const
+std::string Renderer::get_piece_type_string(uint32_t piece_type) const
 {
-	uint32_t piece_type = get_piece_type_value(piece);
-
 	switch (piece_type)
 	{
 	case pawn_bit:		return "Pawn";
@@ -82,6 +86,7 @@ std::string Renderer::get_piece_type_string(uint32_t piece) const
 	case rook_bit:		return "Rook";
 	default:		assert(0);
 	}
+	return "";
 }
 
 void Renderer::render_pieces_with_selected_on_mouse_position(const RenderInformation& renderInfo)
@@ -138,27 +143,23 @@ int Renderer::getWindowHeight()
 	return this->window_height;
 }
 
-/*
-
-
-void Renderer::renderPromotionSelection(PieceColor color)
+void Renderer::render_promotion_selection(PieceColor color)
 {
-	sdlHandler->clear();
-	sdlHandler->createAndPushBackRenderElement("Images/Chess/background.png", 0, 0, windowWidth, windowHeight);
+	sdl_handler->clear();
+	sdl_handler->createAndPushBackRenderElement("Images/background.png", 0, 0, window_width, window_height);
 
-	std::string queenStr = getFileString('Q', color);
-	std::string rookStr = getFileString('R', color);
-	std::string knightStr = getFileString('H', color);
-	std::string  bishopStr = getFileString('B', color);
+	std::string queenStr = get_file_string(queen_bit, color);
+	std::string rookStr = get_file_string(rook_bit, color);
+	std::string knightStr = get_file_string(knight_bit, color);
+	std::string  bishopStr = get_file_string(bishop_bit, color);
 
-	sdlHandler->createAndPushBackRenderElement(queenStr, 0, 0, windowWidth / 2, windowHeight / 2);
-	sdlHandler->createAndPushBackRenderElement(rookStr, windowWidth / 2, 0, windowWidth / 2, windowHeight / 2);
-	sdlHandler->createAndPushBackRenderElement(knightStr, 0, windowHeight / 2, windowWidth / 2, windowHeight / 2);
-	sdlHandler->createAndPushBackRenderElement(bishopStr, windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
+	sdl_handler->createAndPushBackRenderElement(queenStr, 0, 0, window_width / 2, window_height / 2);
+	sdl_handler->createAndPushBackRenderElement(rookStr, window_width / 2, 0, window_width / 2, window_height / 2);
+	sdl_handler->createAndPushBackRenderElement(knightStr, 0, window_height / 2, window_width / 2, window_height / 2);
+	sdl_handler->createAndPushBackRenderElement(bishopStr, window_width / 2, window_height / 2, window_width / 2, window_height / 2);
 
-	sdlHandler->updateRendering();
+	sdl_handler->updateRendering();
 }
-*/
 
 bool Renderer::update_quit()
 {

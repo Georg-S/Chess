@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-#include "MouseInformation.h"
 #include <SDL.h>
+#include "MouseInformation.h"
 
 class Mouse
 {

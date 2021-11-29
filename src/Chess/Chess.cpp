@@ -103,7 +103,7 @@ Move Chess::get_human_move()
 
 bool Chess::is_valid_move(const Move& move)
 {
-	if(!is_valid_board_pos(move.fromX, move.fromY) || !is_valid_board_pos(move.toX, move.toY))
+	if (!is_valid_board_pos(move.fromX, move.fromY) || !is_valid_board_pos(move.toX, move.toY))
 		return false;
 	if (!is_field_occupied(board, move.fromX, move.fromY))
 		return false;
@@ -118,6 +118,44 @@ bool Chess::is_valid_board_pos(int x, int y)
 
 void Chess::handle_promo_selection(Board& board, int posx, int posy)
 {
+	renderer->render_promotion_selection(current_player);
+
+	bool validPieceSelected = false;
+
+	while (!validPieceSelected)
+	{
+		mouse.update();
+
+		if (!mouse.isNewLeftClick())
+			continue;
+
+		uint32_t piece = get_piece_from_promo_selection(mouse.getMousePositionX(), mouse.getMousePositionY());
+
+		if (piece == 0)
+			continue;
+
+		board[posx][posy] = piece;
+		validPieceSelected = true;
+	}
+}
+
+uint32_t Chess::get_piece_from_promo_selection(int mouseX, int mouseY)
+{
+	int x = mouseX / (renderer->getWindowWidth() / 2);
+	int y = mouseY / (renderer->getWindowHeight() / 2);
+
+	uint32_t color = (current_player == PieceColor::BLACK) ? color_black_bit : 0;
+
+	if (x == 0 && y == 0)
+		return (queen_bit | color | moved_bit | occupied_bit);
+	else if (x == 1 && y == 0)
+		return (rook_bit | color | moved_bit | occupied_bit);
+	else if (x == 0 && y == 1)
+		return (knight_bit | color | moved_bit | occupied_bit);
+	else if (x == 1 && y == 1)
+		return (bishop_bit | color | moved_bit | occupied_bit);
+
+	return 0;
 }
 
 void Chess::handle_game_over()

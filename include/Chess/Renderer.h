@@ -10,7 +10,7 @@ class Renderer
 public:
 	Renderer();
 	void render(const RenderInformation& renderInfo);
-	//		void renderPromotionSelection(PieceColor color);
+	void render_promotion_selection(PieceColor color);
 	int getWindowWidth();
 	int getWindowHeight();
 	bool update_quit();
@@ -26,8 +26,9 @@ private:
 	void render_piece_on_mouse_position(uint32_t piece, int mouseX, int mouseY);
 	void render_all_possible_moves_for_selected_piece(const Board& board, int selected_x, int selected_y);
 	std::string get_file_string(uint32_t piece) const;
-	std::string get_color_string(uint32_t piece) const;
-	std::string get_piece_type_string(uint32_t piece) const;
+	std::string get_file_string(uint32_t piece_type, PieceColor piece_color);
+	std::string get_color_string(PieceColor color) const;
+	std::string get_piece_type_string(uint32_t piece_type) const;
 
 	const int window_width = 800;
 	const int window_height = 800;

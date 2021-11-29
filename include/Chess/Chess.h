@@ -20,6 +20,7 @@ private:
 	bool is_valid_move(const Move& move);
 	bool is_valid_board_pos(int x, int y);
 	void handle_promo_selection(Board& board, int posx, int posy);
+	uint32_t get_piece_from_promo_selection(int mouseX, int mouseY);
 	void handle_game_over();
 	int convert_mouse_position_x_to_board_position(int mouse_x);
 	int convert_mouse_position_y_to_board_position(int mouse_y);
