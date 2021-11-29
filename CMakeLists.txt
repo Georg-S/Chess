@@ -18,12 +18,15 @@ set(CHESS_HEADER
 	"include/Chess/Renderer.h"
 	"include/Chess/RenderInformation.h"
 	"include/Chess/GameLogic.h"
+	"include/Chess/PlayerCountSelection.h"
+	"include/Chess/PlayerColorSelection.h"
 )
 
 set(SDL_HEADER
 	"include/SDL/Mouse.h"
 	"include/SDL/MouseInformation.h"
 	"include/SDL/SDLHandler.h"
+	"include/SDL/SDLButton.h"
 )
 
 set(PIECES_SOURCE
@@ -40,11 +43,14 @@ set(CHESS_SOURCE
 	"src/Chess/Board.cpp"
 	"src/Chess/Renderer.cpp"
 	"src/Chess/GameLogic.cpp"
+	"src/Chess/PlayerCountSelection.cpp"
+	"src/Chess/PlayerColorSelection.cpp"
 )
 
 set(SDL_SOURCE
 	"src/SDL/Mouse.cpp"
 	"src/SDL/SDLHandler.cpp"
+	"src/SDL/SDLButton.cpp"
 )
 
 set(SOURCES 
