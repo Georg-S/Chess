@@ -21,6 +21,7 @@ set(CHESS_HEADER
 	"include/Chess/PlayerCountSelection.h"
 	"include/Chess/PlayerColorSelection.h"
 	"include/Chess/Constant.h"
+	"include/Chess/MinimaxAI.h"
 )
 
 set(SDL_HEADER
@@ -46,6 +47,7 @@ set(CHESS_SOURCE
 	"src/Chess/GameLogic.cpp"
 	"src/Chess/PlayerCountSelection.cpp"
 	"src/Chess/PlayerColorSelection.cpp"
+	"src/Chess/MinimaxAI.cpp"
 )
 
 set(SDL_SOURCE

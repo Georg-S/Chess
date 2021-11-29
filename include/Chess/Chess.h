@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "GameLogic.h"
 #include "SDL/Mouse.h"
+#include "MinimaxAI.h"
 
 class Chess
 {
@@ -32,6 +33,8 @@ private:
 	int player_count = 2;
 	bool game_over = false;
 	PieceColor current_player = PieceColor::WHITE;
+	PieceColor human_player_color;
+	MinimaxAI ai;
 	Move previous_move{-1, -1, -1, -1};
 	Move pending_move{-1, -1, -1, -1};
 	Mouse mouse;

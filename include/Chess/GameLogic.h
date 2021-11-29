@@ -22,6 +22,7 @@ bool pieces_have_different_color(const Board& board, const Move& move);
 bool is_move_valid(const Board& board, const Move& move);
 void reset_en_passant_direction_for_color(Board& board, PieceColor color);
 void make_move(Board& board, const Move& move);
+void make_move_with_automatic_promotion(Board& board, const Move& move);
 void move_piece_to_position(Board& board, const Move& move);
 bool has_pawn_reached_end_of_board(const Board& board);
 PieceColor get_next_player(PieceColor player);

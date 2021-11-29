@@ -12,6 +12,8 @@ Chess::Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, PieceCol
 	board.init_board();
 	renderer = std::make_unique<Renderer>(std::move(sdl_handler));
 	render_info = std::make_unique<RenderInformation>(board);
+	this->player_count = player_count;
+	human_player_color = player_color;
 }
 
 void Chess::game_loop()
@@ -31,6 +33,10 @@ void Chess::game_loop()
 
 void Chess::update_1_player_game()
 {
+	if (current_player == human_player_color)
+		update_human_move();
+	else
+		update_ai_move();
 }
 
 void Chess::update_2_player_game()
@@ -40,6 +46,20 @@ void Chess::update_2_player_game()
 
 void Chess::update_ai_move()
 {
+	Move move = ai.get_move(board, current_player);
+	if (!is_valid_move(move)) 
+	{
+		assert(0);
+		return;
+	}
+	make_move_with_automatic_promotion(board, move);
+	previous_move = move;
+	render_info = std::make_unique<RenderInformation>(board, previous_move);
+
+	current_player = get_next_player(current_player);
+
+	if (is_game_over(board, current_player))
+		handle_game_over();
 }
 
 void Chess::update_human_move()

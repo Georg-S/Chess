@@ -152,6 +152,16 @@ void make_move(Board& board, const Move& move)
 	}
 }
 
+void make_move_with_automatic_promotion(Board& board, const Move& move)
+{
+	make_move(board, move);
+	if (has_pawn_reached_end_of_board(board)) 
+	{
+		uint32_t color = board[move.toX][move.toY] & color_black_bit;
+		board[move.toX][move.toY] = queen_bit | moved_bit | occupied_bit | color_black_bit;
+	}
+}
+
 void move_piece_to_position(Board& board, const Move& move)
 {
 	board[move.toX][move.toY] = board[move.fromX][move.fromY] | moved_bit;
