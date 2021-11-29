@@ -29,6 +29,11 @@ void Renderer::render(const RenderInformation& renderInfo)
 		render_all_possible_moves_for_selected_piece(renderInfo.board, renderInfo.selectedPieceX, renderInfo.selectedPieceY);
 	}
 
+	if (renderInfo.check_mate)
+		render_checkmate();
+	else if (renderInfo.stale_mate)
+		render_stalemate();
+
 	sdl_handler->update();
 }
 
@@ -125,6 +130,16 @@ void Renderer::render_all_possible_moves_for_selected_piece(const Board& board, 
 		sdl_handler->createAndPushBackRenderElement("Images/PossibleMove.png", piece_width * move.toX, piece_height * move.toY
 			, piece_width, piece_height);
 	}
+}
+
+void Renderer::render_checkmate()
+{
+	sdl_handler->createAndPushBackRenderElement("Images/Checkmate/Checkmate.png", 0, window_height / 3, window_width, window_height / 4);
+}
+
+void Renderer::render_stalemate()
+{
+	sdl_handler->createAndPushBackRenderElement("Images/Stalemate/Stalemate.png", 0, window_height / 3, window_width, window_height / 4);
 }
 
 void Renderer::render_previous_move(const Move& previousMove)

@@ -216,12 +216,22 @@ bool is_check(const Board& board, int king_x, int king_y)
 
 bool is_check_mate(const Board& board, PieceColor color)
 {
-	return false;
+	if (!is_check(board, color))
+		return false;
+	if (any_move_possible(board, color))
+		return false;
+
+	return true;
 }
 
 bool is_stale_mate(const Board& board, PieceColor color)
 {
-	return false;
+	if (is_check(board, color))
+		return false;
+	if (any_move_possible(board, color))
+		return false;
+
+	return true;
 }
 
 bool direct_move_possible(const Board& board, const Move& move, int dir_x, int dir_y)

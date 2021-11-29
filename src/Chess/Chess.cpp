@@ -19,6 +19,9 @@ void Chess::game_loop()
 	while (!renderer->is_quit())
 	{
 		renderer->render(*render_info);
+		if (game_over)
+			continue;
+
 		if (player_count == 1)
 			update_1_player_game();
 		else
@@ -167,6 +170,11 @@ uint32_t Chess::get_piece_from_promo_selection(int mouseX, int mouseY)
 
 void Chess::handle_game_over()
 {
+	game_over = true;
+	if (is_check_mate(board, current_player))
+		render_info->check_mate = true;
+	else if (is_stale_mate(board, current_player))
+		render_info->stale_mate = true;
 }
 
 int Chess::convert_mouse_position_x_to_board_position(int mouse_x)

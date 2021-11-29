@@ -26,6 +26,8 @@ private:
 	void render_previous_move(const Move& previousMove);
 	void render_piece_on_mouse_position(uint32_t piece, int mouseX, int mouseY);
 	void render_all_possible_moves_for_selected_piece(const Board& board, int selected_x, int selected_y);
+	void render_checkmate();
+	void render_stalemate();
 	std::string get_file_string(uint32_t piece) const;
 	std::string get_file_string(uint32_t piece_type, PieceColor piece_color);
 	std::string get_color_string(PieceColor color) const;
