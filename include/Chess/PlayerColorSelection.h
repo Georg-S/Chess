@@ -1,34 +1,28 @@
 #pragma once
-/*
 #include <string>
-#include "SDLButton.h"
-#include "SDLHandler.h"
-#include "Color.h"
+#include "SDL/Mouse.h"
+#include "SDL/SDLButton.h"
+#include "SDL/SDLHandler.h"
+#include "Chess/Constant.h"
+#include "Board.h"
 
-class ColorSelection
+class PlayerColorSelection
 {
 public:
-	ColorSelection(SDLHandler* sdlHandler, int windowWidth, int windowHeight);
-	~ColorSelection();
-
+	PlayerColorSelection(SDLHandler* sdlHandler);
 	void createColorSelection();
-	void update(const int &mousePositionX, const int &mousePositionY, const bool &clicked);
-	COLOR getSelectedColor();
+	PieceColor getSelectedColor();
 	void destroy();
 
 private:
+	void update();
 	SDLHandler* sdlHandler;
-	RenderingElement* header;
+	std::shared_ptr<RenderingElement> header;
 	SDLButton* whiteButton;
 	SDLButton* blackButton;
+	Mouse mouse;
 
-	int windowWidth;
-	int windowHeight;
-
-	const std::string headerPath = "Images/ColorSelection/Header.png";
-	const std::string blackPath = "Images/ColorSelection/Black.png";
-	const std::string whitePath = "Images/ColorSelection/White.png";
+	const std::string headerPath = "Images/PlayerColorSelection/Header.png";
+	const std::string blackPath = "Images/PlayerColorSelection/Black.png";
+	const std::string whitePath = "Images/PlayerColorSelection/White.png";
 };
-
-
-*/

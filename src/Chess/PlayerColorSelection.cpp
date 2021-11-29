@@ -1,47 +1,42 @@
 #include "Chess/PlayerColorSelection.h"
 
-/*
-ColorSelection::ColorSelection(SDLHandler* sdlHandler, int windowWidth, int windowHeight)
+PlayerColorSelection::PlayerColorSelection(SDLHandler* sdlHandler)
 {
 	this->sdlHandler = sdlHandler;
-	this->windowWidth = windowWidth;
-	this->windowHeight = windowHeight;
 }
 
-ColorSelection::~ColorSelection()
-{
-}
-
-void ColorSelection::createColorSelection()
+void PlayerColorSelection::createColorSelection()
 {
 	int xPosition = 0;
 	int yPosition = 0;
-	header = sdlHandler->createAndPushRenderElement(headerPath, 0, 0, windowWidth, windowHeight / 2);
-	yPosition += windowHeight / 2;
-	whiteButton = new SDLButton(sdlHandler, 0, yPosition, windowWidth / 2, windowHeight / 2, whitePath, whitePath);
-	xPosition += windowWidth / 2;
-	blackButton = new SDLButton(sdlHandler, xPosition, yPosition, windowWidth / 2, windowHeight / 2, blackPath, blackPath);
+	header = sdlHandler->createAndPushBackRenderElement(headerPath, 0, 0, window_width, window_height / 2);
+	yPosition += window_height / 2;
+	whiteButton = new SDLButton(sdlHandler, 0, yPosition, window_width / 2, window_height / 2, whitePath, whitePath);
+	xPosition += window_width / 2;
+	blackButton = new SDLButton(sdlHandler, xPosition, yPosition, window_width / 2, window_height / 2, blackPath, blackPath);
 }
 
-void ColorSelection::update(const int & mousePositionX, const int & mousePositionY, const bool & clicked)
+void PlayerColorSelection::update()
 {
-	whiteButton->updateButton(mousePositionX, mousePositionY, clicked);
-	blackButton->updateButton(mousePositionX, mousePositionY, clicked);
+	sdlHandler->update();
+	mouse.update();
+	whiteButton->updateButton(mouse.getMousePositionX(), mouse.getMousePositionY(), mouse.isNewLeftClick());
+	blackButton->updateButton(mouse.getMousePositionX(), mouse.getMousePositionY(), mouse.isNewLeftClick());
 }
 
-COLOR ColorSelection::getSelectedColor()
+PieceColor PlayerColorSelection::getSelectedColor()
 {
+	update();
 	if (whiteButton->wasClicked())
-		return WHITE;
+		return PieceColor::WHITE;
 	if (blackButton->wasClicked())
-		return BLACK;
-	return NONE;
+		return PieceColor::BLACK;
+	return PieceColor::UNDEFINED;
 }
 
-void ColorSelection::destroy()
+void PlayerColorSelection::destroy()
 {
-	sdlHandler->deleteRenderingElement(header);
+	sdlHandler->deleteRenderingElementAndTexture(header);
 	whiteButton->destroy();
 	blackButton->destroy();
 }
-*/
