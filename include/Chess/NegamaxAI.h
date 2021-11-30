@@ -17,5 +17,6 @@ private:
 	inline int get_piece_value(uint32_t piece);
 	std::vector<Move> get_best_moves(std::vector<std::pair<int, Move>> moves);
 
-	static constexpr int check_mate_value = -10000;
+	static constexpr int min_value = -100000;
+	static constexpr int max_value = 100000;
 };
