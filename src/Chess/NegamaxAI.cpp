@@ -8,15 +8,16 @@ NegamaxAI::NegamaxAI()
 Move NegamaxAI::get_move(const Board& board, PieceColor color)
 {
 	std::vector<std::pair<int, Move>> evaluated_moves;
-	int alpha = INT_MIN;
 	auto possible_moves = get_all_possible_moves(board, color);
+	constexpr int alpha = -20000;
+	int beta = 20000;
 	for (const auto& move : possible_moves)
 	{
 		Board copy_board = board;
 		make_move_with_automatic_promotion(copy_board, move);
 
-		int val = evaluate_board_negamax(copy_board, get_next_player(color), 4, alpha, INT_MAX);
-		alpha = std::max(alpha, val);
+		int val = evaluate_board_negamax(copy_board, get_next_player(color), 4, alpha, beta);
+//		beta = std::min(beta, val);
 		evaluated_moves.push_back({ val, move });
 	}
 	auto best_moves = get_best_moves(evaluated_moves);
@@ -35,10 +36,8 @@ Move NegamaxAI::get_random_move(const std::vector<Move>& moves)
 
 int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta)
 {
-	auto possible_moves = get_all_possible_moves(board, current_player_color);
-	bool no_move_possible = possible_moves.size() == 0;
-	bool check = is_check(board, current_player_color);
-
+	const bool no_move_possible = !any_move_possible(board, current_player_color);
+	const bool check = is_check(board, current_player_color);
 	if (check && no_move_possible)
 		return -(check_mate_value - depth);
 	if (!check && no_move_possible)
@@ -47,6 +46,7 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	if (depth == 0)
 		return -static_board_evaluation(board, current_player_color);
 
+	auto possible_moves = get_all_possible_moves(board, current_player_color);
 	int move_value = INT_MIN;
 	for (const auto& move : possible_moves)
 	{
@@ -54,7 +54,7 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 		make_move_with_automatic_promotion(copy_board, move);
 		move_value = std::max(move_value, evaluate_board_negamax(copy_board, get_next_player(current_player_color), depth - 1, -beta, -alpha));
 		alpha = std::max(alpha, move_value);
-		if (alpha > beta)
+		if (alpha >= beta)
 			break;
 	}
 
