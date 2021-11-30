@@ -47,7 +47,7 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 		return -static_board_evaluation(board, current_player_color);
 
 	auto possible_moves = get_all_possible_moves(board, current_player_color);
-	int move_value = -20000;
+	int move_value = -min_value;
 	for (const auto& move : possible_moves)
 	{
 		Board copy_board = board;
