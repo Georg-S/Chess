@@ -347,7 +347,7 @@ std::vector<Move> get_all_possible_moves(const Board& board, PieceColor color)
 		{
 			if (!is_occupied(board[from_x][from_y]))
 				continue;
-			PieceColor piece_color = get_piece_color(is_occupied(board[from_x][from_y]));
+			PieceColor piece_color = get_piece_color(board[from_x][from_y]);
 			if (piece_color != color)
 				continue;
 
