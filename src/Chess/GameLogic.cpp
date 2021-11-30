@@ -246,7 +246,7 @@ bool is_stale_mate(const Board& board, PieceColor color)
 
 bool direct_move_possible(const Board& board, const Move& move, int dir_x, int dir_y)
 {
-	if (is_field_occupied(board, move.toX, move.toY))
+	if (is_occupied(board[move.toX][move.toY]))
 	{
 		if (!pieces_have_different_color(board, move))
 			return false;
@@ -257,7 +257,7 @@ bool direct_move_possible(const Board& board, const Move& move, int dir_x, int d
 
 	while ((x != move.toX) || (y != move.toY))
 	{
-		if (is_field_occupied(board, x, y))
+		if (is_occupied(board[x][y]))
 			return false;
 
 		x += dir_x;
@@ -279,13 +279,6 @@ int get_y_direction(const Move& move)
 
 std::pair<int, int> get_direction(const Move& move)
 {
-	/*
-	int dir_x = move.toX - move.fromX;
-	int dir_y = move.toY - move.fromY;
-
-	dir_x = std::max(-1, std::min(dir_x, 1));
-	dir_y = std::max(-1, std::min(dir_y, 1));
-	*/
 	return std::pair<int, int>(get_x_direction(move), get_y_direction(move));
 }
 
