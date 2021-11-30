@@ -112,9 +112,9 @@ void reset_en_passant_direction_for_color(Board& board, PieceColor color)
 	{
 		for (int y = 0; y < board_height; y++) 
 		{
-			if (!is_field_occupied(board, x, y))
+			if (!is_occupied(board[x][y]))
 				continue;
-			if (get_piece_color(board, x, y) == color)
+			if (get_piece_color(board[x][y]) == color)
 				board[x][y] = board[x][y] & en_passant_clear_mask;
 		}
 	}
