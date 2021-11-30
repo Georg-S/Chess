@@ -1,5 +1,10 @@
 #include "Chess/Board.h"
 
+void Board::init_empty_board()
+{
+	empty_board();
+}
+
 void Board::init_board()
 {
 	empty_board();

@@ -37,6 +37,14 @@ void Renderer::render(const RenderInformation& renderInfo)
 	sdl_handler->update();
 }
 
+void Renderer::render_board(const Board& board)
+{
+	sdl_handler->clear();
+	render_chess_board();
+	render_pieces(board);
+	sdl_handler->update();
+}
+
 void Renderer::render_chess_board()
 {
 	sdl_handler->createAndPushBackRenderElement("Images/Board.png", 0, 0, window_width, window_height);

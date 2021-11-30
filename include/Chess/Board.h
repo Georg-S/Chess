@@ -37,6 +37,7 @@ enum class PieceColor
 class Board 
 {
 public:
+	void init_empty_board();
 	void init_board();
 	uint32_t* operator[](int index) const;
 private:

@@ -13,6 +13,7 @@ public:
 	Renderer(std::unique_ptr<SDLHandler> handler);
 	void render(const RenderInformation& renderInfo);
 	void render_promotion_selection(PieceColor color);
+	void render_board(const Board& board);
 	int getWindowWidth();
 	int getWindowHeight();
 	bool is_quit();
