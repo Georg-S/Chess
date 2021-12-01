@@ -158,7 +158,7 @@ void make_move_with_automatic_promotion(Board& board, const Move& move)
 	if (has_pawn_reached_end_of_board(board)) 
 	{
 		uint32_t color = board[move.toX][move.toY] & color_black_bit;
-		board[move.toX][move.toY] = queen_bit | moved_bit | occupied_bit | color_black_bit;
+		board[move.toX][move.toY] = queen_bit | moved_bit | occupied_bit | color;
 	}
 }
 

@@ -75,7 +75,7 @@ static void output_board(const Board& board)
 static Move get_move_from_ai(const Board& board, PieceColor color, int depth)
 {
 	NegamaxAI ai;
-	return ai.get_move(board, PieceColor::BLACK, depth);
+	return ai.get_move(board, color, depth);
 }
 
 TEST_CASE("Test_board_1_ai_depth_0", "[board_1]")
@@ -139,15 +139,6 @@ TEST_CASE("Test_board_2_ai_depth_2", "[board_2]")
 
 	REQUIRE(move.toX == 6);
 	REQUIRE(move.toY == 7);
-}
-
-TEST_CASE("Test_board_3_ai_depth_1", "[board_3]")
-{
-	Board test_board_3 = init_test_board_3();
-	Move move = get_move_from_ai(test_board_3, PieceColor::BLACK, 1);
-
-	REQUIRE(move.toX == 6);
-	REQUIRE(move.toY == 2);
 }
 
 TEST_CASE("Test_board_3_ai_depth_2", "[board_3]")
