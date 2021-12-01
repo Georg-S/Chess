@@ -7,7 +7,7 @@ class NegamaxAI
 {
 public:
 	NegamaxAI();
-	Move get_move(const Board& board, PieceColor color, int depth = 3);
+	Move get_move(const Board& board, PieceColor color, int depth = 4);
 
 private:
 	Move get_random_move(const std::vector<Move>& moves);
