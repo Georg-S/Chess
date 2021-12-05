@@ -32,14 +32,14 @@ std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves(const Board& bo
 std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth)
 {
 	const auto processor_count = std::thread::hardware_concurrency();
+	const int thread_count = std::max((unsigned int)1, processor_count);
 	std::vector<std::thread> thread_pool;
 	auto possible_moves = get_all_possible_moves(board, color);
 
 	evaluated_moves.clear();
 	current_index = 0;
-	alpha = min_value;
 
-	for (int i = 0; i < processor_count; i++)
+	for (int i = 0; i < thread_count; i++)
 		thread_pool.push_back(std::thread(&NegamaxAI::eval_multi_threaded, this, board, color, possible_moves, depth));
 
 	for (auto& thread : thread_pool)

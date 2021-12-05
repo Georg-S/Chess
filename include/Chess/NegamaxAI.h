@@ -26,8 +26,7 @@ private:
 
 	std::vector<std::pair<int, Move>> evaluated_moves;
 	std::mutex m_mutex;
-	int current_index;
-	int alpha;
+	int current_index = 0;
 	static constexpr int min_value = -100000;
 	static constexpr int max_value = 100000;
 };
