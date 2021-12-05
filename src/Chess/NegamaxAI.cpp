@@ -7,6 +7,15 @@ NegamaxAI::NegamaxAI()
 
 Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
 {
+	auto evaluated_moves = eval(board, color, depth);
+//	auto evaluated_moves = get_evaluated_moves_multi_threaded(board, color, depth);
+	auto best_moves = get_best_moves(evaluated_moves);
+
+	return get_random_move(best_moves);
+}
+
+std::vector<std::pair<int, Move>> NegamaxAI::eval(const Board& board, PieceColor color, int depth)
+{
 	std::vector<std::pair<int, Move>> evaluated_moves;
 	auto possible_moves = get_all_possible_moves(board, color);
 	int alpha = min_value;
@@ -16,22 +25,79 @@ Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
 		Board copy_board = board;
 		make_move_with_automatic_promotion(copy_board, move);
 
-		int val = evaluate_board_negamax(copy_board, get_next_player(color), depth, -beta, alpha);
+		int val = evaluate_board_negamax(copy_board, get_next_player(color), depth, min_value, max_value);
 		alpha = std::max(alpha, val);
 		evaluated_moves.push_back({ val, move });
 	}
-	auto best_moves = get_best_moves(evaluated_moves);
+	return evaluated_moves;
+}
 
-	return get_random_move(best_moves);
+std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth)
+{
+	constexpr int thread_count = 5;
+	std::vector<std::thread> thread_pool;
+	auto possible_moves = get_all_possible_moves(board, color);
+
+	evaluated_moves.clear();
+	current_index = 0;
+	alpha = min_value;
+
+	for (int i = 0; i < thread_count; i++)
+		thread_pool.push_back(std::thread(&NegamaxAI::eval_multi_threaded, this, board, color, possible_moves, depth));
+
+	for (auto& thread : thread_pool)
+		thread.join();
+
+	return evaluated_moves;
+}
+
+void NegamaxAI::eval_multi_threaded(const Board& board, PieceColor color, const std::vector<Move>& possible_moves, int depth)
+{
+	m_mutex.lock();
+	int move_index = current_index;
+	current_index++;
+	m_mutex.unlock();
+
+	while (move_index < possible_moves.size())
+	{
+		m_mutex.lock();
+		int alpha_v = alpha;
+		m_mutex.unlock();
+
+		Move move = possible_moves[move_index];
+		Board copy_board = board;
+		make_move_with_automatic_promotion(copy_board, move);
+		int val = evaluate_board_negamax(copy_board, get_next_player(color), depth, min_value, max_value);
+
+		m_mutex.lock();
+
+		alpha = std::max(alpha, val);
+		evaluated_moves.push_back({ val, move });
+
+		move_index = current_index;
+		current_index++;
+
+		m_mutex.unlock();
+	}
 }
 
 Move NegamaxAI::get_random_move(const std::vector<Move>& moves)
 {
+//	return moves[0];
 	assert(moves.size());
 	if (moves.size() == 0)
 		return Move();
 
 	return moves[rand() % moves.size()];
+}
+
+Move NegamaxAI::get_random_move(const std::vector<std::pair<int, Move>>& moves)
+{
+	assert(moves.size());
+	if (moves.size() == 0)
+		return Move();
+
+	return moves[rand() % moves.size()].second;
 }
 
 int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta)
