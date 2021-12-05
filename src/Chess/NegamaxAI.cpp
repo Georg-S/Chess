@@ -7,26 +7,23 @@ NegamaxAI::NegamaxAI()
 
 Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
 {
-	auto evaluated_moves = eval(board, color, depth);
-//	auto evaluated_moves = get_evaluated_moves_multi_threaded(board, color, depth);
+//	auto evaluated_moves = get_evaluated_moves(board, color, depth);
+	auto evaluated_moves = get_evaluated_moves_multi_threaded(board, color, depth);
 	auto best_moves = get_best_moves(evaluated_moves);
 
 	return get_random_move(best_moves);
 }
 
-std::vector<std::pair<int, Move>> NegamaxAI::eval(const Board& board, PieceColor color, int depth)
+std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves(const Board& board, PieceColor color, int depth)
 {
 	std::vector<std::pair<int, Move>> evaluated_moves;
 	auto possible_moves = get_all_possible_moves(board, color);
-	int alpha = min_value;
-	int beta = max_value;
 	for (const auto& move : possible_moves)
 	{
 		Board copy_board = board;
 		make_move_with_automatic_promotion(copy_board, move);
 
 		int val = evaluate_board_negamax(copy_board, get_next_player(color), depth, min_value, max_value);
-		alpha = std::max(alpha, val);
 		evaluated_moves.push_back({ val, move });
 	}
 	return evaluated_moves;
@@ -34,7 +31,7 @@ std::vector<std::pair<int, Move>> NegamaxAI::eval(const Board& board, PieceColor
 
 std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth)
 {
-	constexpr int thread_count = 5;
+	const auto processor_count = std::thread::hardware_concurrency();
 	std::vector<std::thread> thread_pool;
 	auto possible_moves = get_all_possible_moves(board, color);
 
@@ -42,7 +39,7 @@ std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves_multi_threaded(
 	current_index = 0;
 	alpha = min_value;
 
-	for (int i = 0; i < thread_count; i++)
+	for (int i = 0; i < processor_count; i++)
 		thread_pool.push_back(std::thread(&NegamaxAI::eval_multi_threaded, this, board, color, possible_moves, depth));
 
 	for (auto& thread : thread_pool)
@@ -60,30 +57,21 @@ void NegamaxAI::eval_multi_threaded(const Board& board, PieceColor color, const 
 
 	while (move_index < possible_moves.size())
 	{
-		m_mutex.lock();
-		int alpha_v = alpha;
-		m_mutex.unlock();
-
 		Move move = possible_moves[move_index];
 		Board copy_board = board;
 		make_move_with_automatic_promotion(copy_board, move);
 		int val = evaluate_board_negamax(copy_board, get_next_player(color), depth, min_value, max_value);
 
 		m_mutex.lock();
-
-		alpha = std::max(alpha, val);
 		evaluated_moves.push_back({ val, move });
-
 		move_index = current_index;
 		current_index++;
-
 		m_mutex.unlock();
 	}
 }
 
 Move NegamaxAI::get_random_move(const std::vector<Move>& moves)
 {
-//	return moves[0];
 	assert(moves.size());
 	if (moves.size() == 0)
 		return Move();
