@@ -14,8 +14,6 @@ Chess create_chess_game_by_user_input()
 	auto handler = std::make_unique<SDLHandler>(window_width, window_height, true);
 	handler->start("Chess");
 
-	return Chess(std::move(handler), 1, PieceColor::WHITE);
-
 	PlayerCountSelection selection = PlayerCountSelection(handler.get());
 	selection.createPlayerSelection();
 
