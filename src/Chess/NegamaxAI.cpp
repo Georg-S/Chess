@@ -133,24 +133,65 @@ int NegamaxAI::static_board_evaluation(const Board& board, PieceColor current_pl
 int NegamaxAI::get_piece_value(const Board& board, PieceColor current_player, int x, int y)
 {
 	PieceColor piece_color = get_piece_color(board, x, y);
-	int piece_value = get_piece_value(board[x][y]);
+	int piece_value = get_raw_piece_value(board[x][y]) + get_piece_position_value(board[x][y], piece_color, x, y);
 	if (piece_color == current_player)
 		return piece_value;
 
 	return -piece_value;
 }
 
-inline int NegamaxAI::get_piece_value(uint32_t piece)
+int NegamaxAI::get_piece_position_value(uint32_t piece, PieceColor color, int x, int y)
 {
 	const uint32_t piece_type = get_piece_type_value(piece);
 	switch (piece_type)
 	{
-	case pawn_bit:		return 1;
-	case knight_bit:	return 3;
-	case bishop_bit:	return 3;
-	case rook_bit:		return 5;
-	case queen_bit:		return 9;
-	case king_bit:		return 100;
+	case pawn_bit:		
+		if (color == PieceColor::BLACK)
+			return black_pawn_table[x][y];
+		else
+			return white_pawn_table[x][y];
+	case knight_bit:
+		if (color == PieceColor::BLACK)
+			return black_knight_table[x][y];
+		else
+			return white_knight_table[x][y];
+	case bishop_bit:
+		if (color == PieceColor::BLACK)
+			return black_bishop_table[x][y];
+		else
+			return white_bishop_table[x][y];
+	case rook_bit:
+		if (color == PieceColor::BLACK)
+			return black_rook_table[x][y];
+		else
+			return white_rook_table[x][y];
+	case queen_bit:	
+		if (color == PieceColor::BLACK)
+			return black_queen_table[x][y];
+		else
+			return white_queen_table[x][y];
+	case king_bit:
+		if (color == PieceColor::BLACK)
+			return black_king_early_game_table[x][y];
+		else
+			return white_king_early_game_table[x][y];
+	default:			
+		assert(0);
+	}
+	return 0;
+}
+
+inline int NegamaxAI::get_raw_piece_value(uint32_t piece)
+{
+	const uint32_t piece_type = get_piece_type_value(piece);
+	switch (piece_type)
+	{
+	case pawn_bit:		return 100;
+	case knight_bit:	return 320;
+	case bishop_bit:	return 330;
+	case rook_bit:		return 500;
+	case queen_bit:		return 900;
+	case king_bit:		return 10000;
 	default:			assert(0);
 	}
 	return 0;

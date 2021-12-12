@@ -22,6 +22,7 @@ set(CHESS_HEADER
 	"include/Chess/PlayerColorSelection.h"
 	"include/Chess/Constant.h"
 	"include/Chess/NegamaxAI.h"
+	"include/Chess/PieceSquareTable.h"
 )
 
 set(SDL_HEADER

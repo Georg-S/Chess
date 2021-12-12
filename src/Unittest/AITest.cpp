@@ -78,6 +78,39 @@ static Move get_move_from_ai(const Board& board, PieceColor color, int depth)
 	return ai.get_move(board, color, depth);
 }
 
+bool is_symetric(const int(* board)[8])
+{
+	for (int y = 0; y < board_height; y++)
+	{
+		for (int left = 0, right = board_width - 1; left < right; left++, right--)
+		{
+			if (board[y][left] != board[y][right])
+				return false;
+		}
+	}
+	return true;
+}
+
+bool piece_table_correctly_mirrored(const int(*arr1)[8], const int(*arr2)[8]) 
+{
+	int buf1[8][8];
+	copy(buf1, arr2);
+	flip_x(buf1);
+	flip_y(buf1);
+
+	return is_equal(buf1, arr1);
+}
+
+TEST_CASE("Correctly mirrored", "[board_1]")
+{
+	REQUIRE(piece_table_correctly_mirrored(black_pawn_table, white_pawn_table));
+	REQUIRE(piece_table_correctly_mirrored(black_bishop_table, white_bishop_table));
+	REQUIRE(piece_table_correctly_mirrored(black_knight_table, white_knight_table));
+	REQUIRE(piece_table_correctly_mirrored(black_queen_table, white_queen_table));
+	REQUIRE(piece_table_correctly_mirrored(black_rook_table, white_rook_table));
+	REQUIRE(piece_table_correctly_mirrored(black_king_early_game_table, white_king_early_game_table));
+}
+
 TEST_CASE("Test_board_1_ai_depth_0", "[board_1]")
 {
 	Board test_board_1 = init_test_board_1();

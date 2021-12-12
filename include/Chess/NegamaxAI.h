@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Board.h"
 #include "GameLogic.h"
+#include "PieceSquareTable.h"
 
 class NegamaxAI
 {
@@ -21,12 +22,13 @@ private:
 	int evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta);
 	int static_board_evaluation(const Board& board, PieceColor current_player);
 	int get_piece_value(const Board& board, PieceColor current_player, int x, int y);
-	inline int get_piece_value(uint32_t piece);
+	int get_piece_position_value(uint32_t piece, PieceColor color, int x, int y);
+	inline int get_raw_piece_value(uint32_t piece);
 	std::vector<Move> get_best_moves(std::vector<std::pair<int, Move>> moves);
 
 	std::vector<std::pair<int, Move>> evaluated_moves;
 	std::mutex m_mutex;
 	int current_index = 0;
-	static constexpr int min_value = -100000;
-	static constexpr int max_value = 100000;
+	static constexpr int min_value = -10000000;
+	static constexpr int max_value = 10000000;
 };
