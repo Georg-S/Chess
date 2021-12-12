@@ -1,13 +1,13 @@
 #pragma once
+// We need to define SDL_MAIN_HANDLED, to be able to execute the main function (WinMain works without this define)
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#include <Windows.h>
 #include <memory>
 #include "Chess/Chess.h"
 #include "Chess/Constant.h"
 #include "Chess/PlayerCountSelection.h"
 #include "Chess/PlayerColorSelection.h"
-
-#ifdef _WIN32 
-#undef main // Undef main because of SDL library
-#endif
 
 Chess create_chess_game_by_user_input() 
 {
@@ -42,7 +42,9 @@ Chess create_chess_game_by_user_input()
 	return Chess(std::move(handler), player_count, player_color);
 }
 
-int main(int argc, char* argv[])
+// Use WinMain instead of main, so we can not show the console window
+// With main: the linker throws an error if the application is defined as Subsystem Windows
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
 {
 	auto chess = create_chess_game_by_user_input();
 	chess.game_loop();
