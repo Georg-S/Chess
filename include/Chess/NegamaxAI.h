@@ -3,6 +3,8 @@
 #include <thread>
 #include <mutex>
 #include <iostream>
+#include <random>
+#include "RNG.h"
 #include "Board.h"
 #include "GameLogic.h"
 #include "PieceSquareTable.h"
@@ -14,6 +16,8 @@ public:
 	Move get_move(const Board& board, PieceColor color, int depth = 4);
 
 private:
+	void init_hashing_table();
+	uint64_t hash_board(const Board& board) const;
 	std::vector<std::pair<int, Move>> get_evaluated_moves(const Board& board, PieceColor color, int depth);
 	std::vector<std::pair<int, Move>> get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth);
 	void eval_multi_threaded(const Board& board, PieceColor color, const std::vector<Move>& possible_moves, int depth);
@@ -31,4 +35,6 @@ private:
 	int current_index = 0;
 	static constexpr int min_value = -10000000;
 	static constexpr int max_value = 10000000;
+	uint64_t hashing_table[8][8];
+	RNG rng;
 };

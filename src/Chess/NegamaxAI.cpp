@@ -3,6 +3,7 @@
 NegamaxAI::NegamaxAI()
 {
 	srand(time(NULL));
+	init_hashing_table();
 }
 
 Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
@@ -12,6 +13,30 @@ Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
 	auto best_moves = get_best_moves(evaluated_moves);
 
 	return get_random_move(best_moves);
+}
+
+void NegamaxAI::init_hashing_table()
+{
+	for (int x = 0; x < board_width; x++) 
+	{
+		for (int y = 0; y < board_height; y++) 
+		{
+			hashing_table[x][y] = rng.get_number(0, std::numeric_limits<uint64_t>::max());
+		}
+	}
+}
+
+uint64_t NegamaxAI::hash_board(const Board& board) const
+{
+	uint64_t hash = 0;
+	for (int x = 0; x < board_width; x++)
+	{
+		for (int y = 0; y < board_height; y++)
+		{
+			hash = (hashing_table[x][y] ^ board[x][y] ^ hash);
+		}
+	}
+	return hash;
 }
 
 std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves(const Board& board, PieceColor color, int depth)
@@ -90,6 +115,7 @@ Move NegamaxAI::get_random_move(const std::vector<std::pair<int, Move>>& moves)
 
 int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta)
 {
+	uint64_t hash = hash_board(board);
 	const bool no_move_possible = !any_move_possible(board, current_player_color);
 	const bool check = is_check(board, current_player_color);
 	if (check && no_move_possible)
