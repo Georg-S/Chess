@@ -9,11 +9,23 @@
 #include "GameLogic.h"
 #include "PieceSquareTable.h"
 
+struct TTEntry 
+{
+	std::mutex mut;
+	enum class type { EXACT, UPPER, LOWER } type;
+	uint64_t hash = 0;
+	int value = 0;
+	int depth = 0;
+	PieceColor player_color;
+};
+
 class NegamaxAI
 {
 public:
 	NegamaxAI();
-	Move get_move(const Board& board, PieceColor color, int depth = 4);
+	NegamaxAI(const NegamaxAI&) = delete;
+	~NegamaxAI();
+	Move get_move(const Board& board, PieceColor color, int depth = 5);
 
 private:
 	void init_hashing_table();
@@ -35,6 +47,8 @@ private:
 	int current_index = 0;
 	static constexpr int min_value = -10000000;
 	static constexpr int max_value = 10000000;
-	uint64_t hashing_table[8][8];
+	uint64_t hashing_table[8][8][12];
+	static constexpr int max_tt_entries = 10000000;
+	TTEntry* tt_table;
 	RNG rng;
 };
