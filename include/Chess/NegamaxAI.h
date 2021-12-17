@@ -28,9 +28,11 @@ public:
 	Move get_move(const Board& board, PieceColor color, int depth = 5);
 
 private:
+	Move iterative_deepening(const Board& board, PieceColor color, int max_depth);
 	void init_hashing_table();
 	uint64_t hash_board(const Board& board, bool black) const;
 	std::vector<std::pair<int, Move>> get_evaluated_moves(const Board& board, PieceColor color, int depth);
+	std::vector<std::pair<int, Move>> get_evaluated_moves(const Board& board, PieceColor color, int depth, const std::vector<Move>& possible_moves);
 	std::vector<std::pair<int, Move>> get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth);
 	void eval_multi_threaded(const Board& board, PieceColor color, const std::vector<Move>& possible_moves, int depth);
 	Move get_random_move(const std::vector<Move>& moves);

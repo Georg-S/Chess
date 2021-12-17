@@ -14,8 +14,33 @@ NegamaxAI::~NegamaxAI()
 
 Move NegamaxAI::get_move(const Board& board, PieceColor color, int depth)
 {
-	//	auto evaluated_moves = get_evaluated_moves(board, color, depth);
+	/*
+	auto evaluated_moves = get_evaluated_moves(board, color, depth);
 	auto evaluated_moves = get_evaluated_moves_multi_threaded(board, color, depth);
+	auto best_moves = get_best_moves(evaluated_moves);
+
+	return get_random_move(best_moves);
+	*/
+	return iterative_deepening(board, color, depth);
+}
+
+Move NegamaxAI::iterative_deepening(const Board& board, PieceColor color, int max_depth)
+{
+	auto compare = [](std::pair<int, Move> p1, std::pair<int, Move> p2)
+	{
+		return p1.first > p2.first;
+	};
+	auto possible_moves = get_all_possible_moves(board, color);
+	std::vector<std::pair<int, Move>> evaluated_moves;
+
+	for (int i = 0; i <= max_depth; i++)
+	{
+		evaluated_moves = get_evaluated_moves(board, color, i, possible_moves);
+		std::sort(evaluated_moves.begin(), evaluated_moves.end(), compare);
+		possible_moves.clear();
+		for (const auto& eval_move : evaluated_moves)
+			possible_moves.push_back(eval_move.second);
+	}
 	auto best_moves = get_best_moves(evaluated_moves);
 
 	return get_random_move(best_moves);
@@ -89,10 +114,15 @@ std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves(const Board& bo
 
 std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves_multi_threaded(const Board& board, PieceColor color, int depth)
 {
+	auto possible_moves = get_all_possible_moves(board, color);
+	return get_evaluated_moves(board, color, depth, possible_moves);
+}
+
+std::vector<std::pair<int, Move>> NegamaxAI::get_evaluated_moves(const Board& board, PieceColor color, int depth, const std::vector<Move>& possible_moves)
+{
 	const auto processor_count = std::thread::hardware_concurrency();
 	const int thread_count = std::max((unsigned int)1, processor_count);
 	std::vector<std::thread> thread_pool;
-	auto possible_moves = get_all_possible_moves(board, color);
 
 	evaluated_moves.clear();
 	current_index = 0;
@@ -181,12 +211,12 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	if (depth == 0)
 		return -static_board_evaluation(board, current_player_color);
 
-	Move best_move{};
 	auto possible_moves = get_all_possible_moves(board, current_player_color);
 	if (tt_move.fromX != -1)
 		set_move_to_front(possible_moves, tt_move);
 
 	assert(possible_moves.size());
+	Move best_move{};
 	int move_value = min_value;
 	for (const auto& move : possible_moves)
 	{
@@ -330,7 +360,7 @@ void NegamaxAI::set_move_to_front(std::vector<Move>& moves, const Move& move)
 	for (int i = 0; i < moves.size(); i++) 
 	{
 		const auto& buf = moves[i];
-		if (buf.fromX == buf.fromY && move.fromY && buf.toX == move.toX && buf.toY == move.toY) 
+		if (buf.fromX == move.fromX && buf.fromY == move.fromY && buf.toX == move.toX && buf.toY == move.toY) 
 		{
 			std::swap(moves[0], moves[i]);
 			return;
