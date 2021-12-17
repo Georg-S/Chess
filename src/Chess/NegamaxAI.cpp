@@ -152,11 +152,13 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	const uint64_t hash = hash_board(board, current_player_color == PieceColor::BLACK);
 
 	int index = hash % max_tt_entries;
+	Move tt_move{-1, -1};
 	auto& entry = tt_table[index];
 	{
 		std::scoped_lock lock(entry.mut);
 		if ((entry.hash != 0) && (entry.hash == hash) && (entry.depth >= depth))
 		{
+			tt_move = entry.best_move;
 			if (entry.type == TTEntry::type::EXACT)
 				return -entry.value;
 			else if (entry.type == TTEntry::type::LOWER)
@@ -179,13 +181,24 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	if (depth == 0)
 		return -static_board_evaluation(board, current_player_color);
 
+	Move best_move{};
 	auto possible_moves = get_all_possible_moves(board, current_player_color);
+	if (tt_move.fromX != -1)
+		set_move_to_front(possible_moves, tt_move);
+
+	assert(possible_moves.size());
 	int move_value = min_value;
 	for (const auto& move : possible_moves)
 	{
 		Board copy_board = board;
 		make_move_with_automatic_promotion(copy_board, move);
-		move_value = std::max(move_value, evaluate_board_negamax(copy_board, get_next_player(current_player_color), depth - 1, -beta, -alpha));
+
+		int eval_value = evaluate_board_negamax(copy_board, get_next_player(current_player_color), depth - 1, -beta, -alpha);
+		if (eval_value > move_value) 
+		{
+			best_move = move;
+			move_value = eval_value;
+		}
 		alpha = std::max(alpha, move_value);
 		if (alpha >= beta)
 			break;
@@ -195,6 +208,7 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	entry.value = move_value;
 	entry.depth = depth;
 	entry.hash = hash;
+	entry.best_move = best_move;
 	if (move_value <= initial_alpha)
 		entry.type = TTEntry::type::UPPER;
 	else if (move_value >= beta)
@@ -309,4 +323,17 @@ std::vector<Move> NegamaxAI::get_best_moves(std::vector<std::pair<int, Move>> mo
 	}
 
 	return best_moves;
+}
+
+void NegamaxAI::set_move_to_front(std::vector<Move>& moves, const Move& move)
+{
+	for (int i = 0; i < moves.size(); i++) 
+	{
+		const auto& buf = moves[i];
+		if (buf.fromX == buf.fromY && move.fromY && buf.toX == move.toX && buf.toY == move.toY) 
+		{
+			std::swap(moves[0], moves[i]);
+			return;
+		}
+	}
 }

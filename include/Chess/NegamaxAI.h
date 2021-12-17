@@ -16,6 +16,7 @@ struct TTEntry
 	uint64_t hash = 0;
 	int value = 0;
 	int depth = 0;
+	Move best_move;
 };
 
 class NegamaxAI
@@ -40,6 +41,7 @@ private:
 	int get_piece_position_value(uint32_t piece, PieceColor color, int x, int y);
 	inline int get_raw_piece_value(uint32_t piece);
 	std::vector<Move> get_best_moves(std::vector<std::pair<int, Move>> moves);
+	void set_move_to_front(std::vector<Move>& moves, const Move& move);
 
 	std::vector<std::pair<int, Move>> evaluated_moves;
 	std::mutex m_mutex;
