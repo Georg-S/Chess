@@ -52,8 +52,10 @@ inline static int get_hash_table_piece_type_index(uint32_t piece)
 	return 0;
 }
 
-uint64_t NegamaxAI::hash_board(const Board& board) const
+uint64_t NegamaxAI::hash_board(const Board& board, bool black) const
 {
+	constexpr uint64_t max_uint64_t = 0xFFFFFFFFFFFFFFFF;
+
 	uint64_t hash = 0;
 	for (int x = 0; x < board_width; x++)
 	{
@@ -65,6 +67,8 @@ uint64_t NegamaxAI::hash_board(const Board& board) const
 			hash ^= hashing_table[x][y][index];
 		}
 	}
+	if (black)
+		return hash ^ max_uint64_t;
 	return hash;
 }
 
@@ -145,7 +149,7 @@ Move NegamaxAI::get_random_move(const std::vector<std::pair<int, Move>>& moves)
 int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta)
 {
 	const int initial_alpha = alpha;
-	const uint64_t hash = hash_board(board);
+	const uint64_t hash = hash_board(board, current_player_color == PieceColor::BLACK);
 
 	int index = hash % max_tt_entries;
 	auto& entry = tt_table[index];
@@ -153,19 +157,15 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 		std::scoped_lock lock(entry.mut);
 		if ((entry.hash != 0) && (entry.hash == hash) && (entry.depth >= depth))
 		{
-			int buf_val = entry.value;
-			if (current_player_color != entry.player_color)
-				buf_val = -buf_val;
-
 			if (entry.type == TTEntry::type::EXACT)
-				return -buf_val;
+				return -entry.value;
 			else if (entry.type == TTEntry::type::LOWER)
-				alpha = std::max(alpha, buf_val);
+				alpha = std::max(alpha, entry.value);
 			else if (entry.type == TTEntry::type::UPPER)
-				beta = std::min(beta, buf_val);
+				beta = std::min(beta, entry.value);
 
 			if (alpha >= beta)
-				return -buf_val;
+				return -entry.value;
 		}
 	}
 
@@ -194,7 +194,6 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	std::scoped_lock lock(entry.mut);
 	entry.value = move_value;
 	entry.depth = depth;
-	entry.player_color = current_player_color;
 	entry.hash = hash;
 	if (move_value <= initial_alpha)
 		entry.type = TTEntry::type::UPPER;
