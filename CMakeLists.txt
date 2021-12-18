@@ -23,6 +23,7 @@ set(CHESS_HEADER
 	"include/Chess/Constant.h"
 	"include/Chess/NegamaxAI.h"
 	"include/Chess/PieceSquareTable.h"
+	"include/Chess/RNG.h"
 )
 
 set(SDL_HEADER
@@ -49,6 +50,7 @@ set(CHESS_SOURCE
 	"src/Chess/PlayerCountSelection.cpp"
 	"src/Chess/PlayerColorSelection.cpp"
 	"src/Chess/NegamaxAI.cpp"
+	"src/Chess/RNG.cpp"
 )
 
 set(SDL_SOURCE
