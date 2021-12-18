@@ -176,13 +176,62 @@ Move NegamaxAI::get_random_move(const std::vector<std::pair<int, Move>>& moves)
 	return moves[rand() % moves.size()].second;
 }
 
+static void set_move_to_front(std::vector<Move>& moves, const Move& move)
+{
+	for (int i = 0; i < moves.size(); i++)
+	{
+		const auto& buf = moves[i];
+		if (buf.fromX == move.fromX && buf.fromY == move.fromY && buf.toX == move.toX && buf.toY == move.toY)
+		{
+			std::swap(moves[0], moves[i]);
+			return;
+		}
+	}
+}
+
+static int get_piece_MVV_LVA_index(uint32_t piece) 
+{
+	switch (piece & piece_bit_mask)
+	{
+	case pawn_bit:		return 5;
+	case knight_bit:	return 4;
+	case bishop_bit:	return 3;
+	case rook_bit:		return 2;
+	case queen_bit:		return 1;
+	case king_bit:		return 0;
+	default:			return 6;
+	}
+}
+
+static void sort_moves_by_MVV_LVA(const Board& board, std::vector<Move>& moves) 
+{
+	for (int i = 0; i < moves.size(); i++) 
+	{
+		int from_index = get_piece_MVV_LVA_index(board[moves[i].fromX][moves[i].fromY]);
+		int to_index = get_piece_MVV_LVA_index(board[moves[i].toX][moves[i].toY]);
+
+		int val = MVV_LVA[to_index][from_index];
+	}
+}
+
+static std::vector<Move> generate_sorted_possible_moves(const Board& board, PieceColor current_player_color, const Move& tt_move)
+{
+	auto possible_moves = get_all_possible_moves(board, current_player_color);
+	sort_moves_by_MVV_LVA(board, possible_moves);
+	if (tt_move.fromX != -1)
+		set_move_to_front(possible_moves, tt_move);
+
+	return possible_moves;
+}
+
+
 int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_player_color, int depth, int alpha, int beta)
 {
 	const int initial_alpha = alpha;
 	const uint64_t hash = hash_board(board, current_player_color == PieceColor::BLACK);
 
 	int index = hash % max_tt_entries;
-	Move tt_move{-1, -1};
+	Move tt_move{-1 };
 	auto& entry = tt_table[index];
 	{
 		std::scoped_lock lock(entry.mut);
@@ -211,9 +260,7 @@ int NegamaxAI::evaluate_board_negamax(const Board& board, PieceColor current_pla
 	if (depth == 0)
 		return -static_board_evaluation(board, current_player_color);
 
-	auto possible_moves = get_all_possible_moves(board, current_player_color);
-	if (tt_move.fromX != -1)
-		set_move_to_front(possible_moves, tt_move);
+	auto possible_moves = generate_sorted_possible_moves(board, current_player_color, tt_move);
 
 	assert(possible_moves.size());
 	Move best_move{};
@@ -353,17 +400,4 @@ std::vector<Move> NegamaxAI::get_best_moves(std::vector<std::pair<int, Move>> mo
 	}
 
 	return best_moves;
-}
-
-void NegamaxAI::set_move_to_front(std::vector<Move>& moves, const Move& move)
-{
-	for (int i = 0; i < moves.size(); i++) 
-	{
-		const auto& buf = moves[i];
-		if (buf.fromX == move.fromX && buf.fromY == move.fromY && buf.toX == move.toX && buf.toY == move.toY) 
-		{
-			std::swap(moves[0], moves[i]);
-			return;
-		}
-	}
 }
