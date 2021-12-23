@@ -78,7 +78,7 @@ source_group("\\Source Files\\Chess\\Pieces" FILES ${PIECES_SOURCE})
 source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
 
 
-add_executable(Chess_4.0 WIN32 "src/main.cpp"
+add_executable(Chess_4.0 "src/main.cpp"
 						${SDL_HEADER}
 						${CHESS_HEADER}
 						${SDL_SOURCE}

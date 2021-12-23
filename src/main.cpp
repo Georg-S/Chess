@@ -42,9 +42,19 @@ Chess create_chess_game_by_user_input()
 	return Chess(std::move(handler), player_count, player_color);
 }
 
+/*
 // Use WinMain instead of main, so we can not show the console window
 // With main: the linker throws an error if the application is defined as Subsystem Windows
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
+{
+	auto chess = create_chess_game_by_user_input();
+	chess.game_loop();
+
+	return 0;
+}
+*/
+
+int main() 
 {
 	auto chess = create_chess_game_by_user_input();
 	chess.game_loop();

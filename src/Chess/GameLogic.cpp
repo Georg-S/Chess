@@ -382,6 +382,32 @@ bool any_move_possible(const Board& board, PieceColor color)
 	return false;
 }
 
+static void perft(const Board& board, PieceColor current_player, uint64_t& counter, int depth)
+{
+	if (depth == 0) 
+	{
+		counter++;
+		return;
+	}
+
+	auto moves = get_all_possible_moves(board, current_player);
+
+	for (const auto& move : moves) 
+	{
+		Board copy_board = board;
+		make_move(copy_board, move);
+		perft(copy_board, get_next_player(current_player), counter, depth - 1);
+	}
+}
+
+uint64_t perft(const Board& board, PieceColor current_player, int depth)
+{
+	uint64_t counter = 0;
+	perft(board, current_player, counter, depth);
+
+	return counter;
+}
+
 bool direct_move_possible(const Board& board, const Move& move)
 {
 	const auto [dir_x, dir_y] = get_direction(move);

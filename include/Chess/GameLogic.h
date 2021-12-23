@@ -44,3 +44,4 @@ void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out
 std::vector<Move> get_all_possible_moves(const Board& board, PieceColor color);
 bool any_move_possible_for_piece(const Board& board, int x, int y);
 bool any_move_possible(const Board& board, PieceColor color);
+uint64_t perft(const Board& board, PieceColor, int depth);
