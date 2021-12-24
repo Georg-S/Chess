@@ -5,38 +5,37 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(HEADER
 	"include/Board.h"
+	"include/MoveGenerator.h"
+	"include/Utility.h"
 )
 
 set(SOURCE
 	"src/Board.cpp"
+	"src/MoveGenerator.cpp"
+	"src/Utility.cpp"
 )
 
 set(TEST_FILES
 	"include/Unittest/catch_amalgamated.hpp"
 	"src/Unittest/catch_amalgamated.cpp"
-	"src/Unittest/AITest.cpp"
+	"src/Unittest/AI_Test.cpp"
+	"src/Unittest/MoveGeneration_Test.cpp"
 )
 
 source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
 
 add_library(Chess_engine STATIC ${HEADER} ${SOURCE})
-
 target_include_directories(Chess_engine PUBLIC include)
 
 
-#[[
-add_executable(Unittest ${TEST_FILES}
-						${SDL_HEADER}
-						${CHESS_HEADER}
-						${SDL_SOURCE}
-						${CHESS_SOURCE}
-						${PIECES_HEADER}
-						${PIECES_SOURCE}
-						)
 
+
+
+add_executable(Unittest ${TEST_FILES} ${HEADER} ${SOURCE})
 target_include_directories(Unittest PUBLIC include ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
 target_link_libraries(Unittest ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
 
+#[[
 if (MSVC)
 	add_custom_command(TARGET Unittest
 						POST_BUILD

@@ -127,6 +127,7 @@ endif (MSVC)
 
 
 
+#[[
 
 add_executable(Unittest ${TEST_FILES}
 						${SDL_HEADER}
@@ -160,3 +161,4 @@ if (MSVC)
                         ${SDL2_IMAGE_DLLS}
                         $<TARGET_FILE_DIR:Unittest>)
 endif (MSVC)
+]]
