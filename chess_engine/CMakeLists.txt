@@ -7,12 +7,14 @@ set(HEADER
 	"include/Board.h"
 	"include/MoveGenerator.h"
 	"include/Utility.h"
+	"include/ChessEngine.h"
 )
 
 set(SOURCE
 	"src/Board.cpp"
 	"src/MoveGenerator.cpp"
 	"src/Utility.cpp"
+	"src/ChessEngine.cpp"
 )
 
 set(TEST_FILES
@@ -20,6 +22,7 @@ set(TEST_FILES
 	"src/Unittest/catch_amalgamated.cpp"
 	"src/Unittest/AI_Test.cpp"
 	"src/Unittest/MoveGeneration_Test.cpp"
+	"src/Unittest/Utility_Test.cpp"
 )
 
 source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})

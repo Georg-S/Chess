@@ -18,14 +18,6 @@ namespace ceg
 		void print_board_to_console();
 		void set_board(const std::string& FEN_pieces_str);
 		
-	private:
-		void update_occupied();
-		void set_bit(uint64_t& num, int x, int y);
-		bool is_bit_set(uint64_t num, int x, int y);
-		bool is_occupied(int x, int y);
-		char get_field_char(int x, int y);
-		char get_FEN_char(int x, int y);
-		void set_piece_by_FEN_char(char c, int x, int y);
 
 		uint64_t white_pawns = 0;
 		uint64_t black_pawns = 0;
@@ -45,5 +37,13 @@ namespace ceg
 		uint64_t occupied = 0;
 		uint64_t white_occupied = 0;
 		uint64_t black_occupied = 0;
+	private:
+		void update_occupied();
+		void set_bit(uint64_t& num, int x, int y);
+		bool is_bit_set(uint64_t num, int x, int y);
+		bool is_occupied(int x, int y);
+		char get_field_char(int x, int y);
+		char get_FEN_char(int x, int y);
+		void set_piece_by_FEN_char(char c, int x, int y);
 	};
 }
