@@ -19,8 +19,10 @@ namespace ceg
 	void clear_bit(uint64_t& num, int x, int y);
 	std::vector<std::string> string_split(std::string str, const std::string& delimiter);
 	bool is_bit_set(uint64_t num, int bit_index);
+	bool is_bit_set(uint64_t num, int x, int y);
 	int to_linear_idx(int x, int y);
 	void print_bit_board(uint64_t num);
 	uint64_t set_all_bits_in_direction(int pos_x, int pos_y, int dir_x, int dir_y, bool set_pos = false);
+	uint64_t set_all_bits_in_direction_until_occupied(int index, int dir_x, int dir_y, uint64_t occupied);
 	bool in_board_bounds(int index);
 }

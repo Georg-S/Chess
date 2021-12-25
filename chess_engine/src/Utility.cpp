@@ -75,6 +75,11 @@ bool ceg::is_bit_set(uint64_t num, int bit_index)
 	return num & (uint64_t(1) << bit_index);
 }
 
+bool ceg::is_bit_set(uint64_t num, int x, int y)
+{
+	return is_bit_set(num, x + y * 8);
+}
+
 int ceg::to_linear_idx(int x, int y)
 {
 	return x + y * 8;
@@ -96,16 +101,33 @@ void ceg::print_bit_board(uint64_t num)
 
 uint64_t ceg::set_all_bits_in_direction(int pos_x, int pos_y, int dir_x, int dir_y, bool set_pos)
 {
-	auto in_bounds = [](int num) {};
-
 	uint64_t result = 0;
 	while (in_board_bounds(pos_x) && in_board_bounds(pos_y))
 	{
-		if(set_pos)
+		if (set_pos)
 			set_bit(result, pos_x, pos_y);
 		pos_x += dir_x;
 		pos_y += dir_y;
 		set_pos = true;
+	}
+
+	return result;
+}
+
+uint64_t ceg::set_all_bits_in_direction_until_occupied(int index, int dir_x, int dir_y, uint64_t occupied)
+{
+	uint64_t result = 0;
+
+	int x = index % 8 + dir_x;
+	int y = index / 8 + dir_y;
+	while (in_board_bounds(x) && in_board_bounds(y)) 
+	{
+		set_bit(result, x, y);
+		x += dir_x;
+		y += dir_y;
+
+		if (is_bit_set(occupied, x, y))
+			break;
 	}
 
 	return result;

@@ -16,6 +16,8 @@ namespace ceg
 	public:
 		MoveGenerator();
 		std::vector<Move> get_all_possible_moves(const BitBoard& board, bool black);
+		void make_move(BitBoard& board, const Move& move);
+		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
 
 		static constexpr int arr_size = board_height * board_width;
 		uint64_t vertical_mask[arr_size]{};
@@ -33,7 +35,10 @@ namespace ceg
 		uint64_t white_pawn_normal_moves[arr_size]{};
 		uint64_t white_pawn_attack_moves[arr_size]{};
 	private:
-		uint64_t get_raw_rook_moves(const BitBoard& board);
+		// TODO implement a more performant way, which looks up the moves.
+		uint64_t get_raw_rook_moves(const BitBoard& board, int index);
+		uint64_t get_raw_bishop_moves(const BitBoard& board, int index);
+		uint64_t get_raw_queen_moves(const BitBoard& board, int index);
 
 		void init();
 		void init_mask(uint64_t* mask, int x_dir, int y_dir);
