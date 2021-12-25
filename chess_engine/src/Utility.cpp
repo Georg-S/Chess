@@ -39,10 +39,21 @@ void ceg::set_bit(uint64_t& num, int bit_index)
 	num |= (uint64_t(1) << bit_index);
 }
 
-void ceg::set_bit_board_format(uint64_t& num, int x, int y)
+void ceg::set_bit(uint64_t& num, int x, int y)
 {
 	constexpr int board_width = 8;
 	set_bit(num, x + board_width * y);
+}
+
+void ceg::clear_bit(uint64_t& num, int bit_index)
+{
+	num &= ~(uint64_t(1) << bit_index);
+}
+
+void ceg::clear_bit(uint64_t& num, int x, int y)
+{
+	constexpr int board_width = 8;
+	clear_bit(num, x + board_width * y);
 }
 
 std::vector<std::string> ceg::string_split(std::string str, const std::string& delimiter)
@@ -85,17 +96,22 @@ void ceg::print_bit_board(uint64_t num)
 
 uint64_t ceg::set_all_bits_in_direction(int pos_x, int pos_y, int dir_x, int dir_y, bool set_pos)
 {
-	auto in_bounds = [](int num) {return num >= 0 && num < 8; };
+	auto in_bounds = [](int num) {};
 
 	uint64_t result = 0;
-	while (in_bounds(pos_x) && in_bounds(pos_y)) 
+	while (in_board_bounds(pos_x) && in_board_bounds(pos_y))
 	{
 		if(set_pos)
-			set_bit_board_format(result, pos_x, pos_y);
+			set_bit(result, pos_x, pos_y);
 		pos_x += dir_x;
 		pos_y += dir_y;
 		set_pos = true;
 	}
 
 	return result;
+}
+
+bool ceg::in_board_bounds(int index)
+{
+	return index >= 0 && index < 8; ;
 }
