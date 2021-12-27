@@ -16,6 +16,7 @@ namespace ceg
 	{
 	public:
 		MoveGenerator();
+		uint64_t get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter);
 		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
 		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
@@ -32,6 +33,7 @@ namespace ceg
 		uint64_t diagonal_down_mask[arr_size]{};
 		uint64_t diagonal_down_mask_without_index[arr_size]{};
 		uint64_t diagonal_mask[arr_size]{};
+		uint64_t reset_index_mask[arr_size]{};
 
 		uint64_t rook_mask[arr_size]{};
 		std::unordered_map<uint64_t, uint64_t> horizontal_with_occupied[arr_size]{};
@@ -54,6 +56,7 @@ namespace ceg
 		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
 
 		void init();
+		void init_reset_index_mask();
 		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
 		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index);
 		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);

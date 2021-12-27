@@ -129,6 +129,46 @@ TEST_CASE("pawn_move_count_black", "MoveGeneration")
 	REQUIRE(res == 8);
 }
 
+TEST_CASE("simple_check_move_count_white_test_1", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k3r3/8/8/8/8/8/4K3/8 w - - 0 1";
+	ceg::ChessEngine engine = ceg::ChessEngine();
+
+	uint64_t res = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(res == 6);
+}
+
+TEST_CASE("simple_check_move_count_white_test_2", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k3r3/8/8/8/8/8/4Kq2/8 w - - 0 1";
+	ceg::ChessEngine engine = ceg::ChessEngine();
+
+	uint64_t res = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(res == 3);
+}
+
+TEST_CASE("simple_check_mate_move_count_white_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/8/8/8/8/3qKq2/8 w - - 0 1";
+	ceg::ChessEngine engine = ceg::ChessEngine();
+
+	uint64_t res = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(res == 1);
+}
+
+TEST_CASE("simple_check_mate_move_count_black_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K7/8/8/8/8/8/3QkQ2/8 b - - 0 1";
+	ceg::ChessEngine engine = ceg::ChessEngine();
+
+	uint64_t res = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(res == 1);
+}
+
 
 /*
 TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")

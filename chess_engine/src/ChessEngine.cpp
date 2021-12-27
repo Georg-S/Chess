@@ -55,6 +55,11 @@ void ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player_bla
 	}
 
 	auto moves = generator.get_all_possible_moves(board, current_player_black);
+	if (moves.size() == 0) 
+	{
+		(*counter)++;
+		return;
+	}
 	for (const auto& move : moves)
 	{
 		ceg::BitBoard copy_board = board;

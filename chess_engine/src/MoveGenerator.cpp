@@ -5,6 +5,80 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
+uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter)
+{
+	uint64_t attacked_fields = 0;
+
+	int other_king_index = get_bit_index_lsb(other->king);
+	uint64_t occupied = board.occupied;
+	occupied &= reset_index_mask[other_king_index];
+
+	const uint64_t playing_occupied_mask = ~(player->occupied);
+	while (player->rooks != 0)
+	{
+		int from_index = get_bit_index_lsb(player->rooks);
+		uint64_t moves = get_raw_rook_moves(from_index, occupied);
+		reset_lsb(player->rooks);
+
+		attacked_fields |= moves;
+
+		if (moves & other->king) 
+			(*check_counter)++;
+	}
+
+	while (player->queens != 0)
+	{
+		int from_index = get_bit_index_lsb(player->queens);
+		auto moves = get_raw_queen_moves(from_index, occupied);
+		reset_lsb(player->queens);
+
+		attacked_fields |= moves;
+
+		if (moves & other->king)
+			(*check_counter)++;
+	}
+
+	/*
+	while (player->bishops != 0)
+	{
+		int from_index = get_bit_index_lsb(player->bishops);
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
+		reset_lsb(playing->bishops);
+	}
+
+	while (player->king != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->king);
+		auto moves = king_moves[from_index] & playing_occupied_mask;
+		reset_lsb(playing->king);
+	}
+
+	while (playing->knights != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->knights);
+		auto moves = knight_moves[from_index] & playing_occupied_mask;
+		reset_lsb(playing->knights);
+	}
+
+	while (playing->pawns != 0)
+	{
+		// TODO en passant
+		int from_index = get_bit_index_lsb(playing->pawns);
+		uint64_t normal_moves = 0;
+		int moving = black ? 8 : -8;
+
+		if (!is_bit_set(board.occupied, from_index + moving))
+			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
+		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
+		auto moves = normal_moves | attack_moves;
+		reset_lsb(playing->pawns);
+	}
+	*/
+
+
+	return attacked_fields;
+}
+
 uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
 {
 	uint64_t horiz = occupied & horizontal_mask_without_index[index];
@@ -28,6 +102,7 @@ uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)
 
 void ceg::MoveGenerator::init()
 {
+	init_reset_index_mask();
 	init_mask(vertical_mask, 0, 1, true);
 	init_mask(horizontal_mask, 1, 0, true);
 	init_mask(diagonal_down_mask, 1, 1, true);
@@ -50,6 +125,17 @@ void ceg::MoveGenerator::init()
 	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, 1);
 	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
 	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
+}
+
+void ceg::MoveGenerator::init_reset_index_mask()
+{
+	for (int i = 0; i < 64; i++) 
+	{
+		uint64_t val = 0;
+		val = ~val;
+		clear_bit(val, i);
+		reset_index_mask[i] = val;
+	}
 }
 
 void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
@@ -101,6 +187,11 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	std::vector<Move> result;
 	auto playing_occupied_mask = ~(playing->occupied);
 
+	ceg::Pieces cop_other = *other;
+	uint64_t check_counter = 0;
+	uint64_t attacked_fields = get_attacked_fields(&cop_other, playing, board, &check_counter);
+	const uint64_t attacked_fields_mask = ~attacked_fields;
+
 	while (playing->bishops != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->bishops);
@@ -112,7 +203,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->king != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->king);
-		auto moves = king_moves[from_index] & playing_occupied_mask;
+		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
 		reset_lsb(playing->king);
 		push_all_moves(result, from_index, moves);
 	}
@@ -209,7 +300,6 @@ void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, ui
 			uint64_t res = 0;
 			res |= ceg::set_all_bits_in_direction_until_occupied(bit_index, x_dir, y_dir, occ);
 			res |= ceg::set_all_bits_in_direction_until_occupied(bit_index, -x_dir, -y_dir, occ);
-			set_bit(res, bit_index);
 
 			arr[bit_index][occ] = res;
 		}
