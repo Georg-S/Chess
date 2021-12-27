@@ -137,3 +137,63 @@ bool ceg::in_board_bounds(int index)
 {
 	return index >= 0 && index < 8; ;
 }
+
+static uint64_t create_number(const std::vector<int>& bit_indices, const std::vector<int>& values) 
+{
+	uint64_t result = 0;
+	for (int i = 0; i < bit_indices.size(); i++) 
+	{
+		if (values[i] == 1)
+			ceg::set_bit(result, bit_indices[i]);
+	}
+
+	return result;
+}
+
+std::vector<uint64_t> ceg::get_every_bit_combination(const std::vector<int>& bit_indices)
+{
+	if(bit_indices.size() == 0)
+		return std::vector<uint64_t>();
+
+	auto result = std::vector<uint64_t>();
+	result.push_back(0);
+
+	std::vector<int> values = std::vector<int>(bit_indices.size());
+	bool not_finished = true;
+	int index = 0;
+
+	while (not_finished)
+	{
+		if (index >= values.size()) 
+		{
+			not_finished = true;
+			break;
+		}
+
+		if (values[index] == 0) 
+		{
+			values[index] = 1;
+			index = 0;
+			result.push_back(create_number(bit_indices, values));
+		}
+		else if (values[index] == 1) 
+		{
+			values[index] = 0;
+			index++;
+		}
+	}
+
+	return result;
+}
+
+std::vector<int> ceg::get_bit_indices(uint64_t num)
+{
+	std::vector<int> result = std::vector<int>();
+
+	while (num != 0) 
+	{
+		result.push_back(ceg::get_bit_index_lsb(num));
+		ceg::reset_lsb(num);
+	}
+	return result;
+}

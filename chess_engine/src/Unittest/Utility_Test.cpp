@@ -38,3 +38,41 @@ TEST_CASE("Test_reset_lsb", "Utility")
 	ceg::reset_lsb(num);
 	REQUIRE(num == 0);
 }
+
+TEST_CASE("Test_get_bit_indices_1", "Utility")
+{
+	auto indices = ceg::get_bit_indices(0b11);
+
+	REQUIRE(indices.size() == 2);
+}
+
+TEST_CASE("Test_get_bit_indices_2", "Utility")
+{
+	auto indices = ceg::get_bit_indices(0b100001);
+
+	REQUIRE(indices.size() == 2);
+}
+
+TEST_CASE("Test_get_every_bit_combination_2_bit", "Utility")
+{
+	auto indices = ceg::get_bit_indices(0b11);
+	auto bit_comb = ceg::get_every_bit_combination(indices);
+
+	REQUIRE(bit_comb.size() == 4);
+}
+
+TEST_CASE("Test_get_every_bit_combination_4_bit", "Utility")
+{
+	auto indices = ceg::get_bit_indices(0b11011);
+	auto bit_comb = ceg::get_every_bit_combination(indices);
+
+	REQUIRE(bit_comb.size() == 16);
+}
+
+TEST_CASE("Test_get_every_bit_combination_14_bit", "Utility")
+{
+	auto indices = ceg::get_bit_indices(0b11111111111111);
+	auto bit_comb = ceg::get_every_bit_combination(indices);
+
+	REQUIRE(bit_comb.size() == 16384);
+}

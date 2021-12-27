@@ -46,6 +46,11 @@ void ceg::MoveGenerator::init()
 	init_queen_moves(); // needs to happen after rook and bishop
 	init_king_moves();
 	init_pawn_moves();
+
+	init_mask_with_occupied(diagonal_up_with_occupied, diagonal_up_mask, 1, 1);
+	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, -1);
+	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
+	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
 }
 
 void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
@@ -226,6 +231,26 @@ void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir)
 	}
 }
 
+void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)
+{
+	for (int bit_index = 0; bit_index < 64; bit_index++) 
+	{
+		auto num = mask[bit_index];
+		clear_bit(num, bit_index);
+
+		auto possible_occupied = ceg::get_every_bit_combination(ceg::get_bit_indices(num));
+		for (auto& occ : possible_occupied)
+		{
+			uint64_t res = 0;
+			res |= ceg::set_all_bits_in_direction_until_occupied(bit_index, x_dir, y_dir, occ);
+			res |= ceg::set_all_bits_in_direction_until_occupied(bit_index, -x_dir, -y_dir, occ);
+			set_bit(res, bit_index);
+
+			arr[bit_index][occ] = res;
+		}
+	}
+}
+
 void ceg::MoveGenerator::init_knight_moves()
 {
 	auto get_knight_moves = [](int pos_x, int pos_y) -> uint64_t
@@ -375,3 +400,25 @@ void ceg::MoveGenerator::init_pawn_moves()
 		}
 	}
 }
+
+/*
+void ceg::MoveGenerator::init_rook_moves_with_occupied(int index)
+{
+	auto num = rook_mask[index];
+	clear_bit(num, index);
+
+	auto possible_occupied = ceg::get_every_bit_combination(ceg::get_bit_indices(num));
+	for (auto& occ : possible_occupied)
+	{
+		uint64_t res = 0;
+		res |= ceg::set_all_bits_in_direction_until_occupied(index, 1, 0, occ);
+		res |= ceg::set_all_bits_in_direction_until_occupied(index, -1, 0, occ);
+		res |= ceg::set_all_bits_in_direction_until_occupied(index, 0, 1, occ);
+		res |= ceg::set_all_bits_in_direction_until_occupied(index, 0, -1, occ);
+
+		rook_moves_with_occupied[index][occ] = res;
+	}
+
+
+}
+*/

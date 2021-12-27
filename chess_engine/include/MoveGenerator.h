@@ -28,6 +28,11 @@ namespace ceg
 		uint64_t diagonal_down_mask[arr_size]{};
 		uint64_t diagonal_mask[arr_size]{};
 
+		std::unordered_map<uint64_t, uint64_t> horizontal_with_occupied[arr_size]{};
+		std::unordered_map<uint64_t, uint64_t> vertical_with_occupied[arr_size]{};
+		std::unordered_map<uint64_t, uint64_t> diagonal_up_with_occupied[arr_size]{};
+		std::unordered_map<uint64_t, uint64_t> diagonal_down_with_occupied[arr_size]{};
+
 		uint64_t knight_moves[arr_size]{};
 		uint64_t rook_moves[arr_size]{};
 		uint64_t bishop_moves[arr_size]{};
@@ -46,6 +51,7 @@ namespace ceg
 		void init();
 		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
 		void init_mask(uint64_t* mask, int x_dir, int y_dir);
+		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);
 		void init_knight_moves();
 		void init_rook_moves();
 		void init_bishop_moves();

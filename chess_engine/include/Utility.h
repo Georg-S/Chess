@@ -25,4 +25,6 @@ namespace ceg
 	uint64_t set_all_bits_in_direction(int pos_x, int pos_y, int dir_x, int dir_y, bool set_pos = false);
 	uint64_t set_all_bits_in_direction_until_occupied(int index, int dir_x, int dir_y, uint64_t occupied);
 	bool in_board_bounds(int index);
+	std::vector<uint64_t> get_every_bit_combination(const std::vector<int>& bit_indices);
+	std::vector<int> get_bit_indices(uint64_t num);
 }
