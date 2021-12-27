@@ -29,6 +29,14 @@ TEST_CASE("perft_start_board_depth_2_test", "MoveGeneration")
 	REQUIRE(res == 400);
 }
 
+TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")
+{
+	ceg::ChessEngine engine = ceg::ChessEngine();
+	auto res = engine.perft(initial_board_FEN, 3);
+
+	REQUIRE(res == 8902);
+}
+
 TEST_CASE("rook_move_count_white_test", "MoveGeneration") 
 {
 	const std::string test_board_fen_str = "k7/8/8/8/1b1R2b1/8/8/3n3K w - - 0 1";
@@ -169,15 +177,7 @@ TEST_CASE("simple_check_mate_move_count_black_test", "MoveGeneration")
 	REQUIRE(res == 1);
 }
 
-
 /*
-TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")
-{
-	ceg::ChessEngine engine = ceg::ChessEngine();
-	auto res = engine.perft(initial_board_FEN, 3);
-
-	REQUIRE(res == 8902);
-}
  
 TEST_CASE("Buf_test", "MoveGeneration")
 {

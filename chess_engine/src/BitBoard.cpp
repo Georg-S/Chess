@@ -5,14 +5,6 @@ ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FE
 	set_board(FEN_pieces_str);
 }
 
-void ceg::BitBoard::clear_bit_for_color(bool black, int bit_index)
-{
-	if (black)
-		clear_bit_for_pieces(&black_pieces, bit_index);
-	else
-		clear_bit_for_pieces(&white_pieces, bit_index);
-}
-
 void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
 {
 	clear_bit(pieces->bishops, bit_index);
@@ -24,27 +16,16 @@ void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
 	clear_bit(pieces->occupied, bit_index);
 }
 
-uint64_t* ceg::BitBoard::get_ptr_to_piece(bool black, int bit_index)
+uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces* pieces, int bit_index)
 {
-	uint64_t* ptr = nullptr;
-	if (black) 
-		ptr = get_ptr_to_piece(black_pieces, bit_index);
-	else 
-		ptr = get_ptr_to_piece(white_pieces, bit_index);
+	if (ceg::is_bit_set(pieces->pawns, bit_index)) return &(pieces->pawns);
+	if (ceg::is_bit_set(pieces->queens, bit_index)) return &(pieces->queens);
+	if (ceg::is_bit_set(pieces->bishops, bit_index)) return &(pieces->bishops);
+	if (ceg::is_bit_set(pieces->rooks, bit_index)) return &(pieces->rooks);
+	if (ceg::is_bit_set(pieces->knights, bit_index)) return &(pieces->knights);
+	if (ceg::is_bit_set(pieces->king, bit_index)) return &(pieces->king);
 
-	assert(ptr);
-	return ptr;
-}
-
-uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces& pieces, int bit_index)
-{
-	if (ceg::is_bit_set(pieces.pawns, bit_index)) return &(pieces.pawns);
-	if (ceg::is_bit_set(pieces.queens, bit_index)) return &(pieces.queens);
-	if (ceg::is_bit_set(pieces.bishops, bit_index)) return &(pieces.bishops);
-	if (ceg::is_bit_set(pieces.rooks, bit_index)) return &(pieces.rooks);
-	if (ceg::is_bit_set(pieces.knights, bit_index)) return &(pieces.knights);
-	if (ceg::is_bit_set(pieces.king, bit_index)) return &(pieces.king);
-
+	assert(!"Made an invalid move");
 	return nullptr;
 }
 

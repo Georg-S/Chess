@@ -21,6 +21,7 @@ namespace ceg
 		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
 		void make_move(BitBoard& board, const Move& move);
+		void make_move(BitBoard& board, const Move& move, bool black);
 		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
 
 		static constexpr int arr_size = board_height * board_width;

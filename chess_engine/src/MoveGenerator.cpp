@@ -256,27 +256,25 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move)
 	if (is_bit_set(board.black_pieces.occupied, move.from))
 		move_made_by_black = true;
 
-	uint64_t* arr = board.get_ptr_to_piece(move_made_by_black, move.from);
+	make_move(board, move, move_made_by_black);
+}
+
+void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black)
+{
+	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
+	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
+	uint64_t* arr = board.get_ptr_to_piece(pieces, move.from);
+
 	clear_bit(*arr, move.from);
 	set_bit(*arr, move.to);
 
-	//		const uint64_t invert_to = ~(move.to);
-	if (move_made_by_black)
-	{
-		set_bit(board.black_pieces.occupied, move.to);
+	clear_bit(pieces->occupied, move.from);
+	set_bit(pieces->occupied, move.to);
 
-		if (is_bit_set(board.white_pieces.occupied, move.to))
-			board.clear_bit_for_color(false, move.to);
-	}
-	else
-	{
-		set_bit(board.white_pieces.occupied, move.to);
+	if (is_bit_set(other->occupied, move.to))
+		board.clear_bit_for_pieces(other, move.to);
 
-		if (is_bit_set(board.black_pieces.occupied, move.to))
-			board.clear_bit_for_color(true, move.to);
-	}
-
-	board.occupied = board.white_pieces.occupied | board.black_pieces.occupied;
+	board.update_occupied();
 
 	// TODO handle castling and en_passant
 }
