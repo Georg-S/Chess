@@ -37,6 +37,8 @@ void ceg::MoveGenerator::init()
 	init_mask(horizontal_mask, 1, 0);
 	init_mask(diagonal_down_mask, 1, 1);
 	init_mask(diagonal_up_mask, 1, -1);
+	combine_two_masks(rook_mask, horizontal_mask, vertical_mask);
+	combine_two_masks(diagonal_mask, diagonal_up_mask, diagonal_down_mask);
 
 	init_knight_moves();
 	init_rook_moves();
@@ -44,6 +46,12 @@ void ceg::MoveGenerator::init()
 	init_queen_moves(); // needs to happen after rook and bishop
 	init_king_moves();
 	init_pawn_moves();
+}
+
+void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
+{
+	for (int i = 0; i < size; i++) 
+		dest[i] = source_1[i] | source_2[i];
 }
 
 std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board, bool black)

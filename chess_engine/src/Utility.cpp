@@ -11,7 +11,7 @@ static constexpr int index64[64] = {
    44, 24, 15,  8, 23,  7,  6,  5
 };
 
-// get_bit_index_lsb (previously: bitScanForward)
+// get_bit_index_lsb (bitScanForward)
 // @author Charles E. Leiserson, Harald Prokop, Keith H. Randall
 int ceg::get_bit_index_lsb(uint64_t num)
 {

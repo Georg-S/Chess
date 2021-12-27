@@ -1,9 +1,9 @@
 #include "Unittest/catch_amalgamated.hpp"
-#include "Board.h"
+#include "BitBoard.h"
 #include "ChessEngine.h"
 #include "MoveGenerator.h"
 
-std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 TEST_CASE("perft_start_board_depth_0_test", "MoveGeneration") 
 {
@@ -27,6 +27,13 @@ TEST_CASE("perft_start_board_depth_2_test", "MoveGeneration")
 	auto res = engine.perft(initial_board_FEN, 2);
 
 	REQUIRE(res == 400);
+}
+
+TEST_CASE("Buf_test", "MoveGeneration")
+{
+	ceg::ChessEngine engine = ceg::ChessEngine();
+	ceg::MoveGenerator gen = ceg::MoveGenerator();
+	ceg::print_bit_board(gen.rook_mask[35]);
 }
 /*
 TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")
