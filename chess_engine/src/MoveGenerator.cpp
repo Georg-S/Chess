@@ -7,16 +7,16 @@ ceg::MoveGenerator::MoveGenerator()
 
 uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
 {
-	uint64_t horiz = occupied & horizontal_mask[index];
-	uint64_t vert = occupied & vertical_mask[index];
+	uint64_t horiz = occupied & horizontal_mask_without_index[index];
+	uint64_t vert = occupied & vertical_mask_without_index[index];
 
 	return horizontal_with_occupied[index][horiz] | vertical_with_occupied[index][vert];
 }
 
 uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied)
 {
-	uint64_t up = occupied & diagonal_up_mask[index];
-	uint64_t down = occupied & diagonal_down_mask[index];
+	uint64_t up = occupied & diagonal_up_mask_without_index[index];
+	uint64_t down = occupied & diagonal_down_mask_without_index[index];
 
 	return diagonal_up_with_occupied[index][up] | diagonal_down_with_occupied[index][down];
 }
@@ -28,10 +28,14 @@ uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)
 
 void ceg::MoveGenerator::init()
 {
-	init_mask(vertical_mask, 0, 1);
-	init_mask(horizontal_mask, 1, 0);
-	init_mask(diagonal_down_mask, 1, 1);
-	init_mask(diagonal_up_mask, 1, -1);
+	init_mask(vertical_mask, 0, 1, true);
+	init_mask(horizontal_mask, 1, 0, true);
+	init_mask(diagonal_down_mask, 1, 1, true);
+	init_mask(diagonal_up_mask, 1, -1, true);
+	init_mask(vertical_mask_without_index, 0, 1, false);
+	init_mask(horizontal_mask_without_index, 1, 0, false);
+	init_mask(diagonal_up_mask_without_index, 1, -1, false);
+	init_mask(diagonal_down_mask_without_index, 1, 1, false);
 	combine_two_masks(rook_mask, horizontal_mask, vertical_mask);
 	combine_two_masks(diagonal_mask, diagonal_up_mask, diagonal_down_mask);
 
@@ -42,8 +46,8 @@ void ceg::MoveGenerator::init()
 	init_king_moves();
 	init_pawn_moves();
 
-	init_mask_with_occupied(diagonal_up_with_occupied, diagonal_up_mask, 1, 1);
-	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, -1);
+	init_mask_with_occupied(diagonal_up_with_occupied, diagonal_up_mask, 1, -1);
+	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, 1);
 	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
 	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
 }
@@ -52,6 +56,17 @@ void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, u
 {
 	for (int i = 0; i < size; i++) 
 		dest[i] = source_1[i] | source_2[i];
+}
+
+void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index)
+{
+	for (int i = 0; i < arr_size; i++)
+	{
+		const int x = i % 8;
+		const int y = i / 8;
+
+		mask[i] = set_all_bits_in_direction(x, y, x_dir, y_dir, set_inital_index) | set_all_bits_in_direction(x, y, -x_dir, -y_dir, set_inital_index);
+	}
 }
 
 std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board, bool black)
@@ -84,7 +99,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 
 
 	std::vector<Move> result;
-	auto playing_occupied_mask = ~playing->occupied;
+	auto playing_occupied_mask = ~(playing->occupied);
 
 	while (playing->bishops != 0)
 	{
@@ -175,17 +190,6 @@ void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const Mo
 {
 	// TODO fully implement
 	make_move(board, move);
-}
-
-void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir)
-{
-	for (int i = 0; i < arr_size; i++)
-	{
-		const int x = i % 8;
-		const int y = i / 8;
-
-		mask[i] = set_all_bits_in_direction(x, y, x_dir, y_dir, true) | set_all_bits_in_direction(x, y, -x_dir, -y_dir, true);
-	}
 }
 
 void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)
