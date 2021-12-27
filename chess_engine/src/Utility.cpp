@@ -123,11 +123,11 @@ uint64_t ceg::set_all_bits_in_direction_until_occupied(int index, int dir_x, int
 	while (in_board_bounds(x) && in_board_bounds(y)) 
 	{
 		set_bit(result, x, y);
-		x += dir_x;
-		y += dir_y;
-
 		if (is_bit_set(occupied, x, y))
 			break;
+
+		x += dir_x;
+		y += dir_y;
 	}
 
 	return result;

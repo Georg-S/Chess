@@ -46,10 +46,124 @@ void ceg::MoveGenerator::init()
 	init_pawn_moves();
 }
 
-std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(const BitBoard& board, bool black)
+std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board, bool black)
 {
+	auto push_all_moves = [](std::vector<Move>& dest, int from_index, uint64_t moves) 
+	{
+		while (moves != 0)
+		{
+			int to_index = get_bit_index_lsb(moves);
+			dest.push_back(Move{ from_index, to_index });
+			reset_lsb(moves);
+		}
+	};
+
 	std::vector<Move> result;
 
+	if (black) 
+	{
+		auto black_occupied_mask = ~board.black_occupied;
+
+		while (board.black_bishops != 0) 
+		{
+			int from_index = get_bit_index_lsb(board.black_bishops);
+			auto bishop_moves = get_raw_bishop_moves(board, from_index) & black_occupied_mask;
+			reset_lsb(board.black_bishops);
+			push_all_moves(result, from_index, bishop_moves);
+		}
+
+		while (board.black_king != 0)
+		{
+			int from_index = get_bit_index_lsb(board.black_king);
+			auto moves = king_moves[from_index] & black_occupied_mask;
+			reset_lsb(board.black_king);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.black_knights != 0)
+		{
+			int from_index = get_bit_index_lsb(board.black_knights);
+			auto moves = knight_moves[from_index] & black_occupied_mask;
+			reset_lsb(board.black_knights);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.black_pawns != 0)
+		{
+			int from_index = get_bit_index_lsb(board.black_pawns);
+			auto moves = black_pawn_normal_moves[from_index] & black_occupied_mask;
+			reset_lsb(board.black_pawns);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.black_queen != 0)
+		{
+			int from_index = get_bit_index_lsb(board.black_queen);
+			auto moves = get_raw_queen_moves(board, from_index) & black_occupied_mask;
+			reset_lsb(board.black_queen);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.black_rooks != 0)
+		{
+			int from_index = get_bit_index_lsb(board.black_rooks);
+			auto moves = get_raw_rook_moves(board, from_index) & black_occupied_mask;
+			reset_lsb(board.black_rooks);
+			push_all_moves(result, from_index, moves);
+		}
+	}
+	else 
+	{
+		auto white_occupied_mask = ~board.white_occupied;
+
+		while (board.white_bishops != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_bishops);
+			auto bishop_moves = get_raw_bishop_moves(board, from_index) & white_occupied_mask;
+			reset_lsb(board.white_bishops);
+			push_all_moves(result, from_index, bishop_moves);
+		}
+
+		while (board.white_king != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_king);
+			auto moves = king_moves[from_index] & white_occupied_mask;
+			reset_lsb(board.white_king);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.white_knights != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_knights);
+			auto moves = knight_moves[from_index] & white_occupied_mask;
+			reset_lsb(board.white_knights);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.white_pawns != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_pawns);
+			auto moves = white_pawn_normal_moves[from_index] & white_occupied_mask;
+			reset_lsb(board.white_pawns);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.white_queen != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_queen);
+			auto moves = get_raw_queen_moves(board, from_index) & white_occupied_mask;
+			reset_lsb(board.white_queen);
+			push_all_moves(result, from_index, moves);
+		}
+
+		while (board.white_rooks != 0)
+		{
+			int from_index = get_bit_index_lsb(board.white_rooks);
+			auto moves = get_raw_rook_moves(board, from_index) & white_occupied_mask;
+			reset_lsb(board.white_rooks);
+			push_all_moves(result, from_index, moves);
+		}
+	}
 
 
 
@@ -237,7 +351,7 @@ void ceg::MoveGenerator::init_pawn_moves()
 
 		white_pawn_attack_moves[i] = get_attack_move(x, y, 1, -1) | get_attack_move(x, y, -1, -1);
 
-		if (y == 7)
+		if (y == 6)
 		{
 			uint64_t normal_moves = 0;
 			set_bit(normal_moves, x, y - 1);

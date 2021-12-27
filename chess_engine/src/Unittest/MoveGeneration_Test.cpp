@@ -10,8 +10,33 @@ TEST_CASE("perft_start_board_depth_0_test", "MoveGeneration")
 	ceg::ChessEngine engine = ceg::ChessEngine();
 	auto res = engine.perft(initial_board_FEN, 0);
 
-	assert(res, 1);
+	REQUIRE(res == 1);
 }
+
+TEST_CASE("perft_start_board_depth_1_test", "MoveGeneration")
+{
+	ceg::ChessEngine engine = ceg::ChessEngine();
+	auto res = engine.perft(initial_board_FEN, 1);
+
+	REQUIRE(res == 20);
+}
+
+TEST_CASE("perft_start_board_depth_2_test", "MoveGeneration")
+{
+	ceg::ChessEngine engine = ceg::ChessEngine();
+	auto res = engine.perft(initial_board_FEN, 2);
+
+	REQUIRE(res == 400);
+}
+/*
+TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")
+{
+	ceg::ChessEngine engine = ceg::ChessEngine();
+	auto res = engine.perft(initial_board_FEN, 3);
+
+	REQUIRE(res == 8902);
+}
+*/
 
 /*
 TEST_CASE("Buf_test", "MoveGeneration")

@@ -7,15 +7,15 @@ namespace ceg
 {
 	struct Move
 	{
-		uint64_t from;
-		uint64_t to;
+		int from;
+		int to;
 	};
 
 	class MoveGenerator
 	{
 	public:
 		MoveGenerator();
-		std::vector<Move> get_all_possible_moves(const BitBoard& board, bool black);
+		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
 		void make_move(BitBoard& board, const Move& move);
 		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
 
