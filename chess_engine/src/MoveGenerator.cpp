@@ -80,7 +80,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 	}
 	else 
 	{
-		return get_all_possible_moves(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, true);
+		return get_all_possible_moves(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, false);
 	}
 }
 
@@ -127,9 +127,13 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 
 	while (playing->pawns != 0)
 	{
+		// TODO en passant
 		int from_index = get_bit_index_lsb(playing->pawns);
-		// TODO: Right now pawn can move two fields, even if the first field is occupied
-		auto normal_moves = pawn_normal_moves[from_index] & playing_occupied_mask;
+		uint64_t normal_moves = 0;
+		int moving = black ? 8 : -8;
+
+		if (!is_bit_set(board.occupied, from_index + moving))
+			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
 		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
 		auto moves = normal_moves | attack_moves;
 		reset_lsb(playing->pawns);
