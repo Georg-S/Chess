@@ -9,19 +9,19 @@ namespace ceg
 	constexpr int board_width = 8;
 	constexpr int board_height = 8;
 
+	struct Pieces
+	{
+		uint64_t pawns = 0;
+		uint64_t bishops = 0;
+		uint64_t knights = 0;
+		uint64_t rooks = 0;
+		uint64_t queens = 0;
+		uint64_t king = 0;
+		uint64_t occupied = 0;
+	};
+
 	class BitBoard
 	{
-		struct Pieces
-		{
-			uint64_t pawns = 0;
-			uint64_t bishops = 0;
-			uint64_t knights = 0;
-			uint64_t rooks = 0;
-			uint64_t queens = 0;
-			uint64_t king = 0;
-			uint64_t occupied = 0;
-		};
-
 	public:
 		BitBoard() = default;
 		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");

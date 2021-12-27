@@ -17,6 +17,8 @@ namespace ceg
 	public:
 		MoveGenerator();
 		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
+		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
 		void make_move(BitBoard& board, const Move& move);
 		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
 
@@ -43,10 +45,9 @@ namespace ceg
 		uint64_t white_pawn_normal_moves[arr_size]{};
 		uint64_t white_pawn_attack_moves[arr_size]{};
 	private:
-		// TODO implement a more performant way, which looks up the moves.
-		uint64_t get_raw_rook_moves(const BitBoard& board, int index);
-		uint64_t get_raw_bishop_moves(const BitBoard& board, int index);
-		uint64_t get_raw_queen_moves(const BitBoard& board, int index);
+		uint64_t get_raw_rook_moves(int index, uint64_t occupied);
+		uint64_t get_raw_bishop_moves(int index, uint64_t occupied);
+		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
 
 		void init();
 		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);

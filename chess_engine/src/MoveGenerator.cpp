@@ -5,30 +5,25 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
-
-uint64_t ceg::MoveGenerator::get_raw_rook_moves(const BitBoard& board, int index)
+uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
 {
-	auto result = set_all_bits_in_direction_until_occupied(index, 1, 0, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, -1, 0, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, 0, 1, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, 0, -1, board.occupied);
+	uint64_t horiz = occupied & horizontal_mask[index];
+	uint64_t vert = occupied & vertical_mask[index];
 
-	return result;
+	return horizontal_with_occupied[index][horiz] | vertical_with_occupied[index][vert];
 }
 
-uint64_t ceg::MoveGenerator::get_raw_bishop_moves(const BitBoard& board, int index)
+uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied)
 {
-	auto result = set_all_bits_in_direction_until_occupied(index, 1, 1, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, -1, -1, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, 1, -1, board.occupied);
-	result |= set_all_bits_in_direction_until_occupied(index, -1, 1, board.occupied);
+	uint64_t up = occupied & diagonal_up_mask[index];
+	uint64_t down = occupied & diagonal_down_mask[index];
 
-	return result;
+	return diagonal_up_with_occupied[index][up] | diagonal_down_with_occupied[index][down];
 }
 
-uint64_t ceg::MoveGenerator::get_raw_queen_moves(const BitBoard& board, int index)
+uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)
 {
-	return get_raw_rook_moves(board, index) | get_raw_bishop_moves(board, index);
+	return get_raw_rook_moves(index, occupied) | get_raw_bishop_moves(index, occupied);
 }
 
 void ceg::MoveGenerator::init()
@@ -61,7 +56,23 @@ void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, u
 
 std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board, bool black)
 {
-	auto push_all_moves = [](std::vector<Move>& dest, int from_index, uint64_t moves) 
+	Pieces black_pieces = board.black_pieces;
+	Pieces white_pieces = board.white_pieces;
+
+	if (black) 
+	{
+		return get_all_possible_moves(&black_pieces, &white_pieces, board, black_pawn_normal_moves, black_pawn_attack_moves, true);
+	}
+	else 
+	{
+		return get_all_possible_moves(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, true);
+	}
+}
+
+std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, 
+	const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black)
+{
+	auto push_all_moves = [](std::vector<Move>& dest, int from_index, uint64_t moves)
 	{
 		while (moves != 0)
 		{
@@ -71,114 +82,60 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 		}
 	};
 
+
 	std::vector<Move> result;
+	auto playing_occupied_mask = ~playing->occupied;
 
-	if (black) 
+	while (playing->bishops != 0)
 	{
-		auto black_occupied_mask = ~board.black_pieces.occupied;
-
-		while (board.black_pieces.bishops != 0) 
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.bishops);
-			auto bishop_moves = get_raw_bishop_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_pieces.bishops);
-			push_all_moves(result, from_index, bishop_moves);
-		}
-
-		while (board.black_pieces.king != 0)
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.king);
-			auto moves = king_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_pieces.king);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.black_pieces.knights != 0)
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.knights);
-			auto moves = knight_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_pieces.knights);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.black_pieces.pawns != 0)
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.pawns);
-			auto moves = black_pawn_normal_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_pieces.pawns);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.black_pieces.queens != 0)
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.queens);
-			auto moves = get_raw_queen_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_pieces.queens);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.black_pieces.rooks != 0)
-		{
-			int from_index = get_bit_index_lsb(board.black_pieces.rooks);
-			auto moves = get_raw_rook_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_pieces.rooks);
-			push_all_moves(result, from_index, moves);
-		}
-	}
-	else 
-	{
-		auto white_occupied_mask = ~board.white_pieces.occupied;
-
-		while (board.white_pieces.bishops != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.bishops);
-			auto bishop_moves = get_raw_bishop_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_pieces.bishops);
-			push_all_moves(result, from_index, bishop_moves);
-		}
-
-		while (board.white_pieces.king != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.king);
-			auto moves = king_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_pieces.king);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.white_pieces.knights != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.knights);
-			auto moves = knight_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_pieces.knights);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.white_pieces.pawns != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.pawns);
-			auto moves = white_pawn_normal_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_pieces.pawns);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.white_pieces.queens != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.queens);
-			auto moves = get_raw_queen_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_pieces.queens);
-			push_all_moves(result, from_index, moves);
-		}
-
-		while (board.white_pieces.rooks != 0)
-		{
-			int from_index = get_bit_index_lsb(board.white_pieces.rooks);
-			auto moves = get_raw_rook_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_pieces.rooks);
-			push_all_moves(result, from_index, moves);
-		}
+		int from_index = get_bit_index_lsb(playing->bishops);
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
+		reset_lsb(playing->bishops);
+		push_all_moves(result, from_index, bishop_moves);
 	}
 
+	while (playing->king != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->king);
+		auto moves = king_moves[from_index] & playing_occupied_mask;
+		reset_lsb(playing->king);
+		push_all_moves(result, from_index, moves);
+	}
 
+	while (playing->knights != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->knights);
+		auto moves = knight_moves[from_index] & playing_occupied_mask;
+		reset_lsb(playing->knights);
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->pawns != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->pawns);
+		// TODO: Right now pawn can move two fields, even if the first field is occupied
+		auto normal_moves = pawn_normal_moves[from_index] & playing_occupied_mask;
+		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
+		auto moves = normal_moves | attack_moves;
+		reset_lsb(playing->pawns);
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->queens != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->queens);
+		auto moves = get_raw_queen_moves(from_index, board.occupied) & playing_occupied_mask;
+		reset_lsb(playing->queens);
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->rooks != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->rooks);
+		auto moves = get_raw_rook_moves(from_index, board.occupied) & playing_occupied_mask;
+		reset_lsb(playing->rooks);
+		push_all_moves(result, from_index, moves);
+	}
 
 	return result;
 }
