@@ -1,4 +1,4 @@
-#include "Board.h"
+#include "BitBoard.h"
 
 ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str)
 {
@@ -7,49 +7,44 @@ ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FE
 
 void ceg::BitBoard::clear_bit_for_color(bool black, int bit_index)
 {
-	if (black) 
-	{
-		clear_bit(black_bishops, bit_index);
-//		clear_bit(black_king, bit_index); // King must not be beaten in chess
-		clear_bit(black_knights, bit_index);
-		clear_bit(black_pawns, bit_index);
-		clear_bit(black_queen, bit_index);
-		clear_bit(black_rooks, bit_index);
-		clear_bit(black_occupied, bit_index);
-	}
-	else 
-	{
-		clear_bit(white_bishops, bit_index);
-		//		clear_bit(white_king, bit_index); // King must not be beaten in chess
-		clear_bit(white_knights, bit_index);
-		clear_bit(white_pawns, bit_index);
-		clear_bit(white_queen, bit_index);
-		clear_bit(white_rooks, bit_index);
-		clear_bit(white_occupied, bit_index);
-	}
+	if (black)
+		clear_bit_for_pieces(&black_pieces, bit_index);
+	else
+		clear_bit_for_pieces(&white_pieces, bit_index);
+}
+
+void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
+{
+	clear_bit(pieces->bishops, bit_index);
+	//		clear_bit(pieces->king, bit_index); // King must not be beaten in chess
+	clear_bit(pieces->knights, bit_index);
+	clear_bit(pieces->pawns, bit_index);
+	clear_bit(pieces->queens, bit_index);
+	clear_bit(pieces->rooks, bit_index);
+	clear_bit(pieces->occupied, bit_index);
 }
 
 uint64_t* ceg::BitBoard::get_ptr_to_piece(bool black, int bit_index)
 {
+	uint64_t* ptr = nullptr;
 	if (black) 
-	{
-		if (ceg::is_bit_set(black_pawns, bit_index)) return &black_pawns;
-		if (ceg::is_bit_set(black_queen, bit_index)) return &black_queen;
-		if (ceg::is_bit_set(black_bishops, bit_index)) return &black_bishops;
-		if (ceg::is_bit_set(black_rooks, bit_index)) return &black_rooks;
-		if (ceg::is_bit_set(black_knights, bit_index)) return &black_knights;
-		if (ceg::is_bit_set(black_king, bit_index)) return &black_king;
-	}
+		ptr = get_ptr_to_piece(black_pieces, bit_index);
 	else 
-	{
-		if (ceg::is_bit_set(white_pawns, bit_index)) return &white_pawns;
-		if (ceg::is_bit_set(white_queen, bit_index)) return &white_queen;
-		if (ceg::is_bit_set(white_bishops, bit_index)) return &white_bishops;
-		if (ceg::is_bit_set(white_rooks, bit_index)) return &white_rooks;
-		if (ceg::is_bit_set(white_knights, bit_index)) return &white_knights;
-		if (ceg::is_bit_set(white_king, bit_index)) return &white_king;
-	}
-	assert(!"No piece at position");
+		ptr = get_ptr_to_piece(white_pieces, bit_index);
+
+	assert(ptr);
+	return ptr;
+}
+
+uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces& pieces, int bit_index)
+{
+	if (ceg::is_bit_set(pieces.pawns, bit_index)) return &(pieces.pawns);
+	if (ceg::is_bit_set(pieces.queens, bit_index)) return &(pieces.queens);
+	if (ceg::is_bit_set(pieces.bishops, bit_index)) return &(pieces.bishops);
+	if (ceg::is_bit_set(pieces.rooks, bit_index)) return &(pieces.rooks);
+	if (ceg::is_bit_set(pieces.knights, bit_index)) return &(pieces.knights);
+	if (ceg::is_bit_set(pieces.king, bit_index)) return &(pieces.king);
+
 	return nullptr;
 }
 
@@ -128,9 +123,9 @@ void ceg::BitBoard::set_en_passant(const std::string& FEN_str)
 
 void ceg::BitBoard::update_occupied()
 {
-	black_occupied = black_bishops | black_king | black_knights | black_pawns | black_queen | black_rooks;
-	white_occupied = white_bishops | white_king | white_knights | white_pawns | white_queen | white_rooks;
-	occupied = black_occupied | white_occupied;
+	black_pieces.occupied = black_pieces.bishops | black_pieces.king | black_pieces.knights | black_pieces.pawns | black_pieces.queens | black_pieces.rooks;
+	white_pieces.occupied = white_pieces.bishops | white_pieces.king | white_pieces.knights | white_pieces.pawns | white_pieces.queens | white_pieces.rooks;
+	occupied = black_pieces.occupied | white_pieces.occupied;
 }
 
 bool ceg::BitBoard::is_bit_set(uint64_t num, int x, int y)
@@ -153,18 +148,18 @@ char ceg::BitBoard::get_field_char(int x, int y)
 
 char ceg::BitBoard::get_FEN_char(int x, int y)
 {
-	if (is_bit_set(black_pawns, x, y)) return 'p';
-	if (is_bit_set(white_pawns, x, y)) return 'P';
-	if (is_bit_set(black_bishops, x, y)) return 'b';
-	if (is_bit_set(white_bishops, x, y)) return 'B';
-	if (is_bit_set(black_knights, x, y)) return 'n';
-	if (is_bit_set(white_knights, x, y)) return 'N';
-	if (is_bit_set(black_rooks, x, y)) return 'r';
-	if (is_bit_set(white_rooks, x, y)) return 'R';
-	if (is_bit_set(black_queen, x, y)) return 'q';
-	if (is_bit_set(white_queen, x, y)) return 'Q';
-	if (is_bit_set(black_king, x, y)) return 'k';
-	if (is_bit_set(white_king, x, y)) return 'K';
+	if (is_bit_set(black_pieces.pawns, x, y)) return 'p';
+	if (is_bit_set(white_pieces.pawns, x, y)) return 'P';
+	if (is_bit_set(black_pieces.bishops, x, y)) return 'b';
+	if (is_bit_set(white_pieces.bishops, x, y)) return 'B';
+	if (is_bit_set(black_pieces.knights, x, y)) return 'n';
+	if (is_bit_set(white_pieces.knights, x, y)) return 'N';
+	if (is_bit_set(black_pieces.rooks, x, y)) return 'r';
+	if (is_bit_set(white_pieces.rooks, x, y)) return 'R';
+	if (is_bit_set(black_pieces.queens, x, y)) return 'q';
+	if (is_bit_set(white_pieces.queens, x, y)) return 'Q';
+	if (is_bit_set(black_pieces.king, x, y)) return 'k';
+	if (is_bit_set(white_pieces.king, x, y)) return 'K';
 	assert(!"Couldn't get FEN char, no piece set at position");
 	return ' ';
 }
@@ -177,40 +172,40 @@ void ceg::BitBoard::set_piece_by_FEN_char(char c, int x, int y)
 	{
 	case 'p':
 		if (black) 
-			set_bit(black_pawns, x, y);
+			set_bit(black_pieces.pawns, x, y);
 		else 
-			set_bit(white_pawns, x, y);
+			set_bit(white_pieces.pawns, x, y);
 
 		break;
 	case 'n':
 		if (black)
-			set_bit(black_knights, x, y);
+			set_bit(black_pieces.knights, x, y);
 		else
-			set_bit(white_knights, x, y);
+			set_bit(white_pieces.knights, x, y);
 		break;
 	case 'b':
 		if (black)
-			set_bit(black_bishops, x, y);
+			set_bit(black_pieces.bishops, x, y);
 		else
-			set_bit(white_bishops, x, y);
+			set_bit(white_pieces.bishops, x, y);
 		break;
 	case 'r':
 		if (black)
-			set_bit(black_rooks, x, y);
+			set_bit(black_pieces.rooks, x, y);
 		else
-			set_bit(white_rooks, x, y);
+			set_bit(white_pieces.rooks, x, y);
 		break;
 	case 'q':
 		if (black)
-			set_bit(black_queen, x, y);
+			set_bit(black_pieces.queens, x, y);
 		else
-			set_bit(white_queen, x, y);
+			set_bit(white_pieces.queens, x, y);
 		break;
 	case 'k':
 		if (black)
-			set_bit(black_king, x, y);
+			set_bit(black_pieces.king, x, y);
 		else
-			set_bit(white_king, x, y);
+			set_bit(white_pieces.king, x, y);
 		break;
 	default:
 		assert(!"Invalid character for FEN string");

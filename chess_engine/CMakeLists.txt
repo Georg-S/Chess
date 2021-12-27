@@ -4,14 +4,14 @@ set(CMAKE_CXX_STANDARD 17)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(HEADER
-	"include/Board.h"
+	"include/BitBoard.h"
 	"include/MoveGenerator.h"
 	"include/Utility.h"
 	"include/ChessEngine.h"
 )
 
 set(SOURCE
-	"src/Board.cpp"
+	"src/BitBoard.cpp"
 	"src/MoveGenerator.cpp"
 	"src/Utility.cpp"
 	"src/ChessEngine.cpp"

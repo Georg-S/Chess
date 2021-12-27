@@ -62,105 +62,105 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 
 	if (black) 
 	{
-		auto black_occupied_mask = ~board.black_occupied;
+		auto black_occupied_mask = ~board.black_pieces.occupied;
 
-		while (board.black_bishops != 0) 
+		while (board.black_pieces.bishops != 0) 
 		{
-			int from_index = get_bit_index_lsb(board.black_bishops);
+			int from_index = get_bit_index_lsb(board.black_pieces.bishops);
 			auto bishop_moves = get_raw_bishop_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_bishops);
+			reset_lsb(board.black_pieces.bishops);
 			push_all_moves(result, from_index, bishop_moves);
 		}
 
-		while (board.black_king != 0)
+		while (board.black_pieces.king != 0)
 		{
-			int from_index = get_bit_index_lsb(board.black_king);
+			int from_index = get_bit_index_lsb(board.black_pieces.king);
 			auto moves = king_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_king);
+			reset_lsb(board.black_pieces.king);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.black_knights != 0)
+		while (board.black_pieces.knights != 0)
 		{
-			int from_index = get_bit_index_lsb(board.black_knights);
+			int from_index = get_bit_index_lsb(board.black_pieces.knights);
 			auto moves = knight_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_knights);
+			reset_lsb(board.black_pieces.knights);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.black_pawns != 0)
+		while (board.black_pieces.pawns != 0)
 		{
-			int from_index = get_bit_index_lsb(board.black_pawns);
+			int from_index = get_bit_index_lsb(board.black_pieces.pawns);
 			auto moves = black_pawn_normal_moves[from_index] & black_occupied_mask;
-			reset_lsb(board.black_pawns);
+			reset_lsb(board.black_pieces.pawns);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.black_queen != 0)
+		while (board.black_pieces.queens != 0)
 		{
-			int from_index = get_bit_index_lsb(board.black_queen);
+			int from_index = get_bit_index_lsb(board.black_pieces.queens);
 			auto moves = get_raw_queen_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_queen);
+			reset_lsb(board.black_pieces.queens);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.black_rooks != 0)
+		while (board.black_pieces.rooks != 0)
 		{
-			int from_index = get_bit_index_lsb(board.black_rooks);
+			int from_index = get_bit_index_lsb(board.black_pieces.rooks);
 			auto moves = get_raw_rook_moves(board, from_index) & black_occupied_mask;
-			reset_lsb(board.black_rooks);
+			reset_lsb(board.black_pieces.rooks);
 			push_all_moves(result, from_index, moves);
 		}
 	}
 	else 
 	{
-		auto white_occupied_mask = ~board.white_occupied;
+		auto white_occupied_mask = ~board.white_pieces.occupied;
 
-		while (board.white_bishops != 0)
+		while (board.white_pieces.bishops != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_bishops);
+			int from_index = get_bit_index_lsb(board.white_pieces.bishops);
 			auto bishop_moves = get_raw_bishop_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_bishops);
+			reset_lsb(board.white_pieces.bishops);
 			push_all_moves(result, from_index, bishop_moves);
 		}
 
-		while (board.white_king != 0)
+		while (board.white_pieces.king != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_king);
+			int from_index = get_bit_index_lsb(board.white_pieces.king);
 			auto moves = king_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_king);
+			reset_lsb(board.white_pieces.king);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.white_knights != 0)
+		while (board.white_pieces.knights != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_knights);
+			int from_index = get_bit_index_lsb(board.white_pieces.knights);
 			auto moves = knight_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_knights);
+			reset_lsb(board.white_pieces.knights);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.white_pawns != 0)
+		while (board.white_pieces.pawns != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_pawns);
+			int from_index = get_bit_index_lsb(board.white_pieces.pawns);
 			auto moves = white_pawn_normal_moves[from_index] & white_occupied_mask;
-			reset_lsb(board.white_pawns);
+			reset_lsb(board.white_pieces.pawns);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.white_queen != 0)
+		while (board.white_pieces.queens != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_queen);
+			int from_index = get_bit_index_lsb(board.white_pieces.queens);
 			auto moves = get_raw_queen_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_queen);
+			reset_lsb(board.white_pieces.queens);
 			push_all_moves(result, from_index, moves);
 		}
 
-		while (board.white_rooks != 0)
+		while (board.white_pieces.rooks != 0)
 		{
-			int from_index = get_bit_index_lsb(board.white_rooks);
+			int from_index = get_bit_index_lsb(board.white_pieces.rooks);
 			auto moves = get_raw_rook_moves(board, from_index) & white_occupied_mask;
-			reset_lsb(board.white_rooks);
+			reset_lsb(board.white_pieces.rooks);
 			push_all_moves(result, from_index, moves);
 		}
 	}
@@ -173,7 +173,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move)
 {
 	bool move_made_by_black = false;
-	if (is_bit_set(board.black_occupied, move.from))
+	if (is_bit_set(board.black_pieces.occupied, move.from))
 		move_made_by_black = true;
 
 	uint64_t* arr = board.get_ptr_to_piece(move_made_by_black, move.from);
@@ -183,20 +183,20 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move)
 	//		const uint64_t invert_to = ~(move.to);
 	if (move_made_by_black)
 	{
-		set_bit(board.black_occupied, move.to);
+		set_bit(board.black_pieces.occupied, move.to);
 
-		if (is_bit_set(board.white_occupied, move.to))
+		if (is_bit_set(board.white_pieces.occupied, move.to))
 			board.clear_bit_for_color(false, move.to);
 	}
 	else
 	{
-		set_bit(board.white_occupied, move.to);
+		set_bit(board.white_pieces.occupied, move.to);
 
-		if (is_bit_set(board.black_occupied, move.to))
+		if (is_bit_set(board.black_pieces.occupied, move.to))
 			board.clear_bit_for_color(true, move.to);
 	}
 
-	board.occupied = board.white_occupied | board.black_occupied;
+	board.occupied = board.white_pieces.occupied | board.black_pieces.occupied;
 
 	// TODO handle castling and en_passant
 }
