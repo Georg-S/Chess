@@ -5,10 +5,8 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
-uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter, const uint64_t* pawn_attack_moves)
+void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves)
 {
-	uint64_t attacked_fields = 0;
-
 	int other_king_index = get_bit_index_lsb(other->king);
 	uint64_t occupied = board.occupied;
 	occupied &= reset_index_mask[other_king_index];
@@ -20,10 +18,10 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		uint64_t moves = get_raw_rook_moves(from_index, occupied);
 		reset_lsb(player->rooks);
 
-		attacked_fields |= moves;
+		out_check_info->attacked_fields |= moves;
 
 		if (moves & other->king) 
-			(*check_counter)++;
+			out_check_info->check_counter++;
 	}
 
 	while (player->queens != 0)
@@ -32,10 +30,10 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		uint64_t moves = get_raw_queen_moves(from_index, occupied);
 		reset_lsb(player->queens);
 
-		attacked_fields |= moves;
+		out_check_info->attacked_fields |= moves;
 
 		if (moves & other->king)
-			(*check_counter)++;
+			out_check_info->check_counter++;
 	}
 
 	while (player->bishops != 0)
@@ -44,10 +42,10 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		uint64_t moves = get_raw_bishop_moves(from_index, occupied);
 		reset_lsb(player->bishops);
 
-		attacked_fields |= moves;
+		out_check_info->attacked_fields |= moves;
 
 		if (moves & other->king)
-			(*check_counter)++;
+			out_check_info->check_counter++;
 	}
 
 	while (player->king != 0)
@@ -56,7 +54,7 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		auto moves = king_moves[from_index];
 		reset_lsb(player->king);
 
-		attacked_fields |= moves;
+		out_check_info->attacked_fields |= moves;
 	}
 
 	while (player->knights != 0)
@@ -65,10 +63,10 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		auto moves = knight_moves[from_index];
 		reset_lsb(player->knights);
 
-		attacked_fields |= moves;
+		out_check_info->attacked_fields |= moves;
 
 		if (moves & other->king)
-			(*check_counter)++;
+			out_check_info->check_counter++;
 	}
 
 	while (player->pawns != 0)
@@ -78,13 +76,11 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 		auto attack_moves = pawn_attack_moves[from_index];
 		reset_lsb(player->pawns);
 
-		attacked_fields |= attack_moves;
+		out_check_info->attacked_fields |= attack_moves;
 
 		if (attack_moves & other->king)
-			(*check_counter)++;
+			out_check_info->check_counter++;
 	}
-
-	return attacked_fields;
 }
 
 uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
@@ -196,10 +192,11 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	auto playing_occupied_mask = ~(playing->occupied);
 
 	ceg::Pieces cop_other = *other;
-	uint64_t check_counter = 0;
 	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
-	uint64_t attacked_fields = get_attacked_fields(&cop_other, playing, board, &check_counter, other_pawn_attack_moves);
-	const uint64_t attacked_fields_mask = ~attacked_fields;
+
+	CheckInfo info = CheckInfo();
+	get_check_info(&cop_other, playing, board, &info, other_pawn_attack_moves);
+	const uint64_t attacked_fields_mask = ~(info.attacked_fields);
 
 	while (playing->king != 0)
 	{
@@ -209,7 +206,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		push_all_moves(result, from_index, moves);
 	}
 
-	if (check_counter >= 2)
+	if (info.check_counter >= 2)
 		return result;
 
 	while (playing->bishops != 0)

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 #include "BitBoard.h"
 #include "Utility.h"
 
@@ -12,11 +13,24 @@ namespace ceg
 		int to;
 	};
 
+	struct CheckInfo 
+	{
+		CheckInfo() 
+		{
+			uint64_t zero = 0;
+			std::fill_n(pin_mask, 64, ~zero);
+		}
+
+		int check_counter = 0;
+		uint64_t attacked_fields = 0;
+		uint64_t pin_mask[64];
+	};
+
 	class MoveGenerator
 	{
 	public:
 		MoveGenerator();
-		uint64_t get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter, const uint64_t* pawn_attack_moves);
+		void get_check_info(Pieces* player, Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
 		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
 		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);

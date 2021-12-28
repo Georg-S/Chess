@@ -34,6 +34,15 @@ TEST_CASE("perft_start_board_depth_3_test", "MoveGeneration")
 	REQUIRE(perft_result == 8902);
 }
 
+/*
+TEST_CASE("perft_start_board_depth_4_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(initial_board_FEN, 4);
+
+	REQUIRE(perft_result == 197281);
+}
+*/
+
 TEST_CASE("rook_move_count_white_test", "MoveGeneration") 
 {
 	const std::string test_board_fen_str = "k7/8/8/8/1b1R2b1/8/8/3n3K w - - 0 1";
@@ -259,6 +268,26 @@ TEST_CASE("white_king_double_check_can_only_move_king_test", "MoveGeneration")
 	REQUIRE(perft_result == 5);
 }
 
+TEST_CASE("black_king_double_check_can_only_move_king_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K2R4/8/8/8/8/5N2/3k4/7r b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("white_rook_pinned_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/8/8/1K1R2q1/8/8/8 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 12);
+}
+
+
+//k7/8/8/8/1K1R2q1/8/8/8 w - - 0 1
 /*
  
 TEST_CASE("Buf_test", "MoveGeneration")
