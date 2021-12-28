@@ -7,27 +7,76 @@ ceg::MoveGenerator::MoveGenerator()
 
 void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves)
 {
-	int other_king_index = get_bit_index_lsb(other->king);
+	const int other_king_index = get_bit_index_lsb(other->king);
 	uint64_t occupied = board.occupied;
 	occupied &= reset_index_mask[other_king_index];
+
+	const auto king_vertical = get_vertical_moves(other_king_index, occupied);
+	const auto king_horizontal = get_horizontal_moves(other_king_index, occupied);
+	const auto king_diagonal_up = get_diagonal_up_moves(other_king_index, occupied);
+	const auto king_diagonal_down = get_diagonal_down_moves(other_king_index, occupied);
 
 	const uint64_t playing_occupied_mask = ~(player->occupied);
 	while (player->rooks != 0)
 	{
 		int from_index = get_bit_index_lsb(player->rooks);
-		uint64_t moves = get_raw_rook_moves(from_index, occupied);
+		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
+		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
+		const uint64_t horizontal_pin = horizontal_moves & king_horizontal;
+		const uint64_t vertical_pin = vertical_moves & king_vertical;
+		if (horizontal_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(horizontal_pin);
+			out_check_info->pin_mask[pinned_piece_index] = horizontal_mask[pinned_piece_index];
+		}
+		else if (vertical_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
+			out_check_info->pin_mask[pinned_piece_index] = vertical_moves | king_vertical;
+		}
+
+		uint64_t moves = horizontal_moves | vertical_moves;
 		reset_lsb(player->rooks);
 
 		out_check_info->attacked_fields |= moves;
 
-		if (moves & other->king) 
+		if (moves & other->king)
 			out_check_info->check_counter++;
 	}
 
 	while (player->queens != 0)
 	{
 		int from_index = get_bit_index_lsb(player->queens);
-		uint64_t moves = get_raw_queen_moves(from_index, occupied);
+		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
+		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
+		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
+		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
+		const uint64_t horizontal_pin = horizontal_moves & king_horizontal;
+		const uint64_t vertical_pin = vertical_moves & king_vertical;
+		const uint64_t up_pin = diagonal_up_moves & king_diagonal_up;
+		const uint64_t down_pin = diagonal_down_moves & king_diagonal_down;
+		if (horizontal_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(horizontal_pin);
+			out_check_info->pin_mask[pinned_piece_index] = horizontal_mask[pinned_piece_index];
+		}
+		else if (vertical_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
+			out_check_info->pin_mask[pinned_piece_index] = vertical_moves | king_vertical;
+		}
+		else if (up_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(up_pin);
+			out_check_info->pin_mask[pinned_piece_index] = diagonal_up_mask[pinned_piece_index];
+		}
+		else if (down_pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(down_pin);
+			out_check_info->pin_mask[pinned_piece_index] = diagonal_down_mask[pinned_piece_index];
+		}
+
+		uint64_t moves = horizontal_moves | vertical_moves | diagonal_up_moves | diagonal_down_moves;
 		reset_lsb(player->queens);
 
 		out_check_info->attacked_fields |= moves;
@@ -39,7 +88,22 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const Bit
 	while (player->bishops != 0)
 	{
 		int from_index = get_bit_index_lsb(player->bishops);
-		uint64_t moves = get_raw_bishop_moves(from_index, occupied);
+		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
+		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
+		const uint64_t up_pin = diagonal_up_moves & king_diagonal_up;
+		const uint64_t down_pin = diagonal_down_moves & king_diagonal_down;
+		if (up_pin) 
+		{
+			int pinned_piece_index = get_bit_index_lsb(up_pin);
+			out_check_info->pin_mask[pinned_piece_index] = diagonal_up_mask[pinned_piece_index];
+		}
+		else if (down_pin) 
+		{
+			int pinned_piece_index = get_bit_index_lsb(down_pin);
+			out_check_info->pin_mask[pinned_piece_index] = diagonal_down_mask[pinned_piece_index];
+		}
+
+		uint64_t moves = diagonal_up_moves | diagonal_down_moves;
 		reset_lsb(player->bishops);
 
 		out_check_info->attacked_fields |= moves;
@@ -71,7 +135,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const Bit
 
 	while (player->pawns != 0)
 	{
-		// TODO en passant
+		// TODO en passant edge case
 		int from_index = get_bit_index_lsb(player->pawns);
 		auto attack_moves = pawn_attack_moves[from_index];
 		reset_lsb(player->pawns);
@@ -85,23 +149,41 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const Bit
 
 uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
 {
-	uint64_t horiz = occupied & horizontal_mask_without_index[index];
-	uint64_t vert = occupied & vertical_mask_without_index[index];
-
-	return horizontal_with_occupied[index][horiz] | vertical_with_occupied[index][vert];
+	return get_horizontal_moves(index, occupied) | get_vertical_moves(index, occupied);
 }
 
 uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied)
 {
-	uint64_t up = occupied & diagonal_up_mask_without_index[index];
-	uint64_t down = occupied & diagonal_down_mask_without_index[index];
-
-	return diagonal_up_with_occupied[index][up] | diagonal_down_with_occupied[index][down];
+	return get_diagonal_up_moves(index, occupied) | get_diagonal_down_moves(index, occupied);
 }
 
 uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)
 {
 	return get_raw_rook_moves(index, occupied) | get_raw_bishop_moves(index, occupied);
+}
+
+uint64_t ceg::MoveGenerator::get_vertical_moves(int index, uint64_t occupied)
+{
+	uint64_t vertical = vertical_mask_without_index[index] & occupied;
+	return vertical_with_occupied[index][vertical];
+}
+
+uint64_t ceg::MoveGenerator::get_horizontal_moves(int index, uint64_t occupied)
+{
+	uint64_t horizontal = horizontal_mask_without_index[index] & occupied;
+	return horizontal_with_occupied[index][horizontal];
+}
+
+uint64_t ceg::MoveGenerator::get_diagonal_up_moves(int index, uint64_t occupied)
+{
+	uint64_t up =  diagonal_up_mask_without_index[index] & occupied;
+	return diagonal_up_with_occupied[index][up];
+}
+
+uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupied)
+{
+	uint64_t down = diagonal_down_mask_without_index[index] & occupied; 
+	return  diagonal_down_with_occupied[index][down];
 }
 
 void ceg::MoveGenerator::init()
@@ -133,7 +215,7 @@ void ceg::MoveGenerator::init()
 
 void ceg::MoveGenerator::init_reset_index_mask()
 {
-	for (int i = 0; i < 64; i++) 
+	for (int i = 0; i < 64; i++)
 	{
 		uint64_t val = 0;
 		val = ~val;
@@ -144,7 +226,7 @@ void ceg::MoveGenerator::init_reset_index_mask()
 
 void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
 {
-	for (int i = 0; i < size; i++) 
+	for (int i = 0; i < size; i++)
 		dest[i] = source_1[i] | source_2[i];
 }
 
@@ -164,17 +246,17 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 	Pieces black_pieces = board.black_pieces;
 	Pieces white_pieces = board.white_pieces;
 
-	if (black) 
+	if (black)
 	{
 		return get_all_possible_moves(&black_pieces, &white_pieces, board, black_pawn_normal_moves, black_pawn_attack_moves, true);
 	}
-	else 
+	else
 	{
 		return get_all_possible_moves(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, false);
 	}
 }
 
-std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, 
+std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other,
 	const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black)
 {
 	auto push_all_moves = [](std::vector<Move>& dest, int from_index, uint64_t moves)
@@ -212,7 +294,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->bishops != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->bishops);
 		push_all_moves(result, from_index, bishop_moves);
 	}
@@ -220,7 +302,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->knights != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->knights);
-		auto moves = knight_moves[from_index] & playing_occupied_mask;
+		auto moves = knight_moves[from_index] & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->knights);
 		push_all_moves(result, from_index, moves);
 	}
@@ -235,7 +317,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		if (!is_bit_set(board.occupied, from_index + moving))
 			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
 		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
-		auto moves = normal_moves | attack_moves;
+		auto moves = (normal_moves | attack_moves) & info.pin_mask[from_index];
 		reset_lsb(playing->pawns);
 		push_all_moves(result, from_index, moves);
 	}
@@ -243,7 +325,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->queens != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->queens);
-		auto moves = get_raw_queen_moves(from_index, board.occupied) & playing_occupied_mask;
+		auto moves = get_raw_queen_moves(from_index, board.occupied) & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->queens);
 		push_all_moves(result, from_index, moves);
 	}
@@ -251,7 +333,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->rooks != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->rooks);
-		auto moves = get_raw_rook_moves(from_index, board.occupied) & playing_occupied_mask;
+		auto moves = get_raw_rook_moves(from_index, board.occupied) & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->rooks);
 		push_all_moves(result, from_index, moves);
 	}
@@ -296,7 +378,7 @@ void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const Mo
 
 void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)
 {
-	for (int bit_index = 0; bit_index < 64; bit_index++) 
+	for (int bit_index = 0; bit_index < 64; bit_index++)
 	{
 		auto num = mask[bit_index];
 		clear_bit(num, bit_index);

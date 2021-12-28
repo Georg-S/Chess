@@ -69,6 +69,10 @@ namespace ceg
 		uint64_t get_raw_rook_moves(int index, uint64_t occupied);
 		uint64_t get_raw_bishop_moves(int index, uint64_t occupied);
 		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
+		uint64_t get_vertical_moves(int index, uint64_t occupied);
+		uint64_t get_horizontal_moves(int index, uint64_t occupied);
+		uint64_t get_diagonal_up_moves(int index, uint64_t occupied);
+		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
 
 		void init();
 		void init_reset_index_mask();

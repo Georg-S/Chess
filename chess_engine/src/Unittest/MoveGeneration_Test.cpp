@@ -277,23 +277,74 @@ TEST_CASE("black_king_double_check_can_only_move_king_test", "MoveGeneration")
 	REQUIRE(perft_result == 5);
 }
 
-TEST_CASE("white_rook_pinned_test", "MoveGeneration")
+TEST_CASE("white_rook_pinned_by_rook_test", "MoveGeneration")
 {
-	const std::string test_board_fen_str = "k7/8/8/8/1K1R2q1/8/8/8 w - - 0 1";
+	const std::string test_board_fen_str = "k7/8/8/8/1K1R2r1/8/8/8 w - - 0 1";
 
 	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
 
 	REQUIRE(perft_result == 12);
 }
 
-
-//k7/8/8/8/1K1R2q1/8/8/8 w - - 0 1
-/*
- 
-TEST_CASE("Buf_test", "MoveGeneration")
+TEST_CASE("black_rook_pinned_by_rook_test", "MoveGeneration")
 {
-	ceg::ChessEngine engine = ceg::ChessEngine();
-	ceg::MoveGenerator gen = ceg::MoveGenerator();
-	ceg::print_bit_board(gen.rook_mask[35]);
+	const std::string test_board_fen_str = "K7/8/8/8/1k1r2R1/8/8/8 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 12);
 }
-*/
+
+TEST_CASE("white_rook_pinned_by_bishop_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k4b2/8/3R4/8/1K6/8/8/8 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 8);
+}
+
+TEST_CASE("black_rook_pinned_by_bishop_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K4B2/8/3r4/8/1k6/8/8/8 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 8);
+}
+
+TEST_CASE("white_rook_pinned_by_queen_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/8/8/1K6/2R5/8/4q3 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
+
+TEST_CASE("black_rook_pinned_by_queen_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K7/8/8/8/1k6/2r5/8/4Q3 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
+
+TEST_CASE("white_pawn_pinned_by_queen_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/8/8/1K6/2P5/8/4q3 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
+
+TEST_CASE("black_pawn_pinned_by_queen_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K7/8/8/8/1k6/2p5/8/4Q3 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
