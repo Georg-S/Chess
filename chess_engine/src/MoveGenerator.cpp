@@ -378,7 +378,8 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		if (!is_bit_set(board.occupied, from_index + moving))
 			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
 		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
-		auto moves = (normal_moves | attack_moves) & info.check_mask & info.pin_mask[from_index];
+		auto en_passant_moves = pawn_attack_moves[from_index] & board.en_passant_mask;
+		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask & info.pin_mask[from_index];
 		reset_lsb(playing->pawns);
 		push_all_moves(result, from_index, moves);
 	}
@@ -413,7 +414,6 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move)
 
 void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black)
 {
-	board.en_passant_mask = 0;
 	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
 
@@ -439,14 +439,37 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 		clear_bit(other->castling, move.to);
 	}
 
+	if (is_bit_set(pieces->pawns, move.from))
+	{
+		if (is_bit_set(board.en_passant_mask, move.to)) 
+		{
+			board.en_passant_mask = 0;
+			board.move_piece(pieces, move);
+			int to_x = move.to % 8;
+			int from_y = move.from / 8;
+
+			board.clear_bit_for_pieces(other, to_x + from_y * 8);
+			board.update_occupied();
+			return;
+		}
+
+		board.en_passant_mask = 0;
+		const int y_distance = move.to - move.from;
+		if (y_distance == 16 || y_distance == -16)
+			set_bit(board.en_passant_mask, move.from + y_distance / 2);
+	}
+	else 
+	{
+		board.en_passant_mask = 0;
+	}
+
 	board.move_piece(pieces, move);
 
 	if (is_bit_set(other->occupied, move.to))
 		board.clear_bit_for_pieces(other, move.to);
 
 	board.update_occupied();
-
-	// TODO handle en_passant
+	// TODO handle en_passant edge cases
 }
 
 void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const Move& move)
