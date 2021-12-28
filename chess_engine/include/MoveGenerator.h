@@ -24,6 +24,7 @@ namespace ceg
 		int check_counter = 0;
 		uint64_t attacked_fields = 0;
 		uint64_t pin_mask[64];
+		uint64_t check_mask = ~uint64_t(0);
 	};
 
 	class MoveGenerator
