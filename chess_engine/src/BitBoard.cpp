@@ -5,6 +5,17 @@ ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FE
 	set_board(FEN_pieces_str, FEN_castling_str, FEN_en_passant_str);
 }
 
+void ceg::BitBoard::move_piece(Pieces* pieces, const Move& move)
+{
+	auto piece = get_ptr_to_piece(pieces, move.from);
+
+	clear_bit(*piece, move.from);
+	set_bit(*piece, move.to);
+
+	clear_bit(pieces->occupied, move.from);
+	set_bit(pieces->occupied, move.to);
+}
+
 void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
 {
 	clear_bit(pieces->bishops, bit_index);

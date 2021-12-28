@@ -21,12 +21,19 @@ namespace ceg
 		uint64_t castling = 0;
 	};
 
+	struct Move
+	{
+		int from;
+		int to;
+	};
+
 	class BitBoard
 	{
 	public:
 		BitBoard() = default;
 		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");
 
+		void move_piece(Pieces* pieces, const Move& move);
 		void clear_bit_for_pieces(Pieces* pieces, int bit_index);
 		uint64_t* get_ptr_to_piece(Pieces* pieces, int bit_index);
 		void print_board_to_console();

@@ -7,12 +7,6 @@
 
 namespace ceg
 {
-	struct Move
-	{
-		int from;
-		int to;
-	};
-
 	struct CheckInfo 
 	{
 		CheckInfo() 

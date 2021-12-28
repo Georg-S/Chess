@@ -413,9 +413,9 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move)
 
 void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black)
 {
+	board.en_passant_mask = 0;
 	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
-	uint64_t* arr = board.get_ptr_to_piece(pieces, move.from);
 
 	if (is_bit_set(pieces->king, move.from)) 
 	{
@@ -423,26 +423,14 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 		if (move.to - move.from == 2) // King side castling
 		{
 			int rook_from_index = move.from + 3;
-			int to_index = move.to - 1;
-			uint64_t* rooks = board.get_ptr_to_piece(pieces, rook_from_index);
-
-			clear_bit(*rooks, rook_from_index);
-			set_bit(*rooks, to_index);
-
-			clear_bit(pieces->occupied, rook_from_index);
-			set_bit(pieces->occupied, to_index);
+			int rook_to_index = move.to - 1;
+			board.move_piece(pieces, Move{ rook_from_index, rook_to_index });
 		}
 		else if (move.to - move.from == -2) // Queen side castling
 		{
 			int rook_from_index = move.from - 4;
-			int to_index = move.to + 1;
-			uint64_t* rooks = board.get_ptr_to_piece(pieces, rook_from_index);
-
-			clear_bit(*rooks, rook_from_index);
-			set_bit(*rooks, to_index);
-
-			clear_bit(pieces->occupied, rook_from_index);
-			set_bit(pieces->occupied, to_index);
+			int rook_to_index = move.to + 1;
+			board.move_piece(pieces, Move{ rook_from_index, rook_to_index });
 		}
 	}
 	else 
@@ -451,19 +439,14 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 		clear_bit(other->castling, move.to);
 	}
 
-	clear_bit(*arr, move.from);
-	set_bit(*arr, move.to);
-
-	clear_bit(pieces->occupied, move.from);
-	set_bit(pieces->occupied, move.to);
+	board.move_piece(pieces, move);
 
 	if (is_bit_set(other->occupied, move.to))
 		board.clear_bit_for_pieces(other, move.to);
 
-
 	board.update_occupied();
 
-	// TODO handle castling and en_passant
+	// TODO handle en_passant
 }
 
 void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const Move& move)
