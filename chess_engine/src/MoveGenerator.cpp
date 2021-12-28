@@ -322,6 +322,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	CheckInfo info = CheckInfo();
 	get_check_info(&cop_other, playing, board, &info, other_pawn_attack_moves);
 	const uint64_t attacked_fields_mask = ~(info.attacked_fields);
+	const auto player_king_index = get_bit_index_lsb(playing->king);
 
 	while (playing->king != 0)
 	{
@@ -379,6 +380,18 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
 		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
 		auto en_passant_moves = pawn_attack_moves[from_index] & board.en_passant_mask;
+		if (en_passant_moves) 
+		{
+			int to_index = get_bit_index_lsb(en_passant_moves);
+			int to_x = to_index % 8;
+			int from_y = from_index / 8;
+			auto occ_buf = board.occupied & horizontal_mask[from_index];
+			clear_bit(occ_buf, from_index);
+			clear_bit(occ_buf, from_y * 8 + to_x);
+
+			if (get_horizontal_moves(player_king_index, occ_buf) & (other->queens | other->rooks))
+				en_passant_moves = 0;
+		}
 		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask & info.pin_mask[from_index];
 		reset_lsb(playing->pawns);
 		push_all_moves(result, from_index, moves);
