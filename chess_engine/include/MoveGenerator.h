@@ -16,7 +16,7 @@ namespace ceg
 	{
 	public:
 		MoveGenerator();
-		uint64_t get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter);
+		uint64_t get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter, const uint64_t* pawn_attack_moves);
 		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
 		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);

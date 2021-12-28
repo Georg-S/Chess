@@ -5,7 +5,7 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
-uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter)
+uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, const BitBoard& board, uint64_t* check_counter, const uint64_t* pawn_attack_moves)
 {
 	uint64_t attacked_fields = 0;
 
@@ -29,7 +29,7 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 	while (player->queens != 0)
 	{
 		int from_index = get_bit_index_lsb(player->queens);
-		auto moves = get_raw_queen_moves(from_index, occupied);
+		uint64_t moves = get_raw_queen_moves(from_index, occupied);
 		reset_lsb(player->queens);
 
 		attacked_fields |= moves;
@@ -38,43 +38,51 @@ uint64_t ceg::MoveGenerator::get_attacked_fields(Pieces* player, Pieces* other, 
 			(*check_counter)++;
 	}
 
-	/*
 	while (player->bishops != 0)
 	{
 		int from_index = get_bit_index_lsb(player->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
-		reset_lsb(playing->bishops);
+		uint64_t moves = get_raw_bishop_moves(from_index, occupied);
+		reset_lsb(player->bishops);
+
+		attacked_fields |= moves;
+
+		if (moves & other->king)
+			(*check_counter)++;
 	}
 
 	while (player->king != 0)
 	{
-		int from_index = get_bit_index_lsb(playing->king);
-		auto moves = king_moves[from_index] & playing_occupied_mask;
-		reset_lsb(playing->king);
+		int from_index = get_bit_index_lsb(player->king);
+		auto moves = king_moves[from_index];
+		reset_lsb(player->king);
+
+		attacked_fields |= moves;
 	}
 
-	while (playing->knights != 0)
+	while (player->knights != 0)
 	{
-		int from_index = get_bit_index_lsb(playing->knights);
-		auto moves = knight_moves[from_index] & playing_occupied_mask;
-		reset_lsb(playing->knights);
+		int from_index = get_bit_index_lsb(player->knights);
+		auto moves = knight_moves[from_index];
+		reset_lsb(player->knights);
+
+		attacked_fields |= moves;
+
+		if (moves & other->king)
+			(*check_counter)++;
 	}
 
-	while (playing->pawns != 0)
+	while (player->pawns != 0)
 	{
 		// TODO en passant
-		int from_index = get_bit_index_lsb(playing->pawns);
-		uint64_t normal_moves = 0;
-		int moving = black ? 8 : -8;
+		int from_index = get_bit_index_lsb(player->pawns);
+		auto attack_moves = pawn_attack_moves[from_index];
+		reset_lsb(player->pawns);
 
-		if (!is_bit_set(board.occupied, from_index + moving))
-			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
-		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
-		auto moves = normal_moves | attack_moves;
-		reset_lsb(playing->pawns);
+		attacked_fields |= attack_moves;
+
+		if (attack_moves & other->king)
+			(*check_counter)++;
 	}
-	*/
-
 
 	return attacked_fields;
 }
@@ -189,16 +197,9 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 
 	ceg::Pieces cop_other = *other;
 	uint64_t check_counter = 0;
-	uint64_t attacked_fields = get_attacked_fields(&cop_other, playing, board, &check_counter);
+	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
+	uint64_t attacked_fields = get_attacked_fields(&cop_other, playing, board, &check_counter, other_pawn_attack_moves);
 	const uint64_t attacked_fields_mask = ~attacked_fields;
-
-	while (playing->bishops != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
-		reset_lsb(playing->bishops);
-		push_all_moves(result, from_index, bishop_moves);
-	}
 
 	while (playing->king != 0)
 	{
@@ -206,6 +207,17 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
 		reset_lsb(playing->king);
 		push_all_moves(result, from_index, moves);
+	}
+
+	if (check_counter >= 2)
+		return result;
+
+	while (playing->bishops != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->bishops);
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask;
+		reset_lsb(playing->bishops);
+		push_all_moves(result, from_index, bishop_moves);
 	}
 
 	while (playing->knights != 0)

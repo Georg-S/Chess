@@ -178,6 +178,87 @@ TEST_CASE("simple_check_mate_move_count_black_test", "MoveGeneration")
 	REQUIRE(perft_result == 1);
 }
 
+TEST_CASE("simple_bishop_check_move_count_white_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/5b2/8/3K4/1b6/8/8 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 4);
+}
+
+TEST_CASE("simple_bishop_check_move_count_black_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "K7/8/5B2/8/3k4/1B6/8/8 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 4);
+}
+
+TEST_CASE("white_king_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "8/8/3K4/8/3k4/8/8/8 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("black_king_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "8/8/3K4/8/3k4/8/8/8 b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("white_king_check_by_knight_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "8/8/1n1K4/5n2/8/8/8/7k w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("black_king_check_by_knight_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "8/8/1N1k4/5N2/8/8/8/7K b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("white_king_check_by_pawn_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k7/8/8/6p1/3p1p2/4K3/8/8 w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
+
+TEST_CASE("black_king_check_by_pawn_cant_move_on_attacked_square_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "8/8/4k3/3P1P2/2P5/8/8/7K b - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 7);
+}
+
+TEST_CASE("white_king_double_check_can_only_move_king_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "k2r4/8/8/8/8/5n2/3K4/7R w - - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
 /*
  
 TEST_CASE("Buf_test", "MoveGeneration")
