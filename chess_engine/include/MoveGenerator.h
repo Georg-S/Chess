@@ -40,6 +40,10 @@ namespace ceg
 		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
 
 		static constexpr int arr_size = board_height * board_width;
+		uint64_t black_queen_side_castling_mask = 0;
+		uint64_t black_king_side_castling_mask = 0;
+		uint64_t white_queen_side_castling_mask = 0;
+		uint64_t white_king_side_castling_mask = 0;
 		uint64_t vertical_mask[arr_size]{};
 		uint64_t vertical_mask_without_index[arr_size]{};
 		uint64_t horizontal_mask[arr_size]{};
@@ -77,6 +81,7 @@ namespace ceg
 
 		void init();
 		void init_reset_index_mask();
+		void init_castling_mask();
 		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
 		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index);
 		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);

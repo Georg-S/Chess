@@ -4,6 +4,7 @@
 #include "MoveGenerator.h"
 
 const std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const std::string perft_test_board_2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 ceg::ChessEngine engine = ceg::ChessEngine();
 
 TEST_CASE("perft_start_board_depth_0_test", "MoveGeneration") 
@@ -39,6 +40,13 @@ TEST_CASE("perft_start_board_depth_4_test", "MoveGeneration")
 	uint64_t perft_result = engine.perft(initial_board_FEN, 4);
 
 	REQUIRE(perft_result == 197281);
+}
+
+TEST_CASE("perft_test_board_2_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_2, 1);
+
+	REQUIRE(perft_result == 48);
 }
 
 TEST_CASE("rook_move_count_white_test", "MoveGeneration") 
@@ -363,4 +371,22 @@ TEST_CASE("black_is_check_queen_has_limited_possible_moves", "MoveGeneration")
 	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
 
 	REQUIRE(perft_result == 8);
+}
+
+TEST_CASE("white_can_castle_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "r3k2r/8/8/8/8/8/8/R3K2R w KQ - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 26);
+}
+
+TEST_CASE("black_can_castle_test", "MoveGeneration")
+{
+	const std::string test_board_fen_str = "r3k2r/8/8/8/8/8/8/R3K2R b kq - 0 1";
+
+	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
+
+	REQUIRE(perft_result == 26);
 }

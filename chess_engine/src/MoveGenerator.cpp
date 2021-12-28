@@ -218,6 +218,7 @@ uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupie
 void ceg::MoveGenerator::init()
 {
 	init_reset_index_mask();
+	init_castling_mask();
 	init_mask(vertical_mask, 0, 1, true);
 	init_mask(horizontal_mask, 1, 0, true);
 	init_mask(diagonal_down_mask, 1, 1, true);
@@ -251,6 +252,19 @@ void ceg::MoveGenerator::init_reset_index_mask()
 		clear_bit(val, i);
 		reset_index_mask[i] = val;
 	}
+}
+
+void ceg::MoveGenerator::init_castling_mask()
+{
+	set_bit(black_queen_side_castling_mask, 2);
+	set_bit(black_queen_side_castling_mask, 3);
+	set_bit(black_king_side_castling_mask, 5);
+	set_bit(black_king_side_castling_mask, 6);
+
+	set_bit(white_queen_side_castling_mask, 2, 7);
+	set_bit(white_queen_side_castling_mask, 3, 7);
+	set_bit(white_king_side_castling_mask, 5, 7);
+	set_bit(white_king_side_castling_mask, 6, 7);
 }
 
 void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
@@ -314,6 +328,24 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		int from_index = get_bit_index_lsb(playing->king);
 		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
 		reset_lsb(playing->king);
+		if (info.check_counter == 0 && playing->castling) 
+		{
+			if (black) 
+			{
+				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 0))
+					set_bit(moves, 2);
+				if (!((black_king_side_castling_mask & info.attacked_fields) | (black_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 7))
+					set_bit(moves, 6);
+			}
+			else 
+			{
+				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 56))
+					set_bit(moves, 58);
+				if (!((white_king_side_castling_mask & info.attacked_fields) | (white_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 63))
+					set_bit(moves, 62);
+			}
+		}
+
 		push_all_moves(result, from_index, moves);
 	}
 
@@ -385,6 +417,40 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
 	uint64_t* arr = board.get_ptr_to_piece(pieces, move.from);
 
+	if (is_bit_set(pieces->king, move.from)) 
+	{
+		pieces->castling = 0;
+		if (move.to - move.from == 2) // King side castling
+		{
+			int rook_from_index = move.from + 3;
+			int to_index = move.to - 1;
+			uint64_t* rooks = board.get_ptr_to_piece(pieces, rook_from_index);
+
+			clear_bit(*rooks, rook_from_index);
+			set_bit(*rooks, to_index);
+
+			clear_bit(pieces->occupied, rook_from_index);
+			set_bit(pieces->occupied, to_index);
+		}
+		else if (move.to - move.from == -2) // Queen side castling
+		{
+			int rook_from_index = move.from - 4;
+			int to_index = move.to + 1;
+			uint64_t* rooks = board.get_ptr_to_piece(pieces, rook_from_index);
+
+			clear_bit(*rooks, rook_from_index);
+			set_bit(*rooks, to_index);
+
+			clear_bit(pieces->occupied, rook_from_index);
+			set_bit(pieces->occupied, to_index);
+		}
+	}
+	else 
+	{
+		clear_bit(pieces->castling, move.from);
+		clear_bit(other->castling, move.to);
+	}
+
 	clear_bit(*arr, move.from);
 	set_bit(*arr, move.to);
 
@@ -393,6 +459,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 
 	if (is_bit_set(other->occupied, move.to))
 		board.clear_bit_for_pieces(other, move.to);
+
 
 	board.update_occupied();
 

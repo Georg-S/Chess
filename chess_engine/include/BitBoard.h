@@ -18,6 +18,7 @@ namespace ceg
 		uint64_t queens = 0;
 		uint64_t king = 0;
 		uint64_t occupied = 0;
+		uint64_t castling = 0;
 	};
 
 	class BitBoard
@@ -36,7 +37,6 @@ namespace ceg
 		Pieces black_pieces;
 
 		uint64_t en_passant_mask = 0;
-		uint64_t castling_mask = 0;
 		uint64_t occupied = 0;
 	private:
 		void set_en_passant(const std::string& FEN_str);

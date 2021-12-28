@@ -2,7 +2,7 @@
 
 ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str)
 {
-	set_board(FEN_pieces_str);
+	set_board(FEN_pieces_str, FEN_castling_str, FEN_en_passant_str);
 }
 
 void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
@@ -65,7 +65,7 @@ void ceg::BitBoard::set_board(const std::string& FEN_pieces_str, const std::stri
 	update_occupied();
 
 	if (FEN_castling_str != "")
-		set_en_passant(FEN_castling_str);
+		set_castling(FEN_castling_str);
 	if (FEN_en_passant_str != "")
 		set_en_passant(FEN_en_passant_str);
 
@@ -76,13 +76,13 @@ void ceg::BitBoard::set_castling(const std::string& FEN_castling_str)
 	for (char c : FEN_castling_str) 
 	{
 		if (c == 'k')
-			set_bit(castling_mask, 7, 0);
+			set_bit(black_pieces.castling, 7, 0);
 		if (c == 'q')
-			set_bit(castling_mask, 0, 0);
+			set_bit(black_pieces.castling, 0, 0);
 		if (c == 'K')
-			set_bit(castling_mask, 7, 7);
+			set_bit(white_pieces.castling, 7, 7);
 		if (c == 'Q')
-			set_bit(castling_mask, 7, 0);
+			set_bit(white_pieces.castling, 0, 7);
 	}
 }
 
