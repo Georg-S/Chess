@@ -210,7 +210,7 @@ TEST_CASE("simple_check_mate_move_count_white_test", "MoveGeneration")
 
 	uint64_t perft_perft_resultult = engine.perft(test_board_fen_str, 1);
 
-	REQUIRE(perft_perft_resultult == 1);
+	REQUIRE(perft_perft_resultult == 0);
 }
 
 TEST_CASE("simple_check_mate_move_count_black_test", "MoveGeneration")
@@ -219,7 +219,7 @@ TEST_CASE("simple_check_mate_move_count_black_test", "MoveGeneration")
 
 	uint64_t perft_result = engine.perft(test_board_fen_str, 1);
 
-	REQUIRE(perft_result == 1);
+	REQUIRE(perft_result == 0);
 }
 
 TEST_CASE("simple_bishop_check_move_count_white_test", "MoveGeneration")
