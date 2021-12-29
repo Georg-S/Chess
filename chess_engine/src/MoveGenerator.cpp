@@ -14,7 +14,9 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 	const auto king_horizontal = get_horizontal_moves(other_king_index, occupied);
 	const auto king_diagonal_up = get_diagonal_up_moves(other_king_index, occupied);
 	const auto king_diagonal_down = get_diagonal_down_moves(other_king_index, occupied);
-	const auto king_mask = king_vertical | king_horizontal | king_diagonal_up | king_diagonal_down;
+	const auto king_bishop_moves = king_diagonal_down | king_diagonal_up;
+	const auto king_rook_moves = king_vertical | king_horizontal;
+	const auto king_mask = king_bishop_moves | king_rook_moves;
 
 	const uint64_t playing_occupied_mask = ~(player->occupied);
 	while (player->rooks != 0)
@@ -44,7 +46,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		{
 			out_check_info->check_counter++;
 			uint64_t res = get_raw_rook_moves(from_index, board.occupied);
-			res &= king_mask;
+			res &= king_rook_moves;
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
 		}
@@ -95,9 +97,9 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
 
 			if (rook_moves & other->king)
-				res = rook_moves & king_mask;
+				res = rook_moves & king_rook_moves;
 			else
-				res = bishop_moves & king_mask;
+				res = bishop_moves & king_bishop_moves;
 
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
@@ -131,7 +133,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		{
 			out_check_info->check_counter++;
 			uint64_t res = get_raw_bishop_moves(from_index, board.occupied);
-			res &= king_mask;
+			res &= king_bishop_moves;
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
 		}

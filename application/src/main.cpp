@@ -82,6 +82,8 @@ int main()
 	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
 
 	compare_maps(old, engine_perft);
+	std::cout << std::endl << std::endl;
+	compare_maps(engine_perft, old);
 	/*
 	auto engine_perft = engine.perft_get_set(perft_str, depth);
 	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
