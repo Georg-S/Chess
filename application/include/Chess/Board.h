@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <string>
 #include <cassert>
+#include <vector>
+#include <sstream>
 
 constexpr int board_width = 8;
 constexpr int board_height = 8;
@@ -39,6 +41,9 @@ enum class PieceColor
 class Board 
 {
 public:
+	Board() = default;
+	Board(const std::string& fen_str);
+
 	void init_empty_board();
 	void init_board();
 	std::string to_FEN_str();

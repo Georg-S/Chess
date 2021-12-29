@@ -19,7 +19,8 @@ namespace ceg
 		uint64_t perft(const std::string& FEN_str, int depth, const std::set<std::string>& possible_boards);
 
 	private:
-		void perft(const ceg::BitBoard& board, bool current_player_black, uint64_t* counter, int depth);
+		uint64_t perft(const ceg::BitBoard& board, bool current_player_black, int depth);
+		std::set<std::string> perft_get_set(const ceg::BitBoard& board, bool current_player_black, uint64_t* counter, int depth);
 		void perft(const ceg::BitBoard& board, bool current_player_black, uint64_t* counter, int depth, const std::set<std::string>& possible_boards);
 		ceg::MoveGenerator generator;
 	};

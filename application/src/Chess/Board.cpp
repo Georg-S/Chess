@@ -1,5 +1,63 @@
 #include "Chess/Board.h"
 
+static std::vector<std::string> str_split(const std::string& str, char delim)
+{
+	std::vector<std::string> result;
+	std::stringstream ss(str);
+	std::string st;
+	while (std::getline(ss, st, delim))
+		result.push_back(st);
+
+	return result;
+}
+
+uint32_t piece_from_FEN_char(char c)
+{
+	uint32_t result = occupied_bit;
+	char lower = tolower(c);
+	if (c == lower)
+		result |= color_black_bit;
+
+	switch (lower)
+	{
+	case 'r': return result | rook_bit;
+	case 'q': return result | queen_bit;
+	case 'p': return result | pawn_bit;
+	case 'k': return result | king_bit;
+	case 'n': return result | knight_bit;
+	case 'b': return result | bishop_bit;
+	default:  return 0;
+	}
+}
+
+Board::Board(const std::string& fen_str)
+{
+	init_empty_board();
+	auto spl = str_split(fen_str, ' ');
+
+	auto pieces = str_split(spl[0], '/');
+	if (pieces.size() != 8)
+		return;
+
+	for (int y = 0; y < pieces.size(); y++)
+	{
+		int x = 0;
+		for (char c : pieces[y])
+		{
+			if (c >= '1' && c <= '8')
+			{
+				x += (c - '0');
+				continue;
+			}
+			if (x >= 8)
+				break;
+
+			board[x][y] = piece_from_FEN_char(c);
+			x++;
+		}
+	}
+}
+
 void Board::init_empty_board()
 {
 	empty_board();

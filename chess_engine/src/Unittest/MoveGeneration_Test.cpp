@@ -6,8 +6,12 @@
 const std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const std::string perft_test_board_2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 const std::string perft_test_board_3 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
+const std::string perft_test_board_4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+const std::string perft_test_board_5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+const std::string perft_test_board_6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 ceg::ChessEngine engine = ceg::ChessEngine();
 
+#if 1
 TEST_CASE("perft_start_board_depth_0_test", "MoveGeneration") 
 {
 	uint64_t perft_result = engine.perft(initial_board_FEN, 0);
@@ -43,6 +47,13 @@ TEST_CASE("perft_start_board_depth_4_test", "MoveGeneration")
 	REQUIRE(perft_result == 197281);
 }
 
+TEST_CASE("perft_start_board_depth_5_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(initial_board_FEN, 5);
+
+	REQUIRE(perft_result == 4865609);
+}
+
 TEST_CASE("perft_test_board_2_depth_1_test", "MoveGeneration")
 {
 	uint64_t perft_result = engine.perft(perft_test_board_2, 1);
@@ -55,14 +66,6 @@ TEST_CASE("perft_test_board_2_depth_2_test", "MoveGeneration")
 
 	REQUIRE(perft_result == 2039);
 }
-/*
-TEST_CASE("perft_test_board_2_depth_3_test", "MoveGeneration")
-{
-	uint64_t perft_result = engine.perft(perft_test_board_2, 3);
-
-	REQUIRE(perft_result == 97862);
-}
-*/
 
 TEST_CASE("perft_test_board_3_depth_1_test", "MoveGeneration")
 {
@@ -76,6 +79,13 @@ TEST_CASE("perft_test_board_3_depth_2_test", "MoveGeneration")
 	uint64_t perft_result = engine.perft(perft_test_board_3, 2);
 
 	REQUIRE(perft_result == 191);
+}
+
+TEST_CASE("perft_test_board_4_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_4, 1);
+
+	REQUIRE(perft_result == 6);
 }
 
 TEST_CASE("rook_move_count_white_test", "MoveGeneration") 
@@ -419,3 +429,36 @@ TEST_CASE("black_can_castle_test", "MoveGeneration")
 
 	REQUIRE(perft_result == 26);
 }
+
+TEST_CASE("white_check_edge_case_1_test", "MoveGeneration")
+{
+	const std::string debug_str = "rnb1kbnr/pppp1ppp/4p3/8/3P3q/5P2/PPP1P1PP/RNBQKBNR w - - 0 1";
+	uint64_t perft_result = engine.perft(debug_str, 1);
+
+	REQUIRE(perft_result == 2);
+}
+
+TEST_CASE("black_check_edge_case_1_test", "MoveGeneration")
+{
+	const std::string debug_str = "rnbqkbnr/ppp1p1pp/5p2/3p3Q/8/4P3/PPPP1PPP/RNB1KBNR b - - 0 1";
+	uint64_t perft_result = engine.perft(debug_str, 1);
+
+	REQUIRE(perft_result == 2);
+}
+
+TEST_CASE("white_check_edge_case_2_test", "MoveGeneration")
+{
+	std::string test_board_str = "rnb1kbnr/pppp1ppp/4p3/8/7q/3P1P2/PPP1P1PP/RNBQKBNR w - - 0 1";
+	uint64_t perft_result = engine.perft(test_board_str, 1);
+
+	REQUIRE(perft_result == 2);
+}
+
+TEST_CASE("black_check_edge_case_2_test", "MoveGeneration")
+{
+	std::string test_board_str = "rnbqkbnr/ppp1p1pp/3p1p2/7Q/8/4P3/PPPP1PPP/RNB1KBNR b - - 0 1";
+	uint64_t perft_result = engine.perft(test_board_str, 1);
+
+	REQUIRE(perft_result == 2);
+}
+#endif

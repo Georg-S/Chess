@@ -41,10 +41,10 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 		out_check_info->attacked_fields |= moves;
 
-		if (moves & other->king) 
+		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = get_raw_rook_moves(from_index, other->king);
+			uint64_t res = get_raw_rook_moves(from_index, board.occupied);
 			res &= king_mask;
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
@@ -91,8 +91,14 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = get_raw_queen_moves(from_index, other->king);
-			res &= king_mask;
+			uint64_t res = 0;
+			uint64_t bishop_moves = get_raw_bishop_moves(from_index, board.occupied);
+			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
+			if (rook_moves & (king_vertical | king_horizontal))
+				res = rook_moves & (king_mask);
+			else
+				res = bishop_moves & (king_mask);
+
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
 		}
@@ -105,12 +111,12 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
 		const uint64_t up_pin = diagonal_up_moves & king_diagonal_up;
 		const uint64_t down_pin = diagonal_down_moves & king_diagonal_down;
-		if (up_pin) 
+		if (up_pin)
 		{
 			int pinned_piece_index = get_bit_index_lsb(up_pin);
 			out_check_info->pin_mask[pinned_piece_index] = diagonal_up_mask[pinned_piece_index];
 		}
-		else if (down_pin) 
+		else if (down_pin)
 		{
 			int pinned_piece_index = get_bit_index_lsb(down_pin);
 			out_check_info->pin_mask[pinned_piece_index] = diagonal_down_mask[pinned_piece_index];
@@ -124,7 +130,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = get_raw_bishop_moves(from_index, other->king);
+			uint64_t res = get_raw_bishop_moves(from_index, board.occupied);
 			res &= king_mask;
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
@@ -205,13 +211,13 @@ uint64_t ceg::MoveGenerator::get_horizontal_moves(int index, uint64_t occupied)
 
 uint64_t ceg::MoveGenerator::get_diagonal_up_moves(int index, uint64_t occupied)
 {
-	uint64_t up =  diagonal_up_mask_without_index[index] & occupied;
+	uint64_t up = diagonal_up_mask_without_index[index] & occupied;
 	return diagonal_up_with_occupied[index][up];
 }
 
 uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupied)
 {
-	uint64_t down = diagonal_down_mask_without_index[index] & occupied; 
+	uint64_t down = diagonal_down_mask_without_index[index] & occupied;
 	return  diagonal_down_with_occupied[index][down];
 }
 
@@ -329,16 +335,16 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		int from_index = get_bit_index_lsb(playing->king);
 		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
 		reset_lsb(playing->king);
-		if (info.check_counter == 0 && playing->castling) 
+		if (info.check_counter == 0 && playing->castling)
 		{
-			if (black) 
+			if (black)
 			{
 				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 0))
 					set_bit(moves, 2);
 				if (!((black_king_side_castling_mask & info.attacked_fields) | (black_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 7))
 					set_bit(moves, 6);
 			}
-			else 
+			else
 			{
 				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 56))
 					set_bit(moves, 58);
@@ -380,7 +386,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
 		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
 		auto en_passant_moves = pawn_attack_moves[from_index] & board.en_passant_mask;
-		if (en_passant_moves) 
+		if (en_passant_moves)
 		{
 			int to_index = get_bit_index_lsb(en_passant_moves);
 			int to_x = to_index % 8;
@@ -430,7 +436,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
 
-	if (is_bit_set(pieces->king, move.from)) 
+	if (is_bit_set(pieces->king, move.from))
 	{
 		pieces->castling = 0;
 		if (move.to - move.from == 2) // King side castling
@@ -446,7 +452,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 			board.move_piece(pieces, Move{ rook_from_index, rook_to_index });
 		}
 	}
-	else 
+	else
 	{
 		clear_bit(pieces->castling, move.from);
 		clear_bit(other->castling, move.to);
@@ -454,7 +460,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 
 	if (is_bit_set(pieces->pawns, move.from))
 	{
-		if (is_bit_set(board.en_passant_mask, move.to)) 
+		if (is_bit_set(board.en_passant_mask, move.to))
 		{
 			board.en_passant_mask = 0;
 			board.move_piece(pieces, move);
@@ -471,7 +477,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 		if (y_distance == 16 || y_distance == -16)
 			set_bit(board.en_passant_mask, move.from + y_distance / 2);
 	}
-	else 
+	else
 	{
 		board.en_passant_mask = 0;
 	}
