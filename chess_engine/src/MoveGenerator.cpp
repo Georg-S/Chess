@@ -249,6 +249,11 @@ void ceg::MoveGenerator::init_castling_mask()
 	set_bit(white_queen_side_castling_mask, 3, 7);
 	set_bit(white_king_side_castling_mask, 5, 7);
 	set_bit(white_king_side_castling_mask, 6, 7);
+
+	black_queen_side_castling_occupied_mask = black_queen_side_castling_mask;
+	white_queen_side_castling_occupied_mask = white_queen_side_castling_mask;
+	set_bit(black_queen_side_castling_occupied_mask, 1);
+	set_bit(white_queen_side_castling_occupied_mask, 1, 7);
 }
 
 void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
@@ -296,9 +301,8 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		}
 	};
 
-
 	std::vector<Move> result;
-	auto playing_occupied_mask = ~(playing->occupied);
+	const auto playing_occupied_mask = ~(playing->occupied);
 
 	ceg::Pieces cop_other = *other;
 	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
@@ -317,14 +321,14 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		{
 			if (black)
 			{
-				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 0))
+				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_occupied_mask & board.occupied)) && is_bit_set(playing->castling, 0))
 					set_bit(moves, 2);
 				if (!((black_king_side_castling_mask & info.attacked_fields) | (black_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 7))
 					set_bit(moves, 6);
 			}
 			else
 			{
-				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 56))
+				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_occupied_mask & board.occupied)) && is_bit_set(playing->castling, 56))
 					set_bit(moves, 58);
 				if (!((white_king_side_castling_mask & info.attacked_fields) | (white_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 63))
 					set_bit(moves, 62);
@@ -336,22 +340,6 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 
 	if (info.check_counter >= 2)
 		return result;
-
-	while (playing->bishops != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
-		reset_lsb(playing->bishops);
-		push_all_moves(result, from_index, bishop_moves);
-	}
-
-	while (playing->knights != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->knights);
-		auto moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
-		reset_lsb(playing->knights);
-		push_all_moves(result, from_index, moves);
-	}
 
 	while (playing->pawns != 0)
 	{
@@ -378,6 +366,22 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 		}
 		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask & info.pin_mask[from_index];
 		reset_lsb(playing->pawns);
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->bishops != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->bishops);
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
+		reset_lsb(playing->bishops);
+		push_all_moves(result, from_index, bishop_moves);
+	}
+
+	while (playing->knights != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->knights);
+		auto moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
+		reset_lsb(playing->knights);
 		push_all_moves(result, from_index, moves);
 	}
 
@@ -429,6 +433,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 			int rook_to_index = move.to + 1;
 			board.move_piece(pieces, Move{ rook_from_index, rook_to_index });
 		}
+		
 	}
 	else
 	{
@@ -466,7 +471,6 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const Move& move, bool black
 		board.clear_bit_for_pieces(other, move.to);
 
 	board.update_occupied();
-	// TODO handle en_passant edge cases
 }
 
 void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const Move& move)

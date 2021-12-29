@@ -37,6 +37,8 @@ namespace ceg
 		uint64_t black_king_side_castling_mask = 0;
 		uint64_t white_queen_side_castling_mask = 0;
 		uint64_t white_king_side_castling_mask = 0;
+		uint64_t black_queen_side_castling_occupied_mask = 0;
+		uint64_t white_queen_side_castling_occupied_mask = 0;
 		uint64_t vertical_mask[arr_size]{};
 		uint64_t vertical_mask_without_index[arr_size]{};
 		uint64_t horizontal_mask[arr_size]{};
