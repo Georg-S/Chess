@@ -70,7 +70,7 @@ int main()
 {
 	const std::string perft_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	ceg::ChessEngine engine;
-	const int depth = 5;
+	const int depth = 6;
 
 
 	uint64_t counter = 0;

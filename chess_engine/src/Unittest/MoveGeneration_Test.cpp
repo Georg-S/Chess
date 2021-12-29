@@ -11,7 +11,7 @@ const std::string perft_test_board_5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/R
 const std::string perft_test_board_6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 ceg::ChessEngine engine = ceg::ChessEngine();
 
-#if 1
+#if 0
 TEST_CASE("perft_start_board_depth_0_test", "MoveGeneration") 
 {
 	uint64_t perft_result = engine.perft(initial_board_FEN, 0);

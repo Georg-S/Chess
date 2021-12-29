@@ -93,10 +93,11 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 			uint64_t res = 0;
 			uint64_t bishop_moves = get_raw_bishop_moves(from_index, board.occupied);
 			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
-			if (rook_moves & (king_vertical | king_horizontal))
-				res = rook_moves & (king_mask);
+
+			if (rook_moves & other->king)
+				res = rook_moves & king_mask;
 			else
-				res = bishop_moves & (king_mask);
+				res = bishop_moves & king_mask;
 
 			set_bit(res, from_index);
 			out_check_info->check_mask = res;
