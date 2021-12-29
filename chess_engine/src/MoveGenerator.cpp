@@ -8,8 +8,7 @@ ceg::MoveGenerator::MoveGenerator()
 void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves)
 {
 	const int other_king_index = get_bit_index_lsb(other->king);
-	uint64_t occupied = board.occupied;
-	occupied &= reset_index_mask[other_king_index];
+	const uint64_t occupied = board.occupied & reset_index_mask[other_king_index];
 
 	const auto king_vertical = get_vertical_moves(other_king_index, occupied);
 	const auto king_horizontal = get_horizontal_moves(other_king_index, occupied);

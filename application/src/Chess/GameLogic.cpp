@@ -382,55 +382,51 @@ bool any_move_possible(const Board& board, PieceColor color)
 	return false;
 }
 
-static void perft(const Board& board, PieceColor current_player, uint64_t& counter, int depth)
+static uint64_t perft(const Board& board, PieceColor current_player, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map)
 {
-	if (depth == 0) 
-	{
-		counter++;
-		return;
-	}
+	if (depth == 0)
+		return 1ULL;
 
 	auto moves = get_all_possible_moves(board, current_player);
-
+	uint64_t nodes = 0;
 	for (const auto& move : moves) 
 	{
 		Board copy_board = board;
 		make_move(copy_board, move);
-		perft(copy_board, get_next_player(current_player), counter, depth - 1);
+		if (out_set)
+			out_set->insert(copy_board.to_FEN_str());
+
+		if (out_map)
+		{
+			std::string fen_str = copy_board.to_FEN_str();
+			if (out_map->find(fen_str) == out_map->end())
+				out_map->insert({ fen_str, 1 });
+			else
+				out_map->at(fen_str) += 1;
+		}
+		nodes += perft(copy_board, get_next_player(current_player), depth - 1, out_set, out_map);
 	}
+	return nodes;
 }
 
-uint64_t perft(const Board& board, PieceColor current_player, int depth)
+uint64_t perft(const std::string& board_str, PieceColor current_player, int depth)
 {
-	uint64_t counter = 0;
-	perft(board, current_player, counter, depth);
-
-	return counter;
+	return perft(Board(board_str), current_player, depth, nullptr, nullptr);
 }
 
-static void perft_get_boards(const Board& board, PieceColor current_player, uint64_t& counter, int depth, std::set<std::string>& boards)
+std::map<std::string, int> perft_get_map(const std::string& board_str, PieceColor current_player, int depth)
 {
-	if (depth == 0)
-	{
-		counter++;
-		return;
-	}
+	std::map<std::string, int> result;
+	perft(Board(board_str), current_player, depth, nullptr, &result);
 
-	auto moves = get_all_possible_moves(board, current_player);
-
-	for (const auto& move : moves)
-	{
-		Board copy_board = board;
-		make_move(copy_board, move);
-		boards.insert(copy_board.to_FEN_str());
-		perft_get_boards(copy_board, get_next_player(current_player), counter, depth - 1, boards);
-	}
+	return result;
 }
 
-std::set<std::string> perft_get_boards(const Board& board, PieceColor current_player, int depth, uint64_t& counter)
+std::set<std::string> perft_get_set(const std::string& board_str, PieceColor current_player, int depth, uint64_t& counter)
 {
 	std::set<std::string> result;
-	perft_get_boards(board, current_player,counter, depth, result);
+	counter = perft(Board(board_str), current_player, depth, &result, nullptr);
+
 	return result;
 }
 

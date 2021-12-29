@@ -55,18 +55,34 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 }
 */
 
+void compare_maps(const std::map<std::string, int>& map_1, const std::map<std::string, int>& map_2) 
+{
+	for (const auto& elem : map_1) 
+	{
+		if (map_2.find(elem.first) == map_2.end())
+			std::cout << elem.first << " couldn't be found in second map" << std::endl;
+		else if (elem.second != map_2.at(elem.first))
+			std::cout << "Values are different for element: " << elem.first << " Map 1 value: " << elem.second << " Map 2 value: " << map_2.at(elem.first) << std::endl;
+	}
+}
+
 int main() 
 {
 	const std::string perft_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	ceg::ChessEngine engine;
-	Board board = Board(perft_str);
+	const int depth = 5;
+
 
 	uint64_t counter = 0;
-	int depth = 5;
-	auto boards_set = perft_get_boards(board,PieceColor::WHITE, depth, counter);
-	std::cout << "Counter: " << counter << " Set size: " << boards_set.size() << std::endl;
+	auto old = perft_get_map(perft_str, PieceColor::WHITE, depth);
+	std::cout << "Counter: " << counter << " Set size: " << old.size() << std::endl;
 
 
+	auto engine_perft = engine.perft_get_map(perft_str, depth);
+	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
+
+	compare_maps(old, engine_perft);
+	/*
 	auto engine_perft = engine.perft_get_set(perft_str, depth);
 	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
 
@@ -75,6 +91,8 @@ int main()
 		if (engine_perft.find(elem) == engine_perft.end())
 			std::cout << elem << std::endl;
 	}
+	*/
+
 
 	return 0;
 }

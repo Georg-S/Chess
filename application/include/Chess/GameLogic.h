@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include <set>
+#include <map>
 #include <string>
 #include "Board.h"
 #include "Chess/Pieces/King.h"
@@ -46,5 +47,6 @@ void get_all_possible_moves_for_piece(const Board& board, std::vector<Move>& out
 std::vector<Move> get_all_possible_moves(const Board& board, PieceColor color);
 bool any_move_possible_for_piece(const Board& board, int x, int y);
 bool any_move_possible(const Board& board, PieceColor color);
-uint64_t perft(const Board& board, PieceColor, int depth);
-std::set<std::string> perft_get_boards(const Board& board, PieceColor, int depth, uint64_t& counter);
+uint64_t perft(const std::string& board_str, PieceColor, int depth);
+std::map<std::string, int> perft_get_map(const std::string& board_str, PieceColor current_player, int depth);
+std::set<std::string> perft_get_set(const std::string& board_str, PieceColor current_player, int depth, uint64_t& counter);
