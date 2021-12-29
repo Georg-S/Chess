@@ -19,23 +19,27 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 	const auto king_mask = king_bishop_moves | king_rook_moves;
 
 	const uint64_t playing_occupied_mask = ~(player->occupied);
+
+	auto add_to_pin_mask = [out_check_info](uint64_t moves, uint64_t king_moves, const uint64_t* mask)
+	{
+		const uint64_t pin = moves & king_moves;
+		if (pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(pin);
+			out_check_info->pin_mask[pinned_piece_index] = mask[pinned_piece_index];
+			return true;
+		}
+		return false;
+	};
+
 	while (player->rooks != 0)
 	{
-		int from_index = get_bit_index_lsb(player->rooks);
+		const int from_index = get_bit_index_lsb(player->rooks);
 		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
 		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
-		const uint64_t horizontal_pin = horizontal_moves & king_horizontal;
-		const uint64_t vertical_pin = vertical_moves & king_vertical;
-		if (horizontal_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(horizontal_pin);
-			out_check_info->pin_mask[pinned_piece_index] = horizontal_mask[pinned_piece_index];
-		}
-		else if (vertical_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
-			out_check_info->pin_mask[pinned_piece_index] = vertical_mask[pinned_piece_index];
-		}
+		if(add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask) 
+			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask))
+			;
 
 		uint64_t moves = horizontal_moves | vertical_moves;
 		reset_lsb(player->rooks);
@@ -54,35 +58,16 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 	while (player->queens != 0)
 	{
-		int from_index = get_bit_index_lsb(player->queens);
+		const int from_index = get_bit_index_lsb(player->queens);
 		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
 		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
 		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
 		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		const uint64_t horizontal_pin = horizontal_moves & king_horizontal;
-		const uint64_t vertical_pin = vertical_moves & king_vertical;
-		const uint64_t up_pin = diagonal_up_moves & king_diagonal_up;
-		const uint64_t down_pin = diagonal_down_moves & king_diagonal_down;
-		if (horizontal_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(horizontal_pin);
-			out_check_info->pin_mask[pinned_piece_index] = horizontal_mask[pinned_piece_index];
-		}
-		else if (vertical_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
-			out_check_info->pin_mask[pinned_piece_index] = vertical_mask[pinned_piece_index];
-		}
-		else if (up_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(up_pin);
-			out_check_info->pin_mask[pinned_piece_index] = diagonal_up_mask[pinned_piece_index];
-		}
-		else if (down_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(down_pin);
-			out_check_info->pin_mask[pinned_piece_index] = diagonal_down_mask[pinned_piece_index];
-		}
+		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
+			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask)
+			|| add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
+			;
 
 		uint64_t moves = horizontal_moves | vertical_moves | diagonal_up_moves | diagonal_down_moves;
 		reset_lsb(player->queens);
@@ -92,9 +77,9 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = 0;
 			uint64_t bishop_moves = get_raw_bishop_moves(from_index, board.occupied);
 			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
+			uint64_t res = 0;
 
 			if (rook_moves & other->king)
 				res = rook_moves & king_rook_moves;
@@ -108,21 +93,12 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 	while (player->bishops != 0)
 	{
-		int from_index = get_bit_index_lsb(player->bishops);
+		const int from_index = get_bit_index_lsb(player->bishops);
 		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
 		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		const uint64_t up_pin = diagonal_up_moves & king_diagonal_up;
-		const uint64_t down_pin = diagonal_down_moves & king_diagonal_down;
-		if (up_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(up_pin);
-			out_check_info->pin_mask[pinned_piece_index] = diagonal_up_mask[pinned_piece_index];
-		}
-		else if (down_pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(down_pin);
-			out_check_info->pin_mask[pinned_piece_index] = diagonal_down_mask[pinned_piece_index];
-		}
+		if (add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
+			;
 
 		uint64_t moves = diagonal_up_moves | diagonal_down_moves;
 		reset_lsb(player->bishops);
@@ -141,7 +117,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 	while (player->king != 0)
 	{
-		int from_index = get_bit_index_lsb(player->king);
+		const int from_index = get_bit_index_lsb(player->king);
 		auto moves = king_moves[from_index];
 		reset_lsb(player->king);
 
@@ -150,7 +126,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 	while (player->knights != 0)
 	{
-		int from_index = get_bit_index_lsb(player->knights);
+		const int from_index = get_bit_index_lsb(player->knights);
 		auto moves = knight_moves[from_index];
 		reset_lsb(player->knights);
 
@@ -168,7 +144,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 	while (player->pawns != 0)
 	{
 		// TODO en passant edge case
-		int from_index = get_bit_index_lsb(player->pawns);
+		const int from_index = get_bit_index_lsb(player->pawns);
 		auto attack_moves = pawn_attack_moves[from_index];
 		reset_lsb(player->pawns);
 
