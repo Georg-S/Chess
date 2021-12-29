@@ -67,8 +67,14 @@ int main()
 	std::cout << "Counter: " << counter << " Set size: " << boards_set.size() << std::endl;
 
 
-	auto engine_perft = engine.perft(perft_str, depth, boards_set);
-	std::cout << "Engine counter: " << engine_perft << std::endl;
+	auto engine_perft = engine.perft_get_set(perft_str, depth);
+	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
+
+	for (auto& elem : boards_set)
+	{
+		if (engine_perft.find(elem) == engine_perft.end())
+			std::cout << elem << std::endl;
+	}
 
 	return 0;
 }

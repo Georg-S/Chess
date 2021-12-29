@@ -61,6 +61,24 @@ uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth, const st
 	return counter;
 }
 
+std::set<std::string> ceg::ChessEngine::perft_get_set(const std::string& FEN_str, int depth)
+{
+	std::set<std::string> result_set;
+	auto splitted = string_split(FEN_str, " ");
+	if (splitted.size() < 4)
+	{
+		assert(!"Invalid FEN input string");
+		return result_set;
+	}
+
+	bool current_player_black = (splitted[1].at(0) == 'b');
+	ceg::BitBoard board(splitted[0], splitted[2], splitted[3]);
+	uint64_t counter = 0;
+	perft_get_set(board, current_player_black, depth, result_set);
+
+	return result_set;
+}
+
 uint64_t ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player_black, int depth)
 {
 	if (depth == 0)
@@ -78,9 +96,21 @@ uint64_t ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player
 	return nodes;
 }
 
-std::set<std::string> ceg::ChessEngine::perft_get_set(const ceg::BitBoard& board, bool current_player_black, uint64_t* counter, int depth)
+void ceg::ChessEngine::perft_get_set(const ceg::BitBoard& board, bool current_player_black, int depth, std::set<std::string>& possible_boards)
 {
-	return std::set<std::string>();
+	if (depth == 0)
+		return;
+
+	uint64_t nodes = 0;
+
+	auto moves = generator.get_all_possible_moves(board, current_player_black);
+	for (const auto& move : moves)
+	{
+		ceg::BitBoard copy_board = board;
+		generator.make_move(copy_board, move);
+		possible_boards.insert(copy_board.to_FEN_string());
+		perft_get_set(copy_board, !current_player_black, depth - 1, possible_boards);
+	}
 }
 
 void ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player_black, uint64_t* counter, int depth, const std::set<std::string>& possible_boards)

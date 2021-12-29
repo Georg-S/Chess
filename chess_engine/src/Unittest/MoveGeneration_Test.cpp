@@ -47,13 +47,6 @@ TEST_CASE("perft_start_board_depth_4_test", "MoveGeneration")
 	REQUIRE(perft_result == 197281);
 }
 
-TEST_CASE("perft_start_board_depth_5_test", "MoveGeneration")
-{
-	uint64_t perft_result = engine.perft(initial_board_FEN, 5);
-
-	REQUIRE(perft_result == 4865609);
-}
-
 TEST_CASE("perft_test_board_2_depth_1_test", "MoveGeneration")
 {
 	uint64_t perft_result = engine.perft(perft_test_board_2, 1);
