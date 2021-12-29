@@ -24,6 +24,7 @@ set(TEST_FILES
 	"src/Unittest/MoveGeneration_Test.cpp"
 	"src/Unittest/Utility_Test.cpp"
 	"src/Unittest/BitBoard_Test.cpp"
+	"src/Unittest/Current_Test.cpp"
 )
 
 source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
