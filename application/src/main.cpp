@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <Windows.h>
 #include <memory>
+#include <ChessEngine.h>
 #include "Chess/Chess.h"
 #include "Chess/Constant.h"
 #include "Chess/PlayerCountSelection.h"
@@ -56,8 +57,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 int main() 
 {
-	auto chess = create_chess_game_by_user_input();
-	chess.game_loop();
+	ceg::ChessEngine engine;
+	Board board = Board();
+	board.init_board();
+	uint64_t counter = 0;
+	int depth = 5;
+	auto boards_set = perft_get_boards(board,PieceColor::WHITE, depth, counter);
+	std::cout << "Counter: " << counter << " Set size: " << boards_set.size() << std::endl;
+
+
+	auto engine_perft = engine.perft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", depth, boards_set);
+	std::cout << "Engine counter: " << engine_perft << std::endl;
 
 	return 0;
 }

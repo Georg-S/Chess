@@ -5,6 +5,43 @@ ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FE
 	set_board(FEN_pieces_str, FEN_castling_str, FEN_en_passant_str);
 }
 
+std::string ceg::BitBoard::to_FEN_string() const
+{
+	std::string result = "";
+
+	for (int y = 0; y < 8; y++)
+	{
+		int counter = 0;
+		for (int x = 0; x < 8; x++)
+		{
+			if(!ceg::is_bit_set(occupied, x , y))
+			{
+				counter++;
+				continue;
+			}
+
+			if (counter != 0)
+			{
+				result += std::to_string(counter);
+				counter = 0;
+			}
+
+			char fen_c = get_FEN_char(x, y);
+			result += fen_c;
+		}
+
+		if (counter != 0)
+		{
+			result += std::to_string(counter);
+			counter = 0;
+		}
+
+		if (y != 7)
+			result += "/";
+	}
+	return result;
+}
+
 void ceg::BitBoard::move_piece(Pieces* pieces, const Move& move)
 {
 	auto piece = get_ptr_to_piece(pieces, move.from);
@@ -138,20 +175,20 @@ char ceg::BitBoard::get_field_char(int x, int y)
 	return get_FEN_char(x, y);
 }
 
-char ceg::BitBoard::get_FEN_char(int x, int y)
+char ceg::BitBoard::get_FEN_char(int x, int y) const
 {
-	if (is_bit_set(black_pieces.pawns, x, y)) return 'p';
-	if (is_bit_set(white_pieces.pawns, x, y)) return 'P';
-	if (is_bit_set(black_pieces.bishops, x, y)) return 'b';
-	if (is_bit_set(white_pieces.bishops, x, y)) return 'B';
-	if (is_bit_set(black_pieces.knights, x, y)) return 'n';
-	if (is_bit_set(white_pieces.knights, x, y)) return 'N';
-	if (is_bit_set(black_pieces.rooks, x, y)) return 'r';
-	if (is_bit_set(white_pieces.rooks, x, y)) return 'R';
-	if (is_bit_set(black_pieces.queens, x, y)) return 'q';
-	if (is_bit_set(white_pieces.queens, x, y)) return 'Q';
-	if (is_bit_set(black_pieces.king, x, y)) return 'k';
-	if (is_bit_set(white_pieces.king, x, y)) return 'K';
+	if (ceg::is_bit_set(black_pieces.pawns, x, y)) return 'p';
+	if (ceg::is_bit_set(white_pieces.pawns, x, y)) return 'P';
+	if (ceg::is_bit_set(black_pieces.bishops, x, y)) return 'b';
+	if (ceg::is_bit_set(white_pieces.bishops, x, y)) return 'B';
+	if (ceg::is_bit_set(black_pieces.knights, x, y)) return 'n';
+	if (ceg::is_bit_set(white_pieces.knights, x, y)) return 'N';
+	if (ceg::is_bit_set(black_pieces.rooks, x, y)) return 'r';
+	if (ceg::is_bit_set(white_pieces.rooks, x, y)) return 'R';
+	if (ceg::is_bit_set(black_pieces.queens, x, y)) return 'q';
+	if (ceg::is_bit_set(white_pieces.queens, x, y)) return 'Q';
+	if (ceg::is_bit_set(black_pieces.king, x, y)) return 'k';
+	if (ceg::is_bit_set(white_pieces.king, x, y)) return 'K';
 	assert(!"Couldn't get FEN char, no piece set at position");
 	return ' ';
 }

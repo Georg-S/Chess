@@ -408,6 +408,32 @@ uint64_t perft(const Board& board, PieceColor current_player, int depth)
 	return counter;
 }
 
+static void perft_get_boards(const Board& board, PieceColor current_player, uint64_t& counter, int depth, std::set<std::string>& boards)
+{
+	if (depth == 0)
+	{
+		counter++;
+		return;
+	}
+
+	auto moves = get_all_possible_moves(board, current_player);
+
+	for (const auto& move : moves)
+	{
+		Board copy_board = board;
+		make_move(copy_board, move);
+		boards.insert(copy_board.to_FEN_str());
+		perft_get_boards(copy_board, get_next_player(current_player), counter, depth - 1, boards);
+	}
+}
+
+std::set<std::string> perft_get_boards(const Board& board, PieceColor current_player, int depth, uint64_t& counter)
+{
+	std::set<std::string> result;
+	perft_get_boards(board, current_player,counter, depth, result);
+	return result;
+}
+
 bool direct_move_possible(const Board& board, const Move& move)
 {
 	const auto [dir_x, dir_y] = get_direction(move);

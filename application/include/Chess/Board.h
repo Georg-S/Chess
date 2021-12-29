@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <string>
+#include <cassert>
 
 constexpr int board_width = 8;
 constexpr int board_height = 8;
@@ -39,6 +41,7 @@ class Board
 public:
 	void init_empty_board();
 	void init_board();
+	std::string to_FEN_str();
 	uint32_t* operator[](int index) const;
 private:
 	void empty_board();

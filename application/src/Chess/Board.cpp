@@ -12,9 +12,71 @@ void Board::init_board()
 	init_black_site();
 }
 
+static char get_fen_piece_char(uint64_t piece)
+{
+	switch (piece)
+	{
+	case pawn_bit:		return 'P';
+	case knight_bit:	return 'N';
+	case bishop_bit:	return 'B';
+	case rook_bit:		return 'R';
+	case queen_bit:		return 'Q';
+	case king_bit:		return 'K';
+	default:			assert(0);
+	}
+	return 0;
+}
+
+static char get_fen_char(uint64_t piece)
+{
+	uint32_t val = piece & piece_bit_mask;
+	char piece_char = get_fen_piece_char(val);
+	if (piece & color_black_bit)
+		piece_char = tolower(piece_char);
+
+	return piece_char;
+}
+
+std::string Board::to_FEN_str()
+{
+	std::string result = "";
+
+	for (int y = 0; y < 8; y++)
+	{
+		int counter = 0;
+		for (int x = 0; x < 8; x++)
+		{
+			if (!(board[x][y]))
+			{
+				counter++;
+				continue;
+			}
+
+			if (counter != 0)
+			{
+				result += std::to_string(counter);
+				counter = 0;
+			}
+
+			char fen_c = get_fen_char(board[x][y]);
+			result += fen_c;
+		}
+
+		if (counter != 0)
+		{
+			result += std::to_string(counter);
+			counter = 0;
+		}
+
+		if (y != 7)
+			result += "/";
+	}
+	return result;
+}
+
 uint32_t* Board::operator[](int index) const
 {
-	return (uint32_t *)board[index];
+	return (uint32_t*)board[index];
 }
 
 void Board::empty_board()

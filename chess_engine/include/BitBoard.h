@@ -33,6 +33,7 @@ namespace ceg
 		BitBoard() = default;
 		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");
 
+		std::string to_FEN_string() const;
 		void move_piece(Pieces* pieces, const Move& move);
 		void clear_bit_for_pieces(Pieces* pieces, int bit_index);
 		uint64_t* get_ptr_to_piece(Pieces* pieces, int bit_index);
@@ -51,7 +52,7 @@ namespace ceg
 		bool is_bit_set(uint64_t num, int x, int y);
 		bool is_occupied(int x, int y);
 		char get_field_char(int x, int y);
-		char get_FEN_char(int x, int y);
+		char get_FEN_char(int x, int y) const;
 		void set_piece_by_FEN_char(char c, int x, int y);
 	};
 }

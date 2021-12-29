@@ -2,6 +2,8 @@
 #include <cassert>
 #include <algorithm>
 #include <vector>
+#include <set>
+#include <string>
 #include "Board.h"
 #include "Chess/Pieces/King.h"
 #include "Chess/Pieces/Queen.h"
@@ -45,3 +47,4 @@ std::vector<Move> get_all_possible_moves(const Board& board, PieceColor color);
 bool any_move_possible_for_piece(const Board& board, int x, int y);
 bool any_move_possible(const Board& board, PieceColor color);
 uint64_t perft(const Board& board, PieceColor, int depth);
+std::set<std::string> perft_get_boards(const Board& board, PieceColor, int depth, uint64_t& counter);
