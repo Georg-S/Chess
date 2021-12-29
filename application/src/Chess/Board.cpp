@@ -56,6 +56,18 @@ Board::Board(const std::string& fen_str)
 			x++;
 		}
 	}
+
+	for (int x = 0; x < 8; x++) 
+	{
+		for (int y = 0; y < 8; y++) 
+		{
+			if (y == 6 || y == 1)
+				continue;
+
+			if (board[x][y] & pawn_bit)
+				board[x][y] |= moved_bit;
+		}
+	}
 }
 
 void Board::init_empty_board()
