@@ -5,7 +5,7 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
-void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves)
+void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves)
 {
 	const int other_king_index = get_bit_index_lsb(other->king);
 	uint64_t occupied = board.occupied;
@@ -33,7 +33,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const Bit
 		else if (vertical_pin)
 		{
 			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
-			out_check_info->pin_mask[pinned_piece_index] = vertical_moves | king_vertical;
+			out_check_info->pin_mask[pinned_piece_index] = vertical_mask[pinned_piece_index];
 		}
 
 		uint64_t moves = horizontal_moves | vertical_moves;
@@ -70,7 +70,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, Pieces* other, const Bit
 		else if (vertical_pin)
 		{
 			int pinned_piece_index = get_bit_index_lsb(vertical_pin);
-			out_check_info->pin_mask[pinned_piece_index] = vertical_moves | king_vertical;
+			out_check_info->pin_mask[pinned_piece_index] = vertical_mask[pinned_piece_index];
 		}
 		else if (up_pin)
 		{

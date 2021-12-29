@@ -11,8 +11,7 @@ namespace ceg
 	{
 		CheckInfo() 
 		{
-			uint64_t zero = 0;
-			std::fill_n(pin_mask, 64, ~zero);
+			std::fill_n(pin_mask, 64, ~uint64_t(0));
 		}
 
 		int check_counter = 0;
@@ -25,7 +24,7 @@ namespace ceg
 	{
 	public:
 		MoveGenerator();
-		void get_check_info(Pieces* player, Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
+		void get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
 		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
 		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
