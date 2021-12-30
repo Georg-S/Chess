@@ -306,19 +306,19 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(BitBoard board
 	}
 }
 
+static void push_all_moves(std::vector<ceg::Move>& dest, int from_index, uint64_t moves)
+{
+	while (moves != 0)
+	{
+		int to_index = ceg::get_bit_index_lsb(moves);
+		dest.push_back(ceg::Move{ from_index, to_index });
+		ceg::reset_lsb(moves);
+	}
+}
+
 std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other,
 	const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black)
 {
-	auto push_all_moves = [](std::vector<Move>& dest, int from_index, uint64_t moves)
-	{
-		while (moves != 0)
-		{
-			int to_index = get_bit_index_lsb(moves);
-			dest.push_back(Move{ from_index, to_index });
-			reset_lsb(moves);
-		}
-	};
-
 	std::vector<Move> result;
 	const auto playing_occupied_mask = ~(playing->occupied);
 
