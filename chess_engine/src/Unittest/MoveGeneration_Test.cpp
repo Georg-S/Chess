@@ -7,8 +7,10 @@ const std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB
 const std::string perft_test_board_2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 const std::string perft_test_board_3 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
 const std::string perft_test_board_4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
-const std::string perft_test_board_5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-const std::string perft_test_board_6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+const std::string perft_test_board_5 = "8/p7/8/1P6/K1k3p1/6P1/7P/8 w - -";
+const std::string perft_test_board_6 = "r3k2r/p6p/8/B7/1pp1p3/3b4/P6P/R3K2R w KQkq -";
+const std::string perft_test_board_7 = "8/5p2/8/2k3P1/p3K3/8/1P6/8 b - -";
+const std::string perft_test_board_8 = "r3k2r/pb3p2/5npp/n2p4/1p1PPB2/6P1/P2N1PBP/R3K2R b KQkq -";
 static ceg::ChessEngine engine = ceg::ChessEngine();
 
 #if 1
@@ -75,6 +77,7 @@ TEST_CASE("perft_test_board_2_depth_3_test", "MoveGeneration")
 	REQUIRE(perft_result == 97862);
 }
 /*
+// Needs proper promotion support for perft to make this test pass
 TEST_CASE("perft_test_board_2_depth_4_test", "MoveGeneration")
 {
 	uint64_t perft_result = engine.perft(perft_test_board_2, 4);
@@ -97,11 +100,130 @@ TEST_CASE("perft_test_board_3_depth_2_test", "MoveGeneration")
 	REQUIRE(perft_result == 191);
 }
 
+TEST_CASE("perft_test_board_3_depth_3_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_3, 3);
+
+	REQUIRE(perft_result == 2812);
+}
+
+TEST_CASE("perft_test_board_3_depth_4_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_3, 4);
+
+	REQUIRE(perft_result == 43238);
+}
+
 TEST_CASE("perft_test_board_4_depth_1_test", "MoveGeneration")
 {
 	uint64_t perft_result = engine.perft(perft_test_board_4, 1);
 
 	REQUIRE(perft_result == 6);
+}
+
+TEST_CASE("perft_test_board_5_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_5, 1);
+
+	REQUIRE(perft_result == 5);
+}
+
+TEST_CASE("perft_test_board_5_depth_2_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_5, 2);
+
+	REQUIRE(perft_result == 39);
+}
+
+TEST_CASE("perft_test_board_5_depth_3_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_5, 3);
+
+	REQUIRE(perft_result == 237);
+}
+
+TEST_CASE("perft_test_board_5_depth_4_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_5, 4);
+
+	REQUIRE(perft_result == 2002);
+}
+
+TEST_CASE("perft_test_board_6_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_6, 1);
+
+	REQUIRE(perft_result == 17);
+}
+
+TEST_CASE("perft_test_board_6_depth_2_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_6, 2);
+
+	REQUIRE(perft_result == 341);
+}
+
+TEST_CASE("perft_test_board_6_depth_3_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_6, 3);
+
+	REQUIRE(perft_result == 6666);
+}
+
+TEST_CASE("perft_test_board_6_depth_4_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_6, 4);
+
+	REQUIRE(perft_result == 150072);
+}
+
+TEST_CASE("perft_test_board_7_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_7, 1);
+
+	REQUIRE(perft_result == 9);
+}
+
+TEST_CASE("perft_test_board_7_depth_2_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_7, 2);
+
+	REQUIRE(perft_result == 85);
+}
+
+TEST_CASE("perft_test_board_7_depth_3_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_7, 3);
+
+	REQUIRE(perft_result == 795);
+}
+
+TEST_CASE("perft_test_board_7_depth_4_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_7, 4);
+
+	REQUIRE(perft_result == 7658);
+}
+
+TEST_CASE("perft_test_board_8_depth_1_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_8, 1);
+
+	REQUIRE(perft_result == 29);
+}
+
+TEST_CASE("perft_test_board_8_depth_2_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_8, 2);
+
+	REQUIRE(perft_result == 953);
+}
+
+TEST_CASE("perft_test_board_8_depth_3_test", "MoveGeneration")
+{
+	uint64_t perft_result = engine.perft(perft_test_board_8, 3);
+
+	REQUIRE(perft_result == 27990);
 }
 
 TEST_CASE("rook_move_count_white_test", "MoveGeneration") 
