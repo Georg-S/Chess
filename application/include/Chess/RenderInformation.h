@@ -1,10 +1,11 @@
 #pragma once
-#include "Board.h"
+#include <ChessEngine.h>
+#include <BitBoard.h>
 
 struct RenderInformation
 {
-	RenderInformation(Board& board, int selectedX = -1, int selectedY = -1, int mouseX = 0, int mouseY = 0,
-		Move previousMove = Move{ -1, -1, -1, -1 })
+	RenderInformation(const ceg::BitBoard& board, int selectedX = -1, int selectedY = -1, int mouseX = 0, int mouseY = 0,
+		ceg::Move previousMove = ceg::Move{ -1, -1, -1, -1 })
 	{
 		this->board = board;
 		this->selectedPieceX = selectedX;
@@ -13,10 +14,10 @@ struct RenderInformation
 		this->mousePositionY = mouseY;
 		this->previousMove = previousMove;
 		this->check_mate = false;
-		this->stale_mate = false;;
+		this->stale_mate = false;
 	}
 
-	RenderInformation(const Board& board, Move previousMove)
+	RenderInformation(const ceg::BitBoard& board, ceg::Move previousMove)
 	{
 		this->board = board;
 		this->previousMove = previousMove;
@@ -29,12 +30,12 @@ struct RenderInformation
 		this->stale_mate = false;;
 	}
 
-	Board board;
+	ceg::BitBoard board;
 	int selectedPieceX;
 	int selectedPieceY;
 	int mousePositionX;
 	int mousePositionY;
-	Move previousMove;
+	ceg::Move previousMove;
 	bool check_mate;
 	bool stale_mate;
 };

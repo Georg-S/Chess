@@ -3,27 +3,13 @@ project(Chess_4.0)
 set(CMAKE_CXX_STANDARD 17)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(PIECES_HEADER
-	"include/Chess/Pieces/King.h"
-	"include/Chess/Pieces/Queen.h"
-	"include/Chess/Pieces/Rook.h"
-	"include/Chess/Pieces/Bishop.h"
-	"include/Chess/Pieces/Knight.h"
-	"include/Chess/Pieces/Pawn.h"
-)
-
 set(CHESS_HEADER
 	"include/Chess/Chess.h"
-	"include/Chess/Board.h"
 	"include/Chess/Renderer.h"
 	"include/Chess/RenderInformation.h"
-	"include/Chess/GameLogic.h"
 	"include/Chess/PlayerCountSelection.h"
 	"include/Chess/PlayerColorSelection.h"
 	"include/Chess/Constant.h"
-	"include/Chess/NegamaxAI.h"
-	"include/Chess/PieceSquareTable.h"
-	"include/Chess/RNG.h"
 )
 
 set(SDL_HEADER
@@ -33,24 +19,11 @@ set(SDL_HEADER
 	"include/SDL/SDLButton.h"
 )
 
-set(PIECES_SOURCE
-	"src/Chess/Pieces/King.cpp"
-	"src/Chess/Pieces/Queen.cpp"
-	"src/Chess/Pieces/Rook.cpp"
-	"src/Chess/Pieces/Bishop.cpp"
-	"src/Chess/Pieces/Knight.cpp"
-	"src/Chess/Pieces/Pawn.cpp"
-)
-
 set(CHESS_SOURCE
 	"src/Chess/Chess.cpp"
-	"src/Chess/Board.cpp"
 	"src/Chess/Renderer.cpp"
-	"src/Chess/GameLogic.cpp"
 	"src/Chess/PlayerCountSelection.cpp"
 	"src/Chess/PlayerColorSelection.cpp"
-	"src/Chess/NegamaxAI.cpp"
-	"src/Chess/RNG.cpp"
 )
 
 set(SDL_SOURCE

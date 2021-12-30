@@ -1,16 +1,14 @@
 #pragma once
 #include <memory>
-#include "Board.h"
+#include <ChessEngine.h>
 #include "Renderer.h"
-#include "GameLogic.h"
 #include "SDL/Mouse.h"
-#include "NegamaxAI.h"
 
 class Chess
 {
 public:
 	Chess();
-	Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, PieceColor player_color = PieceColor::WHITE);
+	Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, ceg::PieceColor player_color = ceg::PieceColor::WHITE);
 
 	void game_loop();
 private:
@@ -18,24 +16,28 @@ private:
 	void update_2_player_game();
 	void update_ai_move();
 	void update_human_move();
-	Move get_human_move();
-	bool is_valid_move(const Move& move);
+	ceg::Move get_human_move();
+	bool is_valid_move(const ceg::Move& move);
 	bool is_valid_board_pos(int x, int y);
-	void handle_promo_selection(Board& board, int posx, int posy);
-	uint32_t get_piece_from_promo_selection(int mouseX, int mouseY);
+	void handle_promo_selection(ceg::BitBoard& board, int posx, int posy);
+	ceg::Piece get_piece_from_promo_selection(int mouseX, int mouseY);
 	void handle_game_over();
 	int convert_mouse_position_x_to_board_position(int mouse_x);
 	int convert_mouse_position_y_to_board_position(int mouse_y);
 
-	Board board;
+	inline static const std::string initial_board_pos_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	std::unique_ptr<ceg::ChessEngine> engine = nullptr;
 	std::unique_ptr<Renderer> renderer;
+	ceg::BitBoard board;
 	std::unique_ptr<RenderInformation> render_info;
 	int player_count = 2;
 	bool game_over = false;
-	PieceColor current_player = PieceColor::WHITE;
-	PieceColor human_player_color;
-	NegamaxAI ai;
-	Move previous_move{-1, -1, -1, -1};
-	Move pending_move{-1, -1, -1, -1};
+	ceg::PieceColor current_player = ceg::PieceColor::WHITE;
+	ceg::PieceColor human_player_color;
+//	NegamaxAI ai;
+	ceg::Move previous_move{-1, -1, -1, -1};
+	ceg::Move pending_move{-1, -1, -1, -1};
 	Mouse mouse;
+	static constexpr int board_width = 8;
+	static constexpr int board_height = 8;
 };

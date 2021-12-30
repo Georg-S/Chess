@@ -1,13 +1,15 @@
 #include "Chess/Renderer.h"
 
-Renderer::Renderer()
+Renderer::Renderer(ceg::ChessEngine* engine)
 {
 	sdl_handler = std::make_unique<SDLHandler>(window_width, window_height, true);
 	sdl_handler->start("Chess");
+	chess_engine = engine;
 }
 
-Renderer::Renderer(std::unique_ptr<SDLHandler> handler)
+Renderer::Renderer(ceg::ChessEngine* engine, std::unique_ptr<SDLHandler> handler)
 {
+	chess_engine = engine;
 	sdl_handler = std::move(handler);
 }
 
@@ -16,7 +18,7 @@ void Renderer::render(const RenderInformation& renderInfo)
 	sdl_handler->clear();
 	render_chess_board();
 
-	if (renderInfo.previousMove.fromX != -1)
+	if (renderInfo.previousMove.from_x != -1)
 		render_previous_move(renderInfo.previousMove);
 
 	if (renderInfo.selectedPieceY == -1 || renderInfo.selectedPieceX == -1) 
@@ -37,11 +39,11 @@ void Renderer::render(const RenderInformation& renderInfo)
 	sdl_handler->update();
 }
 
-void Renderer::render_board(const Board& board)
+void Renderer::render_board(const std::string& FEN_board_str)
 {
 	sdl_handler->clear();
 	render_chess_board();
-	render_pieces(board);
+	render_pieces(FEN_board_str);
 	sdl_handler->update();
 }
 
@@ -50,56 +52,58 @@ void Renderer::render_chess_board()
 	sdl_handler->createAndPushBackRenderElement("Images/Board.png", 0, 0, window_width, window_height);
 }
 
-void Renderer::render_pieces(const Board& board)
+void Renderer::render_pieces(const ceg::BitBoard& board)
 {
+	auto fen_board = board.get_fen_char_representation();
+
 	for (int x = 0; x < board_width; x++)
 	{
 		for (int y = 0; y < board_height; y++)
 		{
-			if (is_field_occupied(board, x, y))
-				render_piece(board, x, y);
+			if (fen_board[x][y] == '-')
+				continue;
+
+			render_piece(fen_board, x, y);
 		}
 	}
 }
 
-void Renderer::render_piece(const Board& board, int x, int y)
+void Renderer::render_piece(const std::vector<std::vector<char>>& fen_board, int x, int y)
 {
-	auto piece = board[x][y];
-	std::string fileString = get_file_string(piece);
+	std::string fileString = get_file_string(fen_board[x][y]);
 	sdl_handler->createAndPushBackRenderElement(fileString, piece_width * x, piece_height * y, piece_width, piece_height);
 }
 
-std::string Renderer::get_file_string(uint32_t piece) const
+std::string Renderer::get_file_string(char fen_c) const
 {
-	uint32_t piece_type = get_piece_type_value(piece);
-	PieceColor color = get_piece_color(piece);
+	ceg::PieceColor color = islower(fen_c) ? ceg::PieceColor::BLACK : ceg::PieceColor::WHITE;
 
-	return "Images/" + get_piece_type_string(piece_type) + "_" + get_color_string(color) + ".png";
+	return "Images/" + get_piece_type_string(tolower(fen_c)) + "_" + get_color_string(color) + ".png";
 }
 
-std::string Renderer::get_file_string(uint32_t piece_type, PieceColor piece_color)
+std::string Renderer::get_file_string(uint32_t piece_type, ceg::PieceColor piece_color)
 {
 	return "Images/" + get_piece_type_string(piece_type) + "_" + get_color_string(piece_color) + ".png";
 }
 
-std::string Renderer::get_color_string(PieceColor color) const
+std::string Renderer::get_color_string(ceg::PieceColor color) const
 {
-	if (color == PieceColor::WHITE)
+	if (color == ceg::PieceColor::WHITE)
 		return "white";
-	else if (color == PieceColor::BLACK)
+	else if (color == ceg::PieceColor::BLACK)
 		return "black";
 }
 
-std::string Renderer::get_piece_type_string(uint32_t piece_type) const
+std::string Renderer::get_piece_type_string(char fen_c) const
 {
-	switch (piece_type)
+	switch (fen_c)
 	{
-	case pawn_bit:		return "Pawn";
-	case knight_bit:	return "Knight";
-	case queen_bit:		return "Queen";
-	case king_bit:		return "King";
-	case bishop_bit:	return "Bishop";
-	case rook_bit:		return "Rook";
+	case 'p':		return "Pawn";
+	case 'n':		return "Knight";
+	case 'q':		return "Queen";
+	case 'k':		return "King";
+	case 'b':		return "Bishop";
+	case 'r':		return "Rook";
 	default:		assert(0);
 	}
 	return "";
@@ -107,35 +111,36 @@ std::string Renderer::get_piece_type_string(uint32_t piece_type) const
 
 void Renderer::render_pieces_with_selected_on_mouse_position(const RenderInformation& renderInfo)
 {
-	uint32_t foreGroundPiece;
+	auto fen_board = renderInfo.board.get_fen_char_representation();
+	char foreGroundPiece;
 
 	for (int x = 0; x < board_width; x++)
 	{
 		for (int y = 0; y < board_height; y++)
 		{
 			if (x == renderInfo.selectedPieceX && y == renderInfo.selectedPieceY)
-				foreGroundPiece = renderInfo.board[x][y];
-			else if (is_field_occupied(renderInfo.board, x, y))
-				render_piece(renderInfo.board, x, y);
+				foreGroundPiece = fen_board[x][y];
+			else if (fen_board[x][y] != '-')
+				render_piece(fen_board, x, y);
 		}
 	}
 	render_piece_on_mouse_position(foreGroundPiece, renderInfo.mousePositionX, renderInfo.mousePositionY);
 }
 
-void Renderer::render_piece_on_mouse_position(uint32_t piece, int mouseX, int mouseY)
+void Renderer::render_piece_on_mouse_position(char piece, int mouseX, int mouseY)
 {
 	std::string fileString = get_file_string(piece);
 	sdl_handler->createAndPushBackRenderElement(fileString, mouseX - (piece_width / 2), mouseY - (piece_height / 2), piece_width, piece_height);
 }
 
-void Renderer::render_all_possible_moves_for_selected_piece(const Board& board, int selected_x, int selected_y)
+void Renderer::render_all_possible_moves_for_selected_piece(const ceg::BitBoard& board, int selected_x, int selected_y)
 {
-	std::vector<Move> possible_moves;
-	get_all_possible_moves_for_piece(board, possible_moves, selected_x, selected_y);
+	auto possible_moves = chess_engine->get_all_possible_moves_for_piece(board, selected_x, selected_y);
 
 	for (const auto& move : possible_moves) 
 	{
-		sdl_handler->createAndPushBackRenderElement("Images/PossibleMove.png", piece_width * move.toX, piece_height * move.toY
+
+		sdl_handler->createAndPushBackRenderElement("Images/PossibleMove.png", piece_width * move.to_x, piece_height * move.to_y
 			, piece_width, piece_height);
 	}
 }
@@ -150,12 +155,12 @@ void Renderer::render_stalemate()
 	sdl_handler->createAndPushBackRenderElement("Images/Stalemate/Stalemate.png", 0, window_height / 3, window_width, window_height / 4);
 }
 
-void Renderer::render_previous_move(const Move& previousMove)
+void Renderer::render_previous_move(const ceg::Move& previousMove)
 {
-	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.fromX, piece_height * previousMove.fromY
+	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.from_x, piece_height * previousMove.from_y
 		, piece_width, piece_height);
 
-	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.toX, piece_height * previousMove.toY
+	sdl_handler->createAndPushBackRenderElement("Images/PreviousMove.png", piece_width * previousMove.to_x, piece_height * previousMove.to_y
 		, piece_width, piece_height);
 }
 
@@ -169,15 +174,15 @@ int Renderer::getWindowHeight()
 	return window_height;
 }
 
-void Renderer::render_promotion_selection(PieceColor color)
+void Renderer::render_promotion_selection(ceg::PieceColor color)
 {
 	sdl_handler->clear();
 	sdl_handler->createAndPushBackRenderElement("Images/background.png", 0, 0, window_width, window_height);
 
-	std::string queenStr = get_file_string(queen_bit, color);
-	std::string rookStr = get_file_string(rook_bit, color);
-	std::string knightStr = get_file_string(knight_bit, color);
-	std::string  bishopStr = get_file_string(bishop_bit, color);
+	std::string queenStr = get_file_string('q', color);
+	std::string rookStr = get_file_string('r', color);
+	std::string knightStr = get_file_string('n', color);
+	std::string  bishopStr = get_file_string('b', color);
 
 	sdl_handler->createAndPushBackRenderElement(queenStr, 0, 0, window_width / 2, window_height / 2);
 	sdl_handler->createAndPushBackRenderElement(rookStr, window_width / 2, 0, window_width / 2, window_height / 2);

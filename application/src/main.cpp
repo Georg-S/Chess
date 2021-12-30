@@ -25,19 +25,17 @@ Chess create_chess_game_by_user_input()
 	}
 	selection.destroy();
 
-	PieceColor player_color = PieceColor::WHITE;
+	ceg::PieceColor player_color = ceg::PieceColor::WHITE;
 
 	if (player_count == 1)
 	{
-		PieceColor color = PieceColor::UNDEFINED;
-
 		PlayerColorSelection color_selection = PlayerColorSelection(handler.get());
 		color_selection.createColorSelection();
 
-		while (!handler->exit && (color == PieceColor::UNDEFINED))
-			color = color_selection.getSelectedColor();
+		while (!handler->exit && !color_selection.color_selected())
+			color_selection.update();
 
-		player_color = color;
+		player_color = color_selection.getSelectedColor();
 	}
 
 	return Chess(std::move(handler), player_count, player_color);
@@ -68,11 +66,16 @@ void compare_maps(const std::map<std::string, int>& map_1, const std::map<std::s
 
 int main() 
 {
-	const std::string perft_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	Chess chess = create_chess_game_by_user_input();
+	chess.game_loop();
+
+#if 0
+	const std::string perft_str = "8/5p2/8/2k3P1/p3K3/8/1P6/8 b - -";
 	ceg::ChessEngine engine;
-	const int depth = 6;
+	const int depth = 5;
 
-
+	uint64_t counter = perft(perft_str, PieceColor::BLACK, depth);
+	std::cout << "Counter: " << counter << std::endl;
 	uint64_t counter = 0;
 	auto old = perft_get_map(perft_str, PieceColor::WHITE, depth);
 	std::cout << "Counter: " << counter << " Set size: " << old.size() << std::endl;
@@ -84,6 +87,7 @@ int main()
 	compare_maps(old, engine_perft);
 	std::cout << std::endl << std::endl;
 	compare_maps(engine_perft, old);
+#endif
 	/*
 	auto engine_perft = engine.perft_get_set(perft_str, depth);
 	std::cout << "Engine counter: " << engine_perft.size() << std::endl;

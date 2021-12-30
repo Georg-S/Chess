@@ -1,5 +1,9 @@
 #include "BitBoard.h"
 
+ceg::BitBoard::BitBoard(const std::string& FEN_str) : BitBoard((string_split(FEN_str, " ")[0]), "","")
+{
+}
+
 ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str)
 {
 	set_board(FEN_pieces_str, FEN_castling_str, FEN_en_passant_str);
@@ -42,7 +46,7 @@ std::string ceg::BitBoard::to_FEN_string() const
 	return result;
 }
 
-void ceg::BitBoard::move_piece(Pieces* pieces, const Move& move)
+void ceg::BitBoard::move_piece(Pieces* pieces, const InternalMove& move)
 {
 	auto piece = get_ptr_to_piece(pieces, move.from);
 
@@ -62,6 +66,13 @@ void ceg::BitBoard::clear_bit_for_pieces(Pieces* pieces, int bit_index)
 	clear_bit(pieces->queens, bit_index);
 	clear_bit(pieces->rooks, bit_index);
 	clear_bit(pieces->occupied, bit_index);
+}
+
+void ceg::BitBoard::clear_bits_at_position(int bit_index)
+{
+	clear_bit_for_pieces(&black_pieces, bit_index);
+	clear_bit_for_pieces(&white_pieces, bit_index);
+	update_occupied();
 }
 
 uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces* pieces, int bit_index)
@@ -157,17 +168,31 @@ void ceg::BitBoard::update_occupied()
 	occupied = black_pieces.occupied | white_pieces.occupied;
 }
 
-bool ceg::BitBoard::is_bit_set(uint64_t num, int x, int y)
+std::vector<std::vector<char>> ceg::BitBoard::get_fen_char_representation() const
+{
+	std::vector<std::vector<char>> result(8, std::vector<char>(8));
+	for (int y = 0; y < ceg::board_height; y++)
+	{
+		for (int x = 0; x < ceg::board_width; x++)
+		{
+			result[x][y] = get_field_char(x, y);
+		}
+	}
+
+	return result;
+}
+
+bool ceg::BitBoard::is_bit_set(uint64_t num, int x, int y) const
 {
 	return ceg::is_bit_set(num, x + y * ceg::board_width);
 }
 
-bool ceg::BitBoard::is_occupied(int x, int y)
+bool ceg::BitBoard::is_occupied(int x, int y) const
 {
 	return is_bit_set(occupied, x, y);
 }
 
-char ceg::BitBoard::get_field_char(int x, int y)
+char ceg::BitBoard::get_field_char(int x, int y) const
 {
 	if (!is_occupied(x, y))
 		return '-';

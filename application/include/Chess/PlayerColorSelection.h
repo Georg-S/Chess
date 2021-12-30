@@ -1,21 +1,22 @@
 #pragma once
 #include <string>
+#include <ChessEngine.h>
 #include "SDL/Mouse.h"
 #include "SDL/SDLButton.h"
 #include "SDL/SDLHandler.h"
 #include "Chess/Constant.h"
-#include "Board.h"
 
 class PlayerColorSelection
 {
 public:
 	PlayerColorSelection(SDLHandler* sdlHandler);
 	void createColorSelection();
-	PieceColor getSelectedColor();
+	bool color_selected() const;
+	ceg::PieceColor getSelectedColor();
+	void update();
 	void destroy();
 
 private:
-	void update();
 	SDLHandler* sdlHandler;
 	std::shared_ptr<RenderingElement> header;
 	SDLButton* whiteButton;

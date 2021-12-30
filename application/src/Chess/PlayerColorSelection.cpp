@@ -16,6 +16,11 @@ void PlayerColorSelection::createColorSelection()
 	blackButton = new SDLButton(sdlHandler, xPosition, yPosition, window_width / 2, window_height / 2, blackPath, blackPath);
 }
 
+bool PlayerColorSelection::color_selected() const
+{
+	return whiteButton->wasClicked() || blackButton->wasClicked();
+}
+
 void PlayerColorSelection::update()
 {
 	sdlHandler->update();
@@ -24,14 +29,14 @@ void PlayerColorSelection::update()
 	blackButton->updateButton(mouse.getMousePositionX(), mouse.getMousePositionY(), mouse.isNewLeftClick());
 }
 
-PieceColor PlayerColorSelection::getSelectedColor()
+ceg::PieceColor PlayerColorSelection::getSelectedColor()
 {
-	update();
 	if (whiteButton->wasClicked())
-		return PieceColor::WHITE;
+		return ceg::PieceColor::WHITE;
 	if (blackButton->wasClicked())
-		return PieceColor::BLACK;
-	return PieceColor::UNDEFINED;
+		return ceg::PieceColor::BLACK;
+
+	return ceg::PieceColor::WHITE;
 }
 
 void PlayerColorSelection::destroy()

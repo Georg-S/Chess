@@ -2,15 +2,17 @@
 
 Chess::Chess()
 {
-	board.init_board();
-	renderer = std::make_unique<Renderer>();
+	board = ceg::BitBoard(initial_board_pos_str);
+	engine = std::make_unique<ceg::ChessEngine>();
+	renderer = std::make_unique<Renderer>(engine.get());
 	render_info = std::make_unique<RenderInformation>(board);
 }
 
-Chess::Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, PieceColor player_color)
+Chess::Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, ceg::PieceColor player_color)
 {
-	board.init_board();
-	renderer = std::make_unique<Renderer>(std::move(sdl_handler));
+	board = ceg::BitBoard(initial_board_pos_str);
+	engine = std::make_unique<ceg::ChessEngine>();
+	renderer = std::make_unique<Renderer>(engine.get(), std::move(sdl_handler));
 	render_info = std::make_unique<RenderInformation>(board);
 	this->player_count = player_count;
 	human_player_color = player_color;
@@ -46,6 +48,7 @@ void Chess::update_2_player_game()
 
 void Chess::update_ai_move()
 {
+	/*
 	Move move = ai.get_move(board, current_player);
 	if (!is_valid_move(move)) 
 	{
@@ -60,38 +63,39 @@ void Chess::update_ai_move()
 
 	if (is_game_over(board, current_player))
 		handle_game_over();
+	*/
 }
 
 void Chess::update_human_move()
 {
-	Move move = get_human_move();
+	ceg::Move move = get_human_move();
 	if (!is_valid_move(move))
 		return;
 
-	make_move(board, move);
+	engine->make_move(board, move);
 	previous_move = move;
 	render_info = std::make_unique<RenderInformation>(board, previous_move);
 
-	if (has_pawn_reached_end_of_board(board))
-		handle_promo_selection(board, move.toX, move.toY);
+	if (engine->has_pawn_reached_end_of_board(board))
+		handle_promo_selection(board, move.to_x, move.to_y);
 
-	current_player = get_next_player(current_player);
+	current_player = engine->get_next_player(current_player);
 
-	if (is_game_over(board, current_player))
+	if (engine->is_game_over(board, current_player))
 		handle_game_over();
 }
 
-Move Chess::get_human_move()
+ceg::Move Chess::get_human_move()
 {
 	mouse.update();
-	Move move = Move{ -1, -1, -1, -1 };
+	ceg::Move move = ceg::Move{ -1, -1, -1, -1 };
 	render_info = std::make_unique<RenderInformation>(board, previous_move);
-	const bool piece_selected = (pending_move.fromX != -1) && (pending_move.fromY != -1);
+	const bool piece_selected = (pending_move.from_x != -1) && (pending_move.from_y != -1);
 
 	if (piece_selected)
 	{
-		render_info->selectedPieceX = pending_move.fromX;
-		render_info->selectedPieceY = pending_move.fromY;
+		render_info->selectedPieceX = pending_move.from_x;
+		render_info->selectedPieceY = pending_move.from_y;
 		render_info->mousePositionX = mouse.getMousePositionX();
 		render_info->mousePositionY = mouse.getMousePositionY();
 		render_info->previousMove = previous_move;
@@ -99,8 +103,8 @@ Move Chess::get_human_move()
 
 	if (mouse.isRightPressed())
 	{
-		pending_move.fromX = -1;
-		pending_move.fromY = -1;
+		pending_move.from_x = -1;
+		pending_move.from_y = -1;
 		return move;
 	}
 
@@ -115,30 +119,31 @@ Move Chess::get_human_move()
 
 	if (!piece_selected)
 	{
-		if (is_field_occupied(board, boardX, boardY) && (get_piece_color(board, boardX, boardY) == current_player))
+		bool is_valid_piece_for_current_player = engine->is_field_occupied(board, boardX, boardY) && (engine->get_piece_color(board, boardX, boardY) == current_player);
+		if (is_valid_piece_for_current_player)
 		{
-			pending_move.fromX = boardX;
-			pending_move.fromY = boardY;
+			pending_move.from_x = boardX;
+			pending_move.from_y = boardY;
 		}
 	}
 	else
 	{
-		move = Move{ pending_move.fromX, pending_move.fromY, boardX, boardY };
-		pending_move.fromX = -1;
-		pending_move.fromY = -1;
+		move = ceg::Move{ pending_move.from_x, pending_move.from_y, boardX, boardY };
+		pending_move.from_x = -1;
+		pending_move.from_y = -1;
 	}
 
 	return move;
 }
 
-bool Chess::is_valid_move(const Move& move)
+bool Chess::is_valid_move(const ceg::Move& move)
 {
-	if (!is_valid_board_pos(move.fromX, move.fromY) || !is_valid_board_pos(move.toX, move.toY))
+	if (!is_valid_board_pos(move.from_x, move.from_y) || !is_valid_board_pos(move.to_x, move.to_y))
 		return false;
-	if (!is_field_occupied(board, move.fromX, move.fromY))
+	if (!engine->is_field_occupied(board, move.from_x, move.from_y))
 		return false;
 
-	return is_move_valid(board, move);
+	return engine->is_move_valid(board, move);
 }
 
 bool Chess::is_valid_board_pos(int x, int y)
@@ -146,7 +151,7 @@ bool Chess::is_valid_board_pos(int x, int y)
 	return (x >= 0) && (x < board_width) && (y >= 0) && (y < board_height);
 }
 
-void Chess::handle_promo_selection(Board& board, int posx, int posy)
+void Chess::handle_promo_selection(ceg::BitBoard& board, int posx, int posy)
 {
 	renderer->render_promotion_selection(current_player);
 
@@ -159,41 +164,36 @@ void Chess::handle_promo_selection(Board& board, int posx, int posy)
 		if (!mouse.isNewLeftClick())
 			continue;
 
-		uint32_t piece = get_piece_from_promo_selection(mouse.getMousePositionX(), mouse.getMousePositionY());
-
-		if (piece == 0)
+		const int x = mouse.getMousePositionX() / (renderer->getWindowWidth() / 2);
+		const int y = mouse.getMousePositionY() / (renderer->getWindowHeight() / 2);
+		if (x > 1 || y > 1)
 			continue;
 
-		board[posx][posy] = piece;
+		ceg::Piece piece = get_piece_from_promo_selection(x, y);
+
+		engine->set_piece(board, piece, current_player, posx, posy);
 		validPieceSelected = true;
 	}
 }
 
-uint32_t Chess::get_piece_from_promo_selection(int mouseX, int mouseY)
+ceg::Piece Chess::get_piece_from_promo_selection(int x, int y)
 {
-	int x = mouseX / (renderer->getWindowWidth() / 2);
-	int y = mouseY / (renderer->getWindowHeight() / 2);
-
-	uint32_t color = (current_player == PieceColor::BLACK) ? color_black_bit : 0;
-
 	if (x == 0 && y == 0)
-		return (queen_bit | color | moved_bit | occupied_bit);
+		return ceg::Piece::QUEEN;
 	else if (x == 1 && y == 0)
-		return (rook_bit | color | moved_bit | occupied_bit);
+		return ceg::Piece::ROOK;
 	else if (x == 0 && y == 1)
-		return (knight_bit | color | moved_bit | occupied_bit);
-	else if (x == 1 && y == 1)
-		return (bishop_bit | color | moved_bit | occupied_bit);
-
-	return 0;
+		return ceg::Piece::KNIGHT;
+	else
+		return ceg::Piece::BISHOP;
 }
 
 void Chess::handle_game_over()
 {
 	game_over = true;
-	if (is_check_mate(board, current_player))
+	if (engine->is_check_mate(board, current_player))
 		render_info->check_mate = true;
-	else if (is_stale_mate(board, current_player))
+	else if (engine->is_stale_mate(board, current_player))
 		render_info->stale_mate = true;
 }
 

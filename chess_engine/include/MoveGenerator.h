@@ -21,17 +21,23 @@ namespace ceg
 		uint64_t check_mask_with_piece = ~uint64_t(0);
 	};
 
+	struct StateInformation
+	{
+		int check_counter;
+		std::vector<ceg::InternalMove> possible_moves;
+	};
+
 	class MoveGenerator
 	{
 	public:
 		MoveGenerator();
-		void get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
-		std::vector<Move> get_all_possible_moves(BitBoard board, bool black);
-		std::vector<Move> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+		CheckInfo get_check_info(BitBoard board, bool black);
+		std::vector<InternalMove> get_all_possible_moves(BitBoard board, bool black);
+		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
-		void make_move(BitBoard& board, const Move& move);
-		void make_move(BitBoard& board, const Move& move, bool black);
-		void make_move_with_auto_promotion(BitBoard& board, const Move& move);
+		void make_move(BitBoard& board, const InternalMove& move);
+		void make_move(BitBoard& board, const InternalMove& move, bool black);
+		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move);
 
 		static constexpr int arr_size = board_height * board_width;
 		uint64_t black_queen_side_castling_mask = 0;
@@ -75,6 +81,9 @@ namespace ceg
 		uint64_t get_horizontal_moves(int index, uint64_t occupied);
 		uint64_t get_diagonal_up_moves(int index, uint64_t occupied);
 		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
+
+		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves);
+		void get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
 
 		void init();
 		void init_en_passant_capture_mask();

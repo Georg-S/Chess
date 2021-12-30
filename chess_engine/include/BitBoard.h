@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <assert.h>
+#include <vector>
 #include "Utility.h"
 
 namespace ceg
@@ -21,7 +22,7 @@ namespace ceg
 		uint64_t castling = 0;
 	};
 
-	struct Move
+	struct InternalMove
 	{
 		int from;
 		int to;
@@ -31,15 +32,18 @@ namespace ceg
 	{
 	public:
 		BitBoard() = default;
-		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");
+		BitBoard(const std::string& FEN_str);
+		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str = "");
 
 		std::string to_FEN_string() const;
-		void move_piece(Pieces* pieces, const Move& move);
+		void move_piece(Pieces* pieces, const InternalMove& move);
 		void clear_bit_for_pieces(Pieces* pieces, int bit_index);
+		void clear_bits_at_position(int bit_index);
 		uint64_t* get_ptr_to_piece(Pieces* pieces, int bit_index);
 		void print_board_to_console();
 		void set_board(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");
 		void update_occupied();
+		std::vector<std::vector<char>> get_fen_char_representation() const;
 
 		Pieces white_pieces;
 		Pieces black_pieces;
@@ -49,9 +53,9 @@ namespace ceg
 	private:
 		void set_en_passant(const std::string& FEN_str);
 		void set_castling(const std::string& FEN_castling_str);
-		bool is_bit_set(uint64_t num, int x, int y);
-		bool is_occupied(int x, int y);
-		char get_field_char(int x, int y);
+		bool is_bit_set(uint64_t num, int x, int y) const;
+		bool is_occupied(int x, int y) const;
+		char get_field_char(int x, int y) const;
 		char get_FEN_char(int x, int y) const;
 		void set_piece_by_FEN_char(char c, int x, int y);
 	};
