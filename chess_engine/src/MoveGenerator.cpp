@@ -49,10 +49,10 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = get_raw_rook_moves(from_index, board.occupied);
-			res &= king_rook_moves;
-			set_bit(res, from_index);
-			out_check_info->check_mask = res;
+			out_check_info->check_piece = 0;
+			set_bit(out_check_info->check_piece, from_index);
+
+			out_check_info->check_mask_with_piece = get_raw_rook_moves(from_index, board.occupied) & king_rook_moves;
 		}
 	}
 
@@ -76,6 +76,8 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 		if (moves & other->king)
 		{
+			out_check_info->check_piece = 0;
+			set_bit(out_check_info->check_piece, from_index);
 			out_check_info->check_counter++;
 			uint64_t bishop_moves = get_raw_bishop_moves(from_index, board.occupied);
 			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
@@ -86,8 +88,7 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 			else
 				res = bishop_moves & king_bishop_moves;
 
-			set_bit(res, from_index);
-			out_check_info->check_mask = res;
+			out_check_info->check_mask_with_piece = res;
 		}
 	}
 
@@ -107,11 +108,11 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 
 		if (moves & other->king)
 		{
+			out_check_info->check_piece = 0;
+			set_bit(out_check_info->check_piece, from_index);
+
 			out_check_info->check_counter++;
-			uint64_t res = get_raw_bishop_moves(from_index, board.occupied);
-			res &= king_bishop_moves;
-			set_bit(res, from_index);
-			out_check_info->check_mask = res;
+			out_check_info->check_mask_with_piece = get_raw_bishop_moves(from_index, board.occupied) & king_bishop_moves;
 		}
 	}
 
@@ -135,9 +136,9 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = 0;
-			set_bit(res, from_index);
-			out_check_info->check_mask = res;
+			out_check_info->check_piece = 0;
+			set_bit(out_check_info->check_piece, from_index);
+			out_check_info->check_mask_with_piece = 0;
 		}
 	}
 
@@ -153,11 +154,13 @@ void ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, con
 		if (attack_moves & other->king)
 		{
 			out_check_info->check_counter++;
-			uint64_t res = 0;
-			set_bit(res, from_index);
-			out_check_info->check_mask = res;
+			out_check_info->check_piece = 0;
+			set_bit(out_check_info->check_piece, from_index);
+			out_check_info->check_mask_with_piece = 0;
 		}
 	}
+
+	out_check_info->check_mask_with_piece |= out_check_info->check_piece;
 }
 
 uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
@@ -201,6 +204,7 @@ uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupie
 
 void ceg::MoveGenerator::init()
 {
+	init_en_passant_capture_mask();
 	init_reset_index_mask();
 	init_castling_mask();
 	init_mask(vertical_mask, 0, 1, true);
@@ -225,6 +229,20 @@ void ceg::MoveGenerator::init()
 	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, 1);
 	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
 	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
+}
+
+void ceg::MoveGenerator::init_en_passant_capture_mask()
+{
+	for (int x = 0; x < 8; x++) 
+	{
+		for (int y = 0; y < 8; y++) 
+		{
+			if (y == 3) 
+				set_bit(en_passant_capture_mask, x, y);
+			if (y == 4)
+				set_bit(en_passant_capture_mask, x, y);
+		}
+	}
 }
 
 void ceg::MoveGenerator::init_reset_index_mask()
@@ -364,7 +382,9 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 			if (get_horizontal_moves(player_king_index, occ_buf) & (other->queens | other->rooks))
 				en_passant_moves = 0;
 		}
-		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask & info.pin_mask[from_index];
+		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask_with_piece & info.pin_mask[from_index];
+		if (info.check_piece & en_passant_capture_mask)
+			moves |= en_passant_moves;
 		reset_lsb(playing->pawns);
 		push_all_moves(result, from_index, moves);
 	}
@@ -372,7 +392,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->bishops != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
+		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
 		reset_lsb(playing->bishops);
 		push_all_moves(result, from_index, bishop_moves);
 	}
@@ -380,7 +400,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->knights != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->knights);
-		auto moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask & info.pin_mask[from_index];
+		auto moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
 		reset_lsb(playing->knights);
 		push_all_moves(result, from_index, moves);
 	}
@@ -388,7 +408,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->queens != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->queens);
-		auto moves = get_raw_queen_moves(from_index, board.occupied) & info.check_mask & playing_occupied_mask & info.pin_mask[from_index];
+		auto moves = get_raw_queen_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->queens);
 		push_all_moves(result, from_index, moves);
 	}
@@ -396,7 +416,7 @@ std::vector<ceg::Move> ceg::MoveGenerator::get_all_possible_moves(Pieces* playin
 	while (playing->rooks != 0)
 	{
 		int from_index = get_bit_index_lsb(playing->rooks);
-		auto moves = get_raw_rook_moves(from_index, board.occupied) & info.check_mask & playing_occupied_mask & info.pin_mask[from_index];
+		auto moves = get_raw_rook_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
 		reset_lsb(playing->rooks);
 		push_all_moves(result, from_index, moves);
 	}

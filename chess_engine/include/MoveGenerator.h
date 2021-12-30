@@ -16,8 +16,9 @@ namespace ceg
 
 		int check_counter = 0;
 		uint64_t attacked_fields = 0;
+		uint64_t check_piece = ~uint64_t(0);
 		uint64_t pin_mask[64];
-		uint64_t check_mask = ~uint64_t(0);
+		uint64_t check_mask_with_piece = ~uint64_t(0);
 	};
 
 	class MoveGenerator
@@ -39,6 +40,7 @@ namespace ceg
 		uint64_t white_king_side_castling_mask = 0;
 		uint64_t black_queen_side_castling_occupied_mask = 0;
 		uint64_t white_queen_side_castling_occupied_mask = 0;
+		uint64_t en_passant_capture_mask = 0;
 		uint64_t vertical_mask[arr_size]{};
 		uint64_t vertical_mask_without_index[arr_size]{};
 		uint64_t horizontal_mask[arr_size]{};
@@ -75,6 +77,7 @@ namespace ceg
 		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
 
 		void init();
+		void init_en_passant_capture_mask();
 		void init_reset_index_mask();
 		void init_castling_mask();
 		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
