@@ -79,6 +79,7 @@ uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupie
 
 void ceg::MoveGenerator::init()
 {
+	init_pawn_end_of_board_mask();
 	init_en_passant_capture_mask();
 	init_reset_index_mask();
 	init_castling_mask();
@@ -104,6 +105,16 @@ void ceg::MoveGenerator::init()
 	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, 1);
 	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
 	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
+}
+
+void ceg::MoveGenerator::init_pawn_end_of_board_mask()
+{
+	for (int x = 0; x < 8; x++) 
+	{
+		set_bit(pawn_end_of_board_mask, x, 0);
+		set_bit(pawn_end_of_board_mask, x, 7);
+	}
+	pawn_end_of_board_inverted_mask = ~pawn_end_of_board_mask;
 }
 
 void ceg::MoveGenerator::init_en_passant_capture_mask()
@@ -527,8 +538,17 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bo
 
 void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const InternalMove& move)
 {
-	// TODO fully implement
-	make_move(board, move);
+	bool move_made_by_black = false;
+	if (is_bit_set(board.black_pieces.occupied, move.from))
+		move_made_by_black = true;
+
+	make_move(board, move, move_made_by_black);
+	uint64_t& pawns = move_made_by_black ? board.black_pieces.pawns : board.white_pieces.pawns;
+	uint64_t& queens = move_made_by_black ? board.black_pieces.queens : board.white_pieces.queens;
+
+	auto mask = pawns & pawn_end_of_board_mask;
+	pawns &= pawn_end_of_board_inverted_mask;
+	queens |= mask;
 }
 
 void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)

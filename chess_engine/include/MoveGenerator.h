@@ -46,6 +46,8 @@ namespace ceg
 		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move);
 
 		static constexpr int arr_size = board_height * board_width;
+		uint64_t pawn_end_of_board_mask = 0;
+		uint64_t pawn_end_of_board_inverted_mask = 0;
 		uint64_t black_queen_side_castling_mask = 0;
 		uint64_t black_king_side_castling_mask = 0;
 		uint64_t white_queen_side_castling_mask = 0;
@@ -97,6 +99,7 @@ namespace ceg
 			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info);
 
 		void init();
+		void init_pawn_end_of_board_mask();
 		void init_en_passant_capture_mask();
 		void init_reset_index_mask();
 		void init_castling_mask();

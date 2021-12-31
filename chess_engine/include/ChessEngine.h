@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <map>
+#include "NegamaxAI.h"
 #include "Utility.h"
 #include "MoveGenerator.h"
 
@@ -36,7 +37,10 @@ namespace ceg
 		static PieceColor get_next_player(PieceColor color);
 		std::vector<ceg::Move> get_all_possible_moves(const std::string& FEN_str);
 		std::vector<ceg::Move> get_all_possible_moves_for_piece(const ceg::BitBoard& board, int piece_x, int piece_y);
+		ceg::Move get_ai_move(const ceg::BitBoard& board, bool current_player_black, int depth);
+		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth = 6);
 		void make_move(ceg::BitBoard& board, ceg::Move move);
+		void make_move_with_auto_promo(ceg::BitBoard& board, ceg::Move move);
 		bool is_move_valid(const ceg::BitBoard& board, const ceg::Move& move);
 		bool has_pawn_reached_end_of_board(ceg::BitBoard& board);
 		bool is_game_over(const ceg::BitBoard& board, PieceColor color);
@@ -56,5 +60,6 @@ namespace ceg
 		uint64_t perft(const ceg::BitBoard& board, bool current_player_black, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map);
 
 		std::unique_ptr<ceg::MoveGenerator> move_generator = nullptr;
+		std::unique_ptr<NegamaxAI> ai = nullptr;
 	};
 }

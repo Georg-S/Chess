@@ -34,7 +34,6 @@ private:
 	bool game_over = false;
 	ceg::PieceColor current_player = ceg::PieceColor::WHITE;
 	ceg::PieceColor human_player_color;
-//	NegamaxAI ai;
 	ceg::Move previous_move{-1, -1, -1, -1};
 	ceg::Move pending_move{-1, -1, -1, -1};
 	Mouse mouse;

@@ -48,22 +48,21 @@ void Chess::update_2_player_game()
 
 void Chess::update_ai_move()
 {
-	/*
-	Move move = ai.get_move(board, current_player);
+	auto move = engine->get_ai_move(board, current_player);
+
 	if (!is_valid_move(move)) 
 	{
 		assert(0);
 		return;
 	}
-	make_move_with_automatic_promotion(board, move);
+	engine->make_move_with_auto_promo(board, move);
 	previous_move = move;
 	render_info = std::make_unique<RenderInformation>(board, previous_move);
 
-	current_player = get_next_player(current_player);
+	current_player = engine->get_next_player(current_player);
 
-	if (is_game_over(board, current_player))
+	if (engine->is_game_over(board, current_player))
 		handle_game_over();
-	*/
 }
 
 void Chess::update_human_move()

@@ -1,11 +1,11 @@
 #include "NegamaxAI.h"
 
-ceg::NegamaxAI::NegamaxAI()
+ceg::NegamaxAI::NegamaxAI(MoveGenerator* move_generator)
 {
 	srand(time(NULL));
 	init_hashing_table();
 	tt_table = new TTEntry[max_tt_entries];
-	move_generator = std::make_unique<MoveGenerator>();
+	this->move_generator = move_generator;
 }
 
 ceg::NegamaxAI::~NegamaxAI()
@@ -80,7 +80,7 @@ uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_bl
 	constexpr uint64_t max_uint64_t = 0xFFFFFFFFFFFFFFFF;
 
 	uint64_t hash = 0;
-	for (int x = 0; x < board_width * board_height; x++)
+	for (int x = 0; x < board_width; x++)
 	{
 		for (int y = 0; y < board_height; y++)
 		{
@@ -407,6 +407,8 @@ int ceg::NegamaxAI::get_pieces_value(Pieces pieces, bool black_pieces)
 		else
 			result += white_king_early_game_table[index];
 	}
+
+	return result;
 }
 
 std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::EvalMove> moves)

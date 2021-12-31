@@ -53,7 +53,7 @@ namespace ceg
 	class NegamaxAI
 	{
 	public:
-		NegamaxAI();
+		NegamaxAI(MoveGenerator* move_generator);
 		NegamaxAI(const NegamaxAI&) = delete;
 		~NegamaxAI();
 		ceg::InternalMove get_move(const ceg::BitBoard& board, bool color_is_black, int depth = 5);
@@ -83,6 +83,6 @@ namespace ceg
 		static constexpr int max_tt_entries = 50000;
 		TTEntry* tt_table;
 		ceg::RNG rng;
-		std::unique_ptr<MoveGenerator> move_generator = nullptr;
+		MoveGenerator* move_generator = nullptr;
 	};
 }

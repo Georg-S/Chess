@@ -2,6 +2,7 @@
 #include "BitBoard.h"
 #include "ChessEngine.h"
 #include "MoveGenerator.h"
+#include "PieceSquareTable.h"
 
 const std::string initial_board_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const std::string perft_test_board_2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -26,6 +27,29 @@ TEST_CASE("perft_test_board_5_depth_1_test", "MoveGeneration")
 
 	REQUIRE(perft_result == 44);
 }
+
+
+
+TEST_CASE("perft_test_board_5_depth_6_test", "MoveGeneration")
+{
+    ScopedTimer timer{};
+    uint64_t perft_result = engine.perft(initial_board_FEN, 6);
+}
+
+TEST_CASE("perft_test_board_5_depth_7_test", "MoveGeneration")
+{
+    getchar();
+}
+
+TEST_CASE("flip_piece_tables", "MoveGeneration")
+{
+    int my_arr[64];
+    copy(my_arr, white_king_end_game_table);
+
+    flip_y(my_arr);
+
+    print_values(my_arr);
+}
 */
 
 class ScopedTimer
@@ -47,13 +71,4 @@ private:
     std::chrono::steady_clock::time_point start_time;
 };
 
-TEST_CASE("perft_test_board_5_depth_6_test", "MoveGeneration")
-{
-    ScopedTimer timer{};
-    uint64_t perft_result = engine.perft(initial_board_FEN, 6);
-}
 
-TEST_CASE("perft_test_board_5_depth_7_test", "MoveGeneration")
-{
-    getchar();
-}

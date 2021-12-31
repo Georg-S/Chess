@@ -3,6 +3,7 @@
 ceg::ChessEngine::ChessEngine()
 {
 	move_generator = std::make_unique<ceg::MoveGenerator>();
+	ai = std::make_unique<ceg::NegamaxAI>(move_generator.get());
 }
 
 ceg::PieceColor ceg::ChessEngine::get_next_player(PieceColor color)
@@ -46,9 +47,24 @@ std::vector<ceg::Move> ceg::ChessEngine::get_all_possible_moves_for_piece(const 
 	return result;
 }
 
+ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, bool current_player_black, int depth)
+{
+	return	ai->get_move(board, current_player_black, depth);
+}
+
+ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth)
+{
+	return get_ai_move(board, to_bool(color), depth);
+}
+
 void ceg::ChessEngine::make_move(ceg::BitBoard& board, ceg::Move move)
 {
 	move_generator->make_move(board, convert_to_internal(move));
+}
+
+void ceg::ChessEngine::make_move_with_auto_promo(ceg::BitBoard& board, ceg::Move move)
+{
+	move_generator->make_move_with_auto_promotion(board, convert_to_internal(move));
 }
 
 bool ceg::ChessEngine::is_move_valid(const ceg::BitBoard& board, const ceg::Move& move)
