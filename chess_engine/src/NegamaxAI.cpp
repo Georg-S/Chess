@@ -50,7 +50,7 @@ void ceg::NegamaxAI::init_hashing_table()
 
 void ceg::NegamaxAI::hash_piece(uint64_t& current_hash, uint64_t piece, int table_index) const
 {
-	while (piece != 0) 
+	while (piece != 0)
 	{
 		int index = ceg::get_bit_index_lsb(piece);
 		ceg::reset_lsb(piece);
@@ -68,7 +68,7 @@ uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_bl
 	hash_piece(hash, board.white_pieces.knights, 2);
 	hash_piece(hash, board.white_pieces.bishops, 4);
 	hash_piece(hash, board.white_pieces.rooks, 6);
-	hash_piece(hash, board.white_pieces.queens,8);
+	hash_piece(hash, board.white_pieces.queens, 8);
 	hash_piece(hash, board.white_pieces.king, 10);
 
 	hash_piece(hash, board.black_pieces.pawns, 1);
@@ -293,8 +293,8 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 
 int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool current_player_black)
 {
-	int black_val = get_pieces_value(board.black_pieces, true);
-	int white_val = get_pieces_value(board.white_pieces, false);
+	int black_val = get_pieces_value(board, board.black_pieces, true);
+	int white_val = get_pieces_value(board, board.white_pieces, false);
 
 	if (current_player_black)
 		return black_val - white_val;
@@ -302,7 +302,7 @@ int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool cur
 		return white_val - black_val;
 }
 
-int ceg::NegamaxAI::get_pieces_value(Pieces pieces, bool black_pieces)
+int ceg::NegamaxAI::get_pieces_value(const ceg::BitBoard& board, Pieces pieces, bool black_pieces)
 {
 	constexpr int pawn_value = 100;
 	constexpr int knight_value = 320;
@@ -377,11 +377,22 @@ int ceg::NegamaxAI::get_pieces_value(Pieces pieces, bool black_pieces)
 		int index = ceg::get_bit_index_lsb(pieces.king);
 		reset_lsb(pieces.king);
 
+		bool endgame = is_end_game(board);
 		result += king_value;
 		if (black_pieces)
-			result += black_king_early_game_table[index];
+		{
+			if (endgame)
+				result += black_king_end_game_table[index];
+			else
+				result += black_king_early_game_table[index];
+		}
 		else
-			result += white_king_early_game_table[index];
+		{
+			if (endgame)
+				result += black_king_end_game_table[index];
+			else
+				result += white_king_early_game_table[index];
+		}
 	}
 
 	return result;
@@ -404,4 +415,30 @@ std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::I
 	}
 
 	return best_moves;
+}
+
+int ceg::NegamaxAI::get_piece_count(uint64_t piece) const
+{
+	int count = 0;
+	while (piece)
+	{
+		ceg::reset_lsb(piece);
+		count++;
+	}
+	return count;
+}
+
+bool ceg::NegamaxAI::is_end_game(const BitBoard& board) const
+{
+	int black_queens = get_piece_count(board.black_pieces.queens);
+	int white_queens = get_piece_count(board.white_pieces.queens);
+	if ((black_queens + white_queens) == 0)
+		return true;
+
+	int black_light_pieces = get_piece_count(board.black_pieces.bishops) + get_piece_count(board.black_pieces.rooks)
+		+ get_piece_count(board.black_pieces.knights);
+	int white_light_pieces = get_piece_count(board.white_pieces.bishops) + get_piece_count(board.white_pieces.rooks)
+		+ get_piece_count(board.white_pieces.knights);
+
+	return (black_light_pieces <= 1 || black_queens == 0) && (white_light_pieces <= 1 || white_queens == 0);
 }

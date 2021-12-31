@@ -38,7 +38,7 @@ namespace ceg
 		std::vector<ceg::Move> get_all_possible_moves(const std::string& FEN_str);
 		std::vector<ceg::Move> get_all_possible_moves_for_piece(const ceg::BitBoard& board, int piece_x, int piece_y);
 		ceg::Move get_ai_move(const ceg::BitBoard& board, bool current_player_black, int depth);
-		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth = 8);
+		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth = 6);
 		void make_move(ceg::BitBoard& board, ceg::Move move);
 		void make_move_with_auto_promo(ceg::BitBoard& board, ceg::Move move);
 		bool is_move_valid(const ceg::BitBoard& board, const ceg::Move& move);
