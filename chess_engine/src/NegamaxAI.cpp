@@ -84,10 +84,10 @@ uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_bl
 	{
 		for (int y = 0; y < board_height; y++)
 		{
-			if(!is_bit_set(board.occupied, x, y))
+			if (!is_bit_set(board.occupied, x, y))
 				continue;
 			//TODO refactor hashing table to use linear index
-			const int index = get_hash_table_piece_type_index(board, x+y*8);
+			const int index = get_hash_table_piece_type_index(board, x + y * 8);
 			hash ^= hashing_table[x][y][index];
 		}
 	}
@@ -96,7 +96,7 @@ uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_bl
 	return hash;
 }
 
-static bool get_next_player(bool black) 
+static bool get_next_player(bool black)
 {
 	return !black;
 }
@@ -111,7 +111,7 @@ std::vector<ceg::EvalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::BitBoa
 		move_generator->make_move_with_auto_promotion(copy_board, move);
 
 		int val = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
-		evaluated_moves.push_back({ move, val});
+		evaluated_moves.push_back({ move, val });
 	}
 	return evaluated_moves;
 }
@@ -155,7 +155,7 @@ void ceg::NegamaxAI::eval_multi_threaded(const ceg::BitBoard& board, bool color_
 		int val = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
 
 		m_mutex.lock();
-		evaluated_moves.push_back({ move, val});
+		evaluated_moves.push_back({ move, val });
 		move_index = current_index;
 		current_index++;
 		m_mutex.unlock();
@@ -193,7 +193,7 @@ static void set_move_to_front(std::vector<ceg::InternalMove>& moves, const ceg::
 	}
 }
 
-static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index) 
+static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index)
 {
 	// TODO check if this can be done more efficient
 	if (!ceg::is_bit_set(board.occupied, index))
@@ -209,9 +209,9 @@ static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index)
 	return 6;
 }
 
-static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::EvalMove>& moves) 
+static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::EvalMove>& moves)
 {
-	for (int i = 0; i < moves.size(); i++) 
+	for (int i = 0; i < moves.size(); i++)
 	{
 		const ceg::InternalMove& move = moves[i].move;
 		int from_index = get_piece_MVV_LVA_index(board, move.from);
@@ -248,7 +248,7 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 	const uint64_t hash = hash_board(board, color_is_black);
 
 	int index = hash % max_tt_entries;
-	ceg::InternalMove tt_move{-1 };
+	ceg::InternalMove tt_move{ -1 };
 	auto& entry = tt_table[index];
 	{
 		std::scoped_lock lock(entry.mut);
@@ -290,7 +290,7 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 		move_generator->make_move_with_auto_promotion(copy_board, move);
 
 		int eval_value = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth - 1, -beta, -alpha);
-		if (eval_value > move_value) 
+		if (eval_value > move_value)
 		{
 			best_move = move;
 			move_value = eval_value;
@@ -317,89 +317,97 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 
 int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool current_player_black)
 {
-	return 0;
-	int value = 0;
-	for (int x = 0; x < board_width; x++)
-	{
-		for (int y = 0; y < board_height; y++)
-		{
-			if (!is_bit_set(board.occupied, x, y))
-				continue;
+	int black_val = get_pieces_value(board.black_pieces, true);
+	int white_val = get_pieces_value(board.white_pieces, false);
 
-//			value += get_piece_value(board, current_player_black, x, y);
-		}
-	}
-	return value;
+	if (current_player_black)
+		return black_val - white_val;
+	else
+		return white_val - black_val;
 }
-/*
-int ceg::NegamaxAI::get_piece_value(const ceg::BitBoard& board, bool current_player_black, int x, int y)
+
+int ceg::NegamaxAI::get_pieces_value(Pieces pieces, bool black_pieces)
 {
-	bool piece_color_black = ceg::is_bit_set(board.black_pieces.occupied, x, y);
+	constexpr int pawn_value = 100;
+	constexpr int knight_value = 320;
+	constexpr int bishop_value = 330;
+	constexpr int rook_value = 500;
+	constexpr int queen_value = 900;
+	constexpr int king_value = 10000;
 
-	int piece_value = get_raw_piece_value(board[x][y]) + get_piece_position_value(board[x][y], piece_color, x, y);
-	if (piece_color == current_player)
-		return piece_value;
-
-	return -piece_value;
-}
-
-int NegamaxAI::get_piece_position_value(uint32_t piece, PieceColor color, int x, int y)
-{
-	const uint32_t piece_type = get_piece_type_value(piece);
-	switch (piece_type)
+	int result = 0;
+	while (pieces.pawns)
 	{
-	case pawn_bit:
-		if (color == PieceColor::BLACK)
-			return black_pawn_table[x][y];
-		else
-			return white_pawn_table[x][y];
-	case knight_bit:
-		if (color == PieceColor::BLACK)
-			return black_knight_table[x][y];
-		else
-			return white_knight_table[x][y];
-	case bishop_bit:
-		if (color == PieceColor::BLACK)
-			return black_bishop_table[x][y];
-		else
-			return white_bishop_table[x][y];
-	case rook_bit:
-		if (color == PieceColor::BLACK)
-			return black_rook_table[x][y];
-		else
-			return white_rook_table[x][y];
-	case queen_bit:
-		if (color == PieceColor::BLACK)
-			return black_queen_table[x][y];
-		else
-			return white_queen_table[x][y];
-	case king_bit:
-		if (color == PieceColor::BLACK)
-			return black_king_early_game_table[x][y];
-		else
-			return white_king_early_game_table[x][y];
-	default:
-		assert(0);
-	}
-	return 0;
-}
+		int index = ceg::get_bit_index_lsb(pieces.pawns);
+		reset_lsb(pieces.pawns);
 
-inline int NegamaxAI::get_raw_piece_value(uint32_t piece)
-{
-	const uint32_t piece_type = get_piece_type_value(piece);
-	switch (piece_type)
-	{
-	case pawn_bit:		return 100;
-	case knight_bit:	return 320;
-	case bishop_bit:	return 330;
-	case rook_bit:		return 500;
-	case queen_bit:		return 900;
-	case king_bit:		return 10000;
-	default:			assert(0);
+		result += pawn_value;
+		if (black_pieces)
+			result += black_pawn_table[index];
+		else
+			result += white_pawn_table[index];
 	}
-	return 0;
+
+	while (pieces.bishops)
+	{
+		int index = ceg::get_bit_index_lsb(pieces.bishops);
+		reset_lsb(pieces.bishops);
+
+		result += bishop_value;
+		if (black_pieces)
+			result += black_bishop_table[index];
+		else
+			result += white_bishop_table[index];
+	}
+
+	while (pieces.knights)
+	{
+		int index = ceg::get_bit_index_lsb(pieces.knights);
+		reset_lsb(pieces.knights);
+
+		result += knight_value;
+		if (black_pieces)
+			result += black_knight_table[index];
+		else
+			result += white_knight_table[index];
+	}
+
+	while (pieces.rooks)
+	{
+		int index = ceg::get_bit_index_lsb(pieces.rooks);
+		reset_lsb(pieces.rooks);
+
+		result += rook_value;
+		if (black_pieces)
+			result += black_rook_table[index];
+		else
+			result += white_rook_table[index];
+	}
+
+	while (pieces.queens)
+	{
+		int index = ceg::get_bit_index_lsb(pieces.queens);
+		reset_lsb(pieces.queens);
+
+		result += queen_value;
+		if (black_pieces)
+			result += black_queen_table[index];
+		else
+			result += white_queen_table[index];
+	}
+
+	while (pieces.king)
+	{
+		int index = ceg::get_bit_index_lsb(pieces.king);
+		reset_lsb(pieces.king);
+
+		result += king_value;
+		if (black_pieces)
+			result += black_king_early_game_table[index];
+		else
+			result += white_king_early_game_table[index];
+	}
 }
-*/
 
 std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::EvalMove> moves)
 {

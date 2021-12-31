@@ -73,19 +73,20 @@ static void print_values(const int(*arr)[8])
 	}
 }
 
-constexpr int white_pawn_table[8][8] =
+constexpr int white_pawn_table[64] =
 {
-0, 50, 10, 5, 0, 5, 5, 0,
-0, 50, 10, 5, 0, -5, 10, 0,
-0, 50, 20, 10, 0, -10, 10, 0,
-0, 50, 30, 25, 20, 0, -20, 0,
-0, 50, 30, 25, 20, 0, -20, 0,
-0, 50, 20, 10, 0, -10, 10, 0,
-0, 50, 10, 5, 0, -5, 10, 0,
-0, 50, 10, 5, 0, 5, 5, 0,
+ 0,  0,  0,  0,  0,  0,  0,  0,
+50, 50, 50, 50, 50, 50, 50, 50,
+10, 10, 20, 30, 30, 20, 10, 10,
+ 5,  5, 10, 25, 25, 10,  5,  5,
+ 0,  0,  0, 20, 20,  0,  0,  0,
+ 5, -5,-10,  0,  0,-10, -5,  5,
+ 5, 10, 10,-20,-20, 10, 10,  5,
+ 0,  0,  0,  0,  0,  0,  0,  0
 };
 
-constexpr int black_pawn_table[8][8] =
+//TODO invert table above
+constexpr int black_pawn_table[64] =
 {
 0, 5, 5, 0, 5, 10, 50, 0,
 0, 10, -5, 0, 5, 10, 50, 0,
@@ -97,7 +98,7 @@ constexpr int black_pawn_table[8][8] =
 0, 5, 5, 0, 5, 10, 50, 0,
 };
 
-constexpr int white_knight_table[8][8] =
+constexpr int white_knight_table[64] =
 {
 -50, -40, -30, -30, -30, -30, -40, -50,
 -40, -20, 0, 5, 0, 5, -20, -40,
@@ -109,7 +110,7 @@ constexpr int white_knight_table[8][8] =
 -50, -40, -30, -30, -30, -30, -40, -50,
 };
 
-constexpr int black_knight_table[8][8] =
+constexpr int black_knight_table[64] =
 {
 -50, -40, -30, -30, -30, -30, -40, -50,
 -40, -20, 5, 0, 5, 0, -20, -40,
@@ -121,7 +122,7 @@ constexpr int black_knight_table[8][8] =
 -50, -40, -30, -30, -30, -30, -40, -50,
 };
 
-constexpr int white_bishop_table[8][8] =
+constexpr int white_bishop_table[64] =
 {
 -20, -10, -10, -10, -10, -10, -10, -20,
 -10, 0, 0, 5, 0, 10, 5, -10,
@@ -133,7 +134,7 @@ constexpr int white_bishop_table[8][8] =
 -20, -10, -10, -10, -10, -10, -10, -20,
 };
 
-constexpr int black_bishop_table[8][8] =
+constexpr int black_bishop_table[64] =
 {
 -20, -10, -10, -10, -10, -10, -10, -20,
 -10, 5, 10, 0, 5, 0, 0, -10,
@@ -145,7 +146,7 @@ constexpr int black_bishop_table[8][8] =
 -20, -10, -10, -10, -10, -10, -10, -20,
 };
 
-constexpr int white_rook_table[8][8] =
+constexpr int white_rook_table[64] =
 {
 0, 5, -5, -5, -5, -5, -5, 0,
 0, 10, 0, 0, 0, 0, 0, 0,
@@ -157,7 +158,7 @@ constexpr int white_rook_table[8][8] =
 0, 5, -5, -5, -5, -5, -5, 0,
 };
 
-constexpr int black_rook_table[8][8] =
+constexpr int black_rook_table[64] =
 {
 0, -5, -5, -5, -5, -5, 5, 0,
 0, 0, 0, 0, 0, 0, 10, 0,
@@ -169,7 +170,7 @@ constexpr int black_rook_table[8][8] =
 0, -5, -5, -5, -5, -5, 5, 0,
 };
 
-constexpr int white_queen_table[8][8] =
+constexpr int white_queen_table[64] =
 {
 -20, -10, -10, -5, 0, -10, -10, -20,
 -10, 0, 0, 0, 0, 5, 0, -10,
@@ -181,7 +182,7 @@ constexpr int white_queen_table[8][8] =
 -20, -10, -10, -5, -5, -10, -10, -20,
 };
 
-constexpr int black_queen_table[8][8] =
+constexpr int black_queen_table[64] =
 {
 -20, -10, -10, -5, -5, -10, -10, -20,
 -10, 0, 0, 0, 0, 0, 0, -10,
@@ -193,7 +194,7 @@ constexpr int black_queen_table[8][8] =
 -20, -10, -10, 0, -5, -10, -10, -20,
 };
 
-constexpr int white_king_early_game_table[8][8] =
+constexpr int white_king_early_game_table[64] =
 {
 -30, -30, -30, -30, -20, -10, 20, 20,
 -40, -40, -40, -40, -30, -20, 20, 30,
@@ -205,7 +206,7 @@ constexpr int white_king_early_game_table[8][8] =
 -30, -30, -30, -30, -20, -10, 20, 20,
 };
 
-constexpr int black_king_early_game_table[8][8] =
+constexpr int black_king_early_game_table[64] =
 {
 20, 20, -10, -20, -30, -30, -30, -30,
 30, 20, -20, -30, -40, -40, -40, -40,

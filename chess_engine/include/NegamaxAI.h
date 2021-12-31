@@ -71,9 +71,7 @@ namespace ceg
 		std::vector<ceg::InternalMove> generate_sorted_possible_moves(const ceg::BitBoard& board, bool color_is_black, const ceg::InternalMove& tt_move);
 		int evaluate_board_negamax(const ceg::BitBoard& board, bool color_is_black, int depth, int alpha, int beta);
 		int static_board_evaluation(const ceg::BitBoard& board, bool current_player_black);
-		int get_piece_value(const ceg::BitBoard& board, bool current_player_black, int x, int y);
-		int get_piece_position_value(uint32_t piece, bool color_is_black, int x, int y);
-		inline int get_raw_piece_value(uint32_t piece);
+		int get_pieces_value(ceg::Pieces pieces, bool black_pieces);
 		std::vector<ceg::InternalMove> get_best_moves(std::vector<EvalMove> moves);
 
 		std::vector<EvalMove> evaluated_moves;
