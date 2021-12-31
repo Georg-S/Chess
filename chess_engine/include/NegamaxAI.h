@@ -66,6 +66,7 @@ namespace ceg
 		int evaluate_board_negamax(const ceg::BitBoard& board, bool color_is_black, int depth, int alpha, int beta);
 		int static_board_evaluation(const ceg::BitBoard& board, bool current_player_black);
 		int get_pieces_value(ceg::Pieces pieces, bool black_pieces);
+		void hash_piece(uint64_t& current_hash, uint64_t piece, int table_index) const;
 		std::vector<ceg::InternalMove> get_best_moves(std::vector<ceg::InternalMove> moves);
 
 		std::vector<ceg::InternalMove> evaluated_moves;

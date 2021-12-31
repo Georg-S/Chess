@@ -48,42 +48,39 @@ void ceg::NegamaxAI::init_hashing_table()
 	}
 }
 
-static int get_hash_table_piece_type_index(const ceg::BitBoard& board, int index)
+void ceg::NegamaxAI::hash_piece(uint64_t& current_hash, uint64_t piece, int table_index) const
 {
-	int value = 0;
-	bool is_black_piece = ceg::is_bit_set(board.black_pieces.occupied, index);
-	if (is_black_piece)
-		value = 1;
+	while (piece != 0) 
+	{
+		int index = ceg::get_bit_index_lsb(piece);
+		ceg::reset_lsb(piece);
 
-	const ceg::Pieces* pieces = is_black_piece ? &(board.black_pieces) : &(board.white_pieces);
-
-	if (ceg::is_bit_set(pieces->pawns, index)) return value;
-	else if (ceg::is_bit_set(pieces->knights, index)) return 2 + value;
-	else if (ceg::is_bit_set(pieces->bishops, index)) return 4 + value;
-	else if (ceg::is_bit_set(pieces->rooks, index)) return 6 + value;
-	else if (ceg::is_bit_set(pieces->queens, index)) return 8 + value;
-	else if (ceg::is_bit_set(pieces->king, index)) return 10 + value;
-
-	assert(!"Invalid piece for hashing");
-	return 0;
+		current_hash ^= hashing_table[index][table_index];
+	}
 }
 
 uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_black) const
 {
 	constexpr uint64_t max_uint64_t = 0xFFFFFFFFFFFFFFFF;
-
 	uint64_t hash = 0;
-	for (int i = 0; i < board_width * board_height; i++) 
-	{
-		if (!is_bit_set(board.occupied, i))
-			continue;
 
-		const int index = get_hash_table_piece_type_index(board, i);
-		hash ^= hashing_table[i][index];
-	}
+	hash_piece(hash, board.white_pieces.pawns, 0);
+	hash_piece(hash, board.white_pieces.knights, 2);
+	hash_piece(hash, board.white_pieces.bishops, 4);
+	hash_piece(hash, board.white_pieces.rooks, 6);
+	hash_piece(hash, board.white_pieces.queens,8);
+	hash_piece(hash, board.white_pieces.king, 10);
+
+	hash_piece(hash, board.black_pieces.pawns, 1);
+	hash_piece(hash, board.black_pieces.knights, 3);
+	hash_piece(hash, board.black_pieces.bishops, 5);
+	hash_piece(hash, board.black_pieces.rooks, 7);
+	hash_piece(hash, board.black_pieces.queens, 9);
+	hash_piece(hash, board.black_pieces.king, 11);
 
 	if (color_is_black)
 		return hash ^ max_uint64_t;
+
 	return hash;
 }
 
