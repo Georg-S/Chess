@@ -28,17 +28,13 @@ ceg::InternalMove ceg::NegamaxAI::get_move(const ceg::BitBoard& board, bool colo
 ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int max_depth)
 {
 	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
-	std::vector<EvalMove> evaluated_moves;
 
 	for (int i = 0; i <= max_depth; i++)
 	{
-		evaluated_moves = get_evaluated_moves(board, color_is_black, i, possible_moves);
-		std::sort(evaluated_moves.begin(), evaluated_moves.end(), operator>);
-		possible_moves.clear();
-		for (const auto& eval_move : evaluated_moves)
-			possible_moves.push_back(eval_move.move);
+		possible_moves = get_evaluated_moves(board, color_is_black, i, possible_moves);
+		std::sort(possible_moves.begin(), possible_moves.end(), operator>);
 	}
-	auto best_moves = get_best_moves(evaluated_moves);
+	auto best_moves = get_best_moves(possible_moves);
 
 	return get_random_move(best_moves);
 }
@@ -101,28 +97,28 @@ static bool get_next_player(bool black)
 	return !black;
 }
 
-std::vector<ceg::EvalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth)
+std::vector<ceg::InternalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth)
 {
-	std::vector<EvalMove> evaluated_moves;
+	std::vector<ceg::InternalMove> evaluated_moves;
 	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
-	for (const auto& move : possible_moves)
+	for (auto move : possible_moves)
 	{
 		ceg::BitBoard copy_board = board;
 		move_generator->make_move_with_auto_promotion(copy_board, move);
 
-		int val = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
-		evaluated_moves.push_back({ move, val });
+		move.value = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
+		evaluated_moves.push_back(move);
 	}
 	return evaluated_moves;
 }
 
-std::vector<ceg::EvalMove> ceg::NegamaxAI::get_evaluated_moves_multi_threaded(const ceg::BitBoard& board, bool color_is_black, int depth)
+std::vector<ceg::InternalMove> ceg::NegamaxAI::get_evaluated_moves_multi_threaded(const ceg::BitBoard& board, bool color_is_black, int depth)
 {
 	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
 	return get_evaluated_moves(board, color_is_black, depth, possible_moves);
 }
 
-std::vector<ceg::EvalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth, const std::vector<ceg::InternalMove>& possible_moves)
+std::vector<ceg::InternalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth, const std::vector<ceg::InternalMove>& possible_moves)
 {
 	const auto processor_count = std::thread::hardware_concurrency();
 	const int thread_count = std::max((unsigned int)1, processor_count);
@@ -154,8 +150,9 @@ void ceg::NegamaxAI::eval_multi_threaded(const ceg::BitBoard& board, bool color_
 		move_generator->make_move_with_auto_promotion(copy_board, move);
 		int val = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
 
+		move.value = val;
 		m_mutex.lock();
-		evaluated_moves.push_back({ move, val });
+		evaluated_moves.push_back(move);
 		move_index = current_index;
 		current_index++;
 		m_mutex.unlock();
@@ -209,11 +206,11 @@ static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index)
 	return 6;
 }
 
-static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::EvalMove>& moves)
+static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves)
 {
 	for (int i = 0; i < moves.size(); i++)
 	{
-		const ceg::InternalMove& move = moves[i].move;
+		const ceg::InternalMove& move = moves[i];
 		int from_index = get_piece_MVV_LVA_index(board, move.from);
 		int to_index = get_piece_MVV_LVA_index(board, move.to);
 
@@ -222,23 +219,12 @@ static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::E
 	std::sort(moves.begin(), moves.end(), ceg::operator>);
 }
 
-std::vector<ceg::InternalMove> ceg::NegamaxAI::generate_sorted_possible_moves(const ceg::BitBoard& board, bool color_is_black, const ceg::InternalMove& tt_move)
+void ceg::NegamaxAI::sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move)
 {
-	std::vector<ceg::EvalMove> eval_moves;
-	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
-	for (const auto& move : possible_moves)
-		eval_moves.push_back({ move, 0 });
-
-	sort_moves_by_MVV_LVA(board, eval_moves);
-
-	std::vector<ceg::InternalMove> sorted_moves;
-	for (const auto& eval_move : eval_moves)
-		sorted_moves.push_back(eval_move.move);
+	sort_moves_by_MVV_LVA(board, moves);
 
 	if (tt_move.from != -1)
-		set_move_to_front(sorted_moves, tt_move);
-
-	return sorted_moves;
+		set_move_to_front(moves, tt_move);
 }
 
 
@@ -276,12 +262,10 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 	if (depth == 0)
 		return -static_board_evaluation(board, color_is_black);
 
-	//TODO Refactor to be correct
-	auto possible_moves = generate_sorted_possible_moves(board, color_is_black, tt_move);
-	if (possible_moves.size() == 0)
-		return 0;
-
+	auto& possible_moves = state.possible_moves;
+	sort_possible_moves(board, possible_moves, color_is_black, tt_move);
 	assert(possible_moves.size());
+
 	ceg::InternalMove best_move{};
 	int move_value = min_value;
 	for (const auto& move : possible_moves)
@@ -411,7 +395,7 @@ int ceg::NegamaxAI::get_pieces_value(Pieces pieces, bool black_pieces)
 	return result;
 }
 
-std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::EvalMove> moves)
+std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::InternalMove> moves)
 {
 	std::vector<ceg::InternalMove> best_moves;
 	assert(moves.size());
@@ -424,7 +408,7 @@ std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::E
 	for (const auto& eval_move : moves)
 	{
 		if (eval_move.value == highest_value)
-			best_moves.push_back(eval_move.move);
+			best_moves.push_back(eval_move);
 	}
 
 	return best_moves;

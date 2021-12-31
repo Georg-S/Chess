@@ -26,6 +26,7 @@ namespace ceg
 	{
 		int from;
 		int to;
+		int value;
 	};
 
 	class BitBoard

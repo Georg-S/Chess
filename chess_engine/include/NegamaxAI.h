@@ -22,18 +22,12 @@ namespace ceg
 		ceg::InternalMove best_move;
 	};
 
-	struct EvalMove
-	{
-		ceg::InternalMove move;
-		int value;
-	};
-
-	inline bool operator<(const EvalMove& rhs, const EvalMove& lhs)
+	inline bool operator<(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
 	{
 		return rhs.value < lhs.value;
 	}
 
-	inline bool operator>(const EvalMove& rhs, const EvalMove& lhs)
+	inline bool operator>(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
 	{
 		return rhs.value > lhs.value;
 	}
@@ -62,25 +56,25 @@ namespace ceg
 		ceg::InternalMove iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int max_depth);
 		void init_hashing_table();
 		uint64_t hash_board(const ceg::BitBoard& board, bool color_is_black) const;
-		std::vector<EvalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth);
-		std::vector<EvalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth, const std::vector<ceg::InternalMove>& possible_moves);
-		std::vector<EvalMove> get_evaluated_moves_multi_threaded(const ceg::BitBoard& board, bool color_is_black, int depth);
+		std::vector<ceg::InternalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth);
+		std::vector<ceg::InternalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth, const std::vector<ceg::InternalMove>& possible_moves);
+		std::vector<ceg::InternalMove> get_evaluated_moves_multi_threaded(const ceg::BitBoard& board, bool color_is_black, int depth);
 		void eval_multi_threaded(const ceg::BitBoard& board, bool color_is_black, const std::vector<ceg::InternalMove>& possible_moves, int depth);
 		ceg::InternalMove get_random_move(const std::vector<ceg::InternalMove>& moves);
 		ceg::InternalMove get_random_move(const std::vector<std::pair<int, ceg::InternalMove>>& moves);
-		std::vector<ceg::InternalMove> generate_sorted_possible_moves(const ceg::BitBoard& board, bool color_is_black, const ceg::InternalMove& tt_move);
+		void sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move);
 		int evaluate_board_negamax(const ceg::BitBoard& board, bool color_is_black, int depth, int alpha, int beta);
 		int static_board_evaluation(const ceg::BitBoard& board, bool current_player_black);
 		int get_pieces_value(ceg::Pieces pieces, bool black_pieces);
-		std::vector<ceg::InternalMove> get_best_moves(std::vector<EvalMove> moves);
+		std::vector<ceg::InternalMove> get_best_moves(std::vector<ceg::InternalMove> moves);
 
-		std::vector<EvalMove> evaluated_moves;
+		std::vector<ceg::InternalMove> evaluated_moves;
 		std::mutex m_mutex;
 		int current_index = 0;
 		static constexpr int min_value = -10000000;
 		static constexpr int max_value = 10000000;
 		uint64_t hashing_table[8][8][12];
-		static constexpr int max_tt_entries = 50000;
+		static constexpr int max_tt_entries = 5000000;
 		TTEntry* tt_table;
 		ceg::RNG rng;
 		MoveGenerator* move_generator = nullptr;
