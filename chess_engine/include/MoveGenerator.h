@@ -44,6 +44,37 @@ namespace ceg
 		void make_move(BitBoard& board, const InternalMove& move);
 		void make_move(BitBoard& board, const InternalMove& move, bool black);
 		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move);
+	private:
+		uint64_t get_raw_rook_moves(int index, uint64_t occupied);
+		uint64_t get_raw_bishop_moves(int index, uint64_t occupied);
+		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
+		uint64_t get_vertical_moves(int index, uint64_t occupied);
+		uint64_t get_horizontal_moves(int index, uint64_t occupied);
+		uint64_t get_diagonal_up_moves(int index, uint64_t occupied);
+		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
+
+		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves);
+		StateInformation get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info);
+
+		void init();
+		void init_pawn_end_of_board_mask();
+		void init_en_passant_capture_mask();
+		void init_reset_index_mask();
+		void init_castling_mask();
+		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
+		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index);
+		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);
+		void init_knight_moves();
+		void init_rook_moves();
+		void init_bishop_moves();
+		void init_queen_moves();
+		void init_king_moves();
+		void init_pawn_moves();
 
 		static constexpr int arr_size = board_height * board_width;
 		uint64_t pawn_end_of_board_mask = 0;
@@ -81,36 +112,5 @@ namespace ceg
 		uint64_t black_pawn_attack_moves[arr_size]{};
 		uint64_t white_pawn_normal_moves[arr_size]{};
 		uint64_t white_pawn_attack_moves[arr_size]{};
-	private:
-		uint64_t get_raw_rook_moves(int index, uint64_t occupied);
-		uint64_t get_raw_bishop_moves(int index, uint64_t occupied);
-		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
-		uint64_t get_vertical_moves(int index, uint64_t occupied);
-		uint64_t get_horizontal_moves(int index, uint64_t occupied);
-		uint64_t get_diagonal_up_moves(int index, uint64_t occupied);
-		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
-
-		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves);
-		StateInformation get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
-		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
-		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info);
-
-		void init();
-		void init_pawn_end_of_board_mask();
-		void init_en_passant_capture_mask();
-		void init_reset_index_mask();
-		void init_castling_mask();
-		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
-		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index);
-		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);
-		void init_knight_moves();
-		void init_rook_moves();
-		void init_bishop_moves();
-		void init_queen_moves();
-		void init_king_moves();
-		void init_pawn_moves();
 	};
 }

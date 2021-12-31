@@ -29,6 +29,16 @@ namespace ceg
 		int value;
 	};
 
+	inline bool operator<(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
+	{
+		return rhs.value < lhs.value;
+	}
+
+	inline bool operator>(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
+	{
+		return rhs.value > lhs.value;
+	}
+
 	class BitBoard
 	{
 	public:

@@ -184,7 +184,6 @@ static void set_move_to_front(std::vector<ceg::InternalMove>& moves, const ceg::
 
 static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index)
 {
-	// TODO check if this can be done more efficient
 	if (!ceg::is_bit_set(board.occupied, index))
 		return 6;
 
@@ -195,6 +194,7 @@ static int get_piece_MVV_LVA_index(const ceg::BitBoard& board, int index)
 	if (ceg::is_bit_set(board.black_pieces.queens | board.white_pieces.queens, index)) return 1;
 	if (ceg::is_bit_set(board.black_pieces.king | board.white_pieces.king, index)) return 0;
 
+	assert(!"Invalid index for get_piece_MVV_LVA");
 	return 6;
 }
 
@@ -434,6 +434,9 @@ bool ceg::NegamaxAI::is_end_game(const BitBoard& board) const
 	int white_queens = get_piece_count(board.white_pieces.queens);
 	if ((black_queens + white_queens) == 0)
 		return true;
+	if ((white_queens >= 2) || (black_queens >= 2))
+		return false;
+
 
 	int black_light_pieces = get_piece_count(board.black_pieces.bishops) + get_piece_count(board.black_pieces.rooks)
 		+ get_piece_count(board.black_pieces.knights);

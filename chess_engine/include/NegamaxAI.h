@@ -11,7 +11,6 @@
 
 namespace ceg
 {
-
 	struct TTEntry
 	{
 		std::mutex mut;
@@ -20,28 +19,6 @@ namespace ceg
 		int value = 0;
 		int depth = 0;
 		ceg::InternalMove best_move;
-	};
-
-	inline bool operator<(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
-	{
-		return rhs.value < lhs.value;
-	}
-
-	inline bool operator>(const ceg::InternalMove& rhs, const ceg::InternalMove& lhs)
-	{
-		return rhs.value > lhs.value;
-	}
-
-	// Most Valuable Victim, Least Valuable Attacker
-	constexpr int MVV_LVA[7][7]
-	{
-		{0, 0, 0, 0, 0, 0, 0} ,       // Victim: King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{50, 51, 52, 53, 54, 55, 0}, //  Victim: Queen, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{40, 41, 42, 43, 44, 45, 0}, //  Victim: Rook, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{30, 31, 32, 33, 34, 35, 0}, //  Victim: Bishop, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{20, 21, 22, 23, 24, 25, 0}, //  Victim: Knight, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{10, 11, 12, 13, 14, 15, 0 }, //  Victim: Pawn, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
-		{0, 0, 0, 0, 0, 0, 0},       //  Victim: None, King, Attacker: King, Queen, Rook, Bishop, Knight, Pawn, None
 	};
 
 	class NegamaxAI
