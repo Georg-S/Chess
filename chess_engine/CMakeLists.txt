@@ -8,6 +8,9 @@ set(HEADER
 	"include/MoveGenerator.h"
 	"include/Utility.h"
 	"include/ChessEngine.h"
+	"include/NegamaxAI.h"
+	"include/RNG.h"
+	"include/PieceSquareTable.h"
 )
 
 set(SOURCE
@@ -15,6 +18,8 @@ set(SOURCE
 	"src/MoveGenerator.cpp"
 	"src/Utility.cpp"
 	"src/ChessEngine.cpp"
+	"src/NegamaxAI.cpp"
+	"src/RNG.cpp"
 )
 
 set(TEST_FILES

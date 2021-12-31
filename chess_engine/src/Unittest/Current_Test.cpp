@@ -27,3 +27,33 @@ TEST_CASE("perft_test_board_5_depth_1_test", "MoveGeneration")
 	REQUIRE(perft_result == 44);
 }
 */
+
+class ScopedTimer
+{
+public:
+    ScopedTimer()
+    {
+        start_time = std::chrono::high_resolution_clock::now();
+    }
+    ~ScopedTimer()
+    {
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto dif = end_time - start_time;
+        auto in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dif);
+
+        std::cout << "Time in seconds: " << (in_ms.count()) / 1000. << std::endl;
+    }
+private:
+    std::chrono::steady_clock::time_point start_time;
+};
+
+TEST_CASE("perft_test_board_5_depth_6_test", "MoveGeneration")
+{
+    ScopedTimer timer{};
+    uint64_t perft_result = engine.perft(initial_board_FEN, 6);
+}
+
+TEST_CASE("perft_test_board_5_depth_7_test", "MoveGeneration")
+{
+    getchar();
+}

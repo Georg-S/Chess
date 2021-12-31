@@ -23,6 +23,12 @@ namespace ceg
 
 	struct StateInformation
 	{
+		StateInformation(int counter, std::vector<ceg::InternalMove>&& moves) 
+		{
+			check_counter = counter;
+			possible_moves = moves;
+		}
+
 		int check_counter;
 		std::vector<ceg::InternalMove> possible_moves;
 	};
@@ -32,9 +38,9 @@ namespace ceg
 	public:
 		MoveGenerator();
 		CheckInfo get_check_info(BitBoard board, bool black);
-		std::vector<InternalMove> get_all_possible_moves(BitBoard board, bool black);
-		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+		std::vector<InternalMove> get_all_possible_moves(const BitBoard& board, bool black);
+		StateInformation get_state_information(const BitBoard& board, bool black);
+
 		void make_move(BitBoard& board, const InternalMove& move);
 		void make_move(BitBoard& board, const InternalMove& move, bool black);
 		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move);
@@ -83,7 +89,12 @@ namespace ceg
 		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
 
 		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves);
-		void get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, CheckInfo* out_check_info, const uint64_t* pawn_attack_moves);
+		StateInformation get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
+			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info);
 
 		void init();
 		void init_en_passant_capture_mask();
