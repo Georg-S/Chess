@@ -41,13 +41,10 @@ ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board
 
 void ceg::NegamaxAI::init_hashing_table()
 {
-	for (int x = 0; x < board_width; x++)
+	for (int i = 0; i < board_width * board_height; i++)
 	{
-		for (int y = 0; y < board_height; y++)
-		{
-			for (int piece_type = 0; piece_type < 12; piece_type++)
-				hashing_table[x][y][piece_type] = rng.get_number(0, std::numeric_limits<uint64_t>::max());
-		}
+		for (int piece_type = 0; piece_type < 12; piece_type++)
+			hashing_table[i][piece_type] = rng.get_number(0, std::numeric_limits<uint64_t>::max());
 	}
 }
 
@@ -76,17 +73,15 @@ uint64_t ceg::NegamaxAI::hash_board(const ceg::BitBoard& board, bool color_is_bl
 	constexpr uint64_t max_uint64_t = 0xFFFFFFFFFFFFFFFF;
 
 	uint64_t hash = 0;
-	for (int x = 0; x < board_width; x++)
+	for (int i = 0; i < board_width * board_height; i++) 
 	{
-		for (int y = 0; y < board_height; y++)
-		{
-			if (!is_bit_set(board.occupied, x, y))
-				continue;
-			//TODO refactor hashing table to use linear index
-			const int index = get_hash_table_piece_type_index(board, x + y * 8);
-			hash ^= hashing_table[x][y][index];
-		}
+		if (!is_bit_set(board.occupied, i))
+			continue;
+
+		const int index = get_hash_table_piece_type_index(board, i);
+		hash ^= hashing_table[i][index];
 	}
+
 	if (color_is_black)
 		return hash ^ max_uint64_t;
 	return hash;

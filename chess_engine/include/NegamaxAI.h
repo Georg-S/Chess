@@ -73,7 +73,7 @@ namespace ceg
 		int current_index = 0;
 		static constexpr int min_value = -10000000;
 		static constexpr int max_value = 10000000;
-		uint64_t hashing_table[8][8][12];
+		uint64_t hashing_table[64][12];
 		static constexpr int max_tt_entries = 5000000;
 		TTEntry* tt_table;
 		ceg::RNG rng;
