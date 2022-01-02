@@ -150,22 +150,13 @@ void ceg::NegamaxAI::eval_multi_threaded(const ceg::BitBoard& board, bool color_
 	}
 }
 
-ceg::InternalMove ceg::NegamaxAI::get_random_move(const std::vector<ceg::InternalMove>& moves)
+ceg::InternalMove ceg::NegamaxAI::get_random_move(const std::vector<ceg::InternalMove>& moves) const
 {
 	assert(moves.size());
 	if (moves.size() == 0)
 		return ceg::InternalMove();
 
 	return moves[rand() % moves.size()];
-}
-
-ceg::InternalMove ceg::NegamaxAI::get_random_move(const std::vector<std::pair<int, ceg::InternalMove>>& moves)
-{
-	assert(moves.size());
-	if (moves.size() == 0)
-		return ceg::InternalMove();
-
-	return moves[rand() % moves.size()].second;
 }
 
 static void set_move_to_front(std::vector<ceg::InternalMove>& moves, const ceg::InternalMove& move)
@@ -210,7 +201,7 @@ static void sort_moves_by_MVV_LVA(const ceg::BitBoard& board, std::vector<ceg::I
 	std::sort(moves.begin(), moves.end(), ceg::operator>);
 }
 
-void ceg::NegamaxAI::sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move)
+void ceg::NegamaxAI::sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move) const
 {
 	sort_moves_by_MVV_LVA(board, moves);
 
@@ -293,7 +284,7 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 	return -move_value;
 }
 
-int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool current_player_black)
+int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool current_player_black) const
 {
 	int black_val = get_pieces_value(board, board.black_pieces, true);
 	int white_val = get_pieces_value(board, board.white_pieces, false);
@@ -304,7 +295,7 @@ int ceg::NegamaxAI::static_board_evaluation(const ceg::BitBoard& board, bool cur
 		return white_val - black_val;
 }
 
-int ceg::NegamaxAI::get_pieces_value(const ceg::BitBoard& board, Pieces pieces, bool black_pieces)
+int ceg::NegamaxAI::get_pieces_value(const ceg::BitBoard& board, Pieces pieces, bool black_pieces) const
 {
 	constexpr int pawn_value = 100;
 	constexpr int knight_value = 320;
@@ -400,7 +391,7 @@ int ceg::NegamaxAI::get_pieces_value(const ceg::BitBoard& board, Pieces pieces, 
 	return result;
 }
 
-std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(std::vector<ceg::InternalMove> moves)
+std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(const std::vector<ceg::InternalMove>& moves) const
 {
 	std::vector<ceg::InternalMove> best_moves;
 	assert(moves.size());

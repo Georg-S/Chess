@@ -101,7 +101,7 @@ bool ceg::ChessEngine::is_field_occupied(const ceg::BitBoard& board, int x, int 
 	return is_bit_set(board.occupied, x, y);
 }
 
-ceg::PieceColor ceg::ChessEngine::get_piece_color(const ceg::BitBoard& board, int x, int y)const
+ceg::PieceColor ceg::ChessEngine::get_piece_color(const ceg::BitBoard& board, int x, int y) const
 {
 	assert(is_field_occupied(board, x, y));
 	if (is_bit_set(board.black_pieces.occupied, x, y))
@@ -110,7 +110,7 @@ ceg::PieceColor ceg::ChessEngine::get_piece_color(const ceg::BitBoard& board, in
 		return PieceColor::WHITE;
 }
 
-void ceg::ChessEngine::set_piece(ceg::BitBoard& board, Piece piece, PieceColor color, int x, int y)const
+void ceg::ChessEngine::set_piece(ceg::BitBoard& board, Piece piece, PieceColor color, int x, int y) const
 {
 	const int linear_idx = to_linear_idx(x, y);
 	board.clear_bits_at_position(linear_idx);
@@ -143,7 +143,7 @@ void ceg::ChessEngine::set_piece(ceg::BitBoard& board, Piece piece, PieceColor c
 	board.update_occupied();
 }
 
-bool ceg::ChessEngine::is_check_mate(ceg::BitBoard& board, PieceColor color)const
+bool ceg::ChessEngine::is_check_mate(ceg::BitBoard& board, PieceColor color) const
 {
 	auto possible_moves = move_generator->get_all_possible_moves(board, to_bool(color));
 	auto check_info = move_generator->get_check_info(board, to_bool(color));
@@ -154,7 +154,7 @@ bool ceg::ChessEngine::is_check_mate(ceg::BitBoard& board, PieceColor color)cons
 	return false;
 }
 
-bool ceg::ChessEngine::is_stale_mate(ceg::BitBoard& board, PieceColor color)const
+bool ceg::ChessEngine::is_stale_mate(ceg::BitBoard& board, PieceColor color) const
 {
 	auto possible_moves = move_generator->get_all_possible_moves(board, to_bool(color));
 	auto check_info = move_generator->get_check_info(board, to_bool(color));
@@ -165,12 +165,12 @@ bool ceg::ChessEngine::is_stale_mate(ceg::BitBoard& board, PieceColor color)cons
 	return false;
 }
 
-uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth)const
+uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth) const
 {
 	return perft(FEN_str, depth, nullptr, nullptr);
 }
 
-std::set<std::string> ceg::ChessEngine::perft_get_set(const std::string& FEN_str, int depth)const
+std::set<std::string> ceg::ChessEngine::perft_get_set(const std::string& FEN_str, int depth) const
 {
 	std::set<std::string> result_set;
 
@@ -179,7 +179,7 @@ std::set<std::string> ceg::ChessEngine::perft_get_set(const std::string& FEN_str
 	return result_set;
 }
 
-std::map<std::string, int>  ceg::ChessEngine::perft_get_map(const std::string& FEN_str, int depth)const
+std::map<std::string, int>  ceg::ChessEngine::perft_get_map(const std::string& FEN_str, int depth) const
 {
 	std::map<std::string, int> result_map;
 
@@ -199,17 +199,17 @@ ceg::BitBoard ceg::ChessEngine::get_board_by_FEN_str(const std::string& FEN_str)
 	return 	ceg::BitBoard(splitted[0], splitted[2], splitted[3]);
 }
 
-bool ceg::ChessEngine::to_bool(ceg::PieceColor color)const
+bool ceg::ChessEngine::to_bool(ceg::PieceColor color) const
 {
 	return (color == PieceColor::BLACK) ? true : false;
 }
 
-ceg::InternalMove ceg::ChessEngine::convert_to_internal(const ceg::Move& move)const
+ceg::InternalMove ceg::ChessEngine::convert_to_internal(const ceg::Move& move) const
 {
 	return ceg::InternalMove{ to_linear_idx(move.from_x, move.from_y), to_linear_idx(move.to_x, move.to_y) };
 }
 
-uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map)const
+uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map) const
 {
 	auto splitted = string_split(FEN_str, " ");
 	if (splitted.size() < 4)
@@ -223,7 +223,7 @@ uint64_t ceg::ChessEngine::perft(const std::string& FEN_str, int depth, std::set
 	return perft(board, current_player_black, depth, out_set, out_map);
 }
 
-uint64_t ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player_black, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map)const
+uint64_t ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player_black, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map) const
 {
 	if (depth == 0)
 		return 1ULL;

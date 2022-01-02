@@ -26,6 +26,7 @@ namespace ceg
 	public:
 		NegamaxAI(MoveGenerator* move_generator);
 		NegamaxAI(const NegamaxAI&) = delete;
+		NegamaxAI& operator=(const NegamaxAI&) = delete;
 		~NegamaxAI();
 		ceg::InternalMove get_move(const ceg::BitBoard& board, bool color_is_black, int depth = 5);
 
@@ -37,14 +38,13 @@ namespace ceg
 		std::vector<ceg::InternalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth, const std::vector<ceg::InternalMove>& possible_moves);
 		std::vector<ceg::InternalMove> get_evaluated_moves_multi_threaded(const ceg::BitBoard& board, bool color_is_black, int depth);
 		void eval_multi_threaded(const ceg::BitBoard& board, bool color_is_black, const std::vector<ceg::InternalMove>& possible_moves, int depth);
-		ceg::InternalMove get_random_move(const std::vector<ceg::InternalMove>& moves);
-		ceg::InternalMove get_random_move(const std::vector<std::pair<int, ceg::InternalMove>>& moves);
-		void sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move);
+		ceg::InternalMove get_random_move(const std::vector<ceg::InternalMove>& moves) const;
+		void sort_possible_moves(const ceg::BitBoard& board, std::vector<ceg::InternalMove>& moves, bool color_is_black, const ceg::InternalMove& tt_move) const;
 		int evaluate_board_negamax(const ceg::BitBoard& board, bool color_is_black, int depth, int alpha, int beta);
-		int static_board_evaluation(const ceg::BitBoard& board, bool current_player_black);
-		int get_pieces_value(const ceg::BitBoard& board, ceg::Pieces pieces, bool black_pieces);
+		int static_board_evaluation(const ceg::BitBoard& board, bool current_player_black) const;
+		int get_pieces_value(const ceg::BitBoard& board, ceg::Pieces pieces, bool black_pieces) const;
 		void hash_piece(uint64_t& current_hash, uint64_t piece, int table_index) const;
-		std::vector<ceg::InternalMove> get_best_moves(std::vector<ceg::InternalMove> moves);
+		std::vector<ceg::InternalMove> get_best_moves(const std::vector<ceg::InternalMove>& moves) const;
 		int get_piece_count(uint64_t piece) const;
 		bool is_end_game(const BitBoard& board) const;
 

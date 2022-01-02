@@ -90,7 +90,7 @@ std::string Renderer::get_color_string(ceg::PieceColor color) const
 {
 	if (color == ceg::PieceColor::WHITE)
 		return "white";
-	else if (color == ceg::PieceColor::BLACK)
+	else
 		return "black";
 }
 
