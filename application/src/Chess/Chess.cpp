@@ -173,6 +173,7 @@ void Chess::handle_promo_selection(ceg::BitBoard& board, int posx, int posy)
 		engine->set_piece(board, piece, current_player, posx, posy);
 		validPieceSelected = true;
 	}
+	render_info->board = board;
 }
 
 ceg::Piece Chess::get_piece_from_promo_selection(int x, int y)

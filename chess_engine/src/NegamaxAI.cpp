@@ -37,7 +37,7 @@ ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board
 			timer = buf_timer;
 
 		possible_moves = get_evaluated_moves(board, color_is_black, i, possible_moves);
-		const bool timer_expired = ceg::get_current_time_in_ms() > max_time_in_ms;
+		const bool timer_expired = ceg::get_current_time_in_ms() > buf_timer;
 
 		if (i <= min_depth || !timer_expired) 
 			last_fully_evaluated_moves = possible_moves;
@@ -249,8 +249,8 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 	}
 
 	auto state = move_generator->get_state_information(board, color_is_black);
-	if ((state.check_counter >= 1) && (state.possible_moves.size() == 0))
-		return -(min_value - depth);
+	if ((state.check_counter >= 1) && (state.possible_moves.size() == 0)) 
+		return -(checkmate_value - depth);
 	if (state.possible_moves.size() == 0)
 		return 0;
 
