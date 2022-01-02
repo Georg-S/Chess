@@ -37,8 +37,8 @@ namespace ceg
 		BitBoard get_initial_board() const;
 		static PieceColor get_next_player(PieceColor color);
 		std::vector<ceg::Move> get_all_possible_moves_for_piece(const ceg::BitBoard& board, int piece_x, int piece_y) const;
-		ceg::Move get_ai_move(const ceg::BitBoard& board, bool current_player_black, int depth);
-		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth = 6);
+		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth);
+		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color);
 		void make_move(ceg::BitBoard& board, ceg::Move move) const;
 		void make_move_with_auto_promo(ceg::BitBoard& board, ceg::Move move) const;
 		bool is_move_valid(const ceg::BitBoard& board, const ceg::Move& move) const;
@@ -53,6 +53,7 @@ namespace ceg
 		std::set<std::string> perft_get_set(const std::string& FEN_str, int depth) const;
 		std::map<std::string, int> perft_get_map(const std::string& FEN_str, int depth) const;
 	private:
+		ceg::Move get_ai_move(const ceg::BitBoard& board, bool current_player_black, int min_depth, int max_depth, long long max_time_in_ms);
 		BitBoard get_board_by_FEN_str(const std::string& FEN_str) const;
 		bool to_bool(ceg::PieceColor color) const;
 		ceg::InternalMove convert_to_internal(const ceg::Move& move) const;
@@ -62,5 +63,8 @@ namespace ceg
 		inline static const std::string initial_board_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		std::unique_ptr<ceg::MoveGenerator> move_generator = nullptr;
 		std::unique_ptr<NegamaxAI> ai = nullptr;
+		int min_depth = 6;
+		int max_depth = 20;
+		long long max_time_in_milli_seconds = 3000;
 	};
 }

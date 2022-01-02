@@ -19,6 +19,12 @@ int ceg::get_bit_index_lsb(uint64_t num)
 	return index64[((num & -num) * debruijn64) >> 58];
 }
 
+long long ceg::get_current_time_in_ms()
+{
+	auto current_time = std::chrono::system_clock::now();
+	return std::chrono::time_point_cast<std::chrono::milliseconds>(current_time).time_since_epoch().count();
+}
+
 uint64_t ceg::get_lsb(uint64_t num)
 {
 	return num & -num;

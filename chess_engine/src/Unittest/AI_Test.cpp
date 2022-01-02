@@ -10,7 +10,7 @@ static ceg::ChessEngine engine = ceg::ChessEngine();
 TEST_CASE("Test_board_1_ai_depth_0", "[board_1]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_1_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 0);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 0);
 
 	REQUIRE(move.to_x == 3);
 	REQUIRE(move.to_y == 7);
@@ -19,7 +19,7 @@ TEST_CASE("Test_board_1_ai_depth_0", "[board_1]")
 TEST_CASE("Test_board_1_ai_depth_1", "[board_1]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_1_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 1);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 1);
 
 	REQUIRE(move.to_x == 3);
 	REQUIRE(move.to_y == 7);
@@ -28,7 +28,7 @@ TEST_CASE("Test_board_1_ai_depth_1", "[board_1]")
 TEST_CASE("Test_board_1_ai_depth_2", "[board_1]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_1_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 2);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 2);
 
 	REQUIRE(move.to_x == 3);
 	REQUIRE(move.to_y == 7);
@@ -37,7 +37,7 @@ TEST_CASE("Test_board_1_ai_depth_2", "[board_1]")
 TEST_CASE("Test_board_2_ai_depth_0", "[board_2]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_2_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 0);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 0);
 
 	REQUIRE(move.to_x == 6);
 	REQUIRE(move.to_y == 7);
@@ -46,7 +46,7 @@ TEST_CASE("Test_board_2_ai_depth_0", "[board_2]")
 TEST_CASE("Test_board_2_ai_depth_1", "[board_2]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_2_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 1);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 1);
 
 	REQUIRE(move.to_x == 6);
 	REQUIRE(move.to_y == 7);
@@ -55,7 +55,7 @@ TEST_CASE("Test_board_2_ai_depth_1", "[board_2]")
 TEST_CASE("Test_board_2_ai_depth_2", "[board_2]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_2_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 2);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 2);
 
 	REQUIRE(move.to_x == 6);
 	REQUIRE(move.to_y == 7);
@@ -64,7 +64,7 @@ TEST_CASE("Test_board_2_ai_depth_2", "[board_2]")
 TEST_CASE("Test_board_3_ai_depth_2", "[board_3]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_3_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 2);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 2);
 
 	REQUIRE(move.to_x == 6);
 	REQUIRE(move.to_y == 2);
@@ -73,7 +73,7 @@ TEST_CASE("Test_board_3_ai_depth_2", "[board_3]")
 TEST_CASE("Test_board_3_ai_depth_3", "[board_3]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_3_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 3);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 3);
 
 	REQUIRE(move.to_x == 6);
 	REQUIRE(move.to_y == 2);
@@ -82,7 +82,7 @@ TEST_CASE("Test_board_3_ai_depth_3", "[board_3]")
 TEST_CASE("Test_board_4_ai_depth_0", "[board_3]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_4_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 0);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 0);
 
 	REQUIRE(move.to_x == 4);
 	REQUIRE(move.to_y == 1);
@@ -91,7 +91,7 @@ TEST_CASE("Test_board_4_ai_depth_0", "[board_3]")
 TEST_CASE("Test_board_4_ai_depth_1", "[board_3]")
 {
 	ceg::BitBoard test_board = ceg::BitBoard(test_board_4_str);
-	ceg::Move move = engine.get_ai_move(test_board, true, 1);
+	ceg::Move move = engine.get_ai_move(test_board, ceg::PieceColor::BLACK, 1);
 
 	REQUIRE(move.to_x == 2);
 	REQUIRE(move.to_y == 1);

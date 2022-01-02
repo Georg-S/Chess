@@ -29,9 +29,10 @@ namespace ceg
 		NegamaxAI& operator=(const NegamaxAI&) = delete;
 		~NegamaxAI();
 		ceg::InternalMove get_move(const ceg::BitBoard& board, bool color_is_black, int depth = 5);
+		ceg::InternalMove get_move(const ceg::BitBoard& board, bool color_is_black, int min_depth, int max_depth, long long time_in_ms);
 
 	private:
-		ceg::InternalMove iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int max_depth);
+		ceg::InternalMove iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int in_min_depth, int max_depth, long long max_time_in_ms);
 		void init_hashing_table();
 		uint64_t hash_board(const ceg::BitBoard& board, bool color_is_black) const;
 		std::vector<ceg::InternalMove> get_evaluated_moves(const ceg::BitBoard& board, bool color_is_black, int depth);
@@ -55,6 +56,7 @@ namespace ceg
 		static constexpr int max_value = 10000000;
 		uint64_t hashing_table[64][12];
 		static constexpr int max_tt_entries = 5000000;
+		long long timer;
 		TTEntry* tt_table;
 		ceg::RNG rng;
 		MoveGenerator* move_generator = nullptr;

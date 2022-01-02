@@ -15,26 +15,39 @@ ceg::NegamaxAI::~NegamaxAI()
 
 ceg::InternalMove ceg::NegamaxAI::get_move(const ceg::BitBoard& board, bool color_is_black, int depth)
 {
-	/*
-	auto evaluated_moves = get_evaluated_moves(board, color, depth);
-	auto evaluated_moves = get_evaluated_moves_multi_threaded(board, color, depth);
-	auto best_moves = get_best_moves(evaluated_moves);
-
-	return get_random_move(best_moves);
-	*/
-	return iterative_deepening(board, color_is_black, depth);
+	return iterative_deepening(board, color_is_black, depth, depth, -1);
 }
 
-ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int max_depth)
+ceg::InternalMove ceg::NegamaxAI::get_move(const ceg::BitBoard& board, bool color_is_black, int min_depth, int max_depth, long long time_in_ms) 
+{
+	return iterative_deepening(board, color_is_black, min_depth, max_depth, time_in_ms);
+}
+
+ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int min_depth, int max_depth, long long max_time_in_ms)
 {
 	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
+	std::vector<ceg::InternalMove> last_fully_evaluated_moves;
+	auto buf_timer = ceg::get_current_time_in_ms() + max_time_in_ms;
 
 	for (int i = 0; i <= max_depth; i++)
 	{
+		if (i <= min_depth)
+			timer = -1; // A timer set to -1 will not expire
+		else
+			timer = buf_timer;
+
 		possible_moves = get_evaluated_moves(board, color_is_black, i, possible_moves);
+		const bool timer_expired = ceg::get_current_time_in_ms() > max_time_in_ms;
+
+		if (i <= min_depth || !timer_expired) 
+			last_fully_evaluated_moves = possible_moves;
+
+		if (timer_expired && (i > min_depth))
+			break;
+
 		std::sort(possible_moves.begin(), possible_moves.end(), operator>);
 	}
-	auto best_moves = get_best_moves(possible_moves);
+	auto best_moves = get_best_moves(last_fully_evaluated_moves);
 
 	return get_random_move(best_moves);
 }
@@ -264,7 +277,12 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 		alpha = std::max(alpha, move_value);
 		if (alpha >= beta)
 			break;
+		if ((timer != -1) && (ceg::get_current_time_in_ms() > timer))
+			return 0;
 	}
+
+	if ((timer != -1) && (ceg::get_current_time_in_ms() > timer))
+		return 0;
 
 	std::scoped_lock lock(entry.mut);
 	if (depth > entry.depth)

@@ -38,14 +38,19 @@ std::vector<ceg::Move> ceg::ChessEngine::get_all_possible_moves_for_piece(const 
 	return result;
 }
 
-ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, bool current_player_black, int depth)
+ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, bool current_player_black, int min_depth, int max_depth, long long max_time_in_ms)
 {
-	return	ai->get_move(board, current_player_black, depth);
+	return	ai->get_move(board, current_player_black, min_depth, max_depth, max_time_in_ms);
 }
 
 ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth)
 {
-	return get_ai_move(board, to_bool(color), depth);
+	return get_ai_move(board, to_bool(color), depth, depth, -1);
+}
+
+ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, PieceColor color)
+{
+	return get_ai_move(board, to_bool(color), min_depth, max_depth, max_time_in_milli_seconds);
 }
 
 void ceg::ChessEngine::make_move(ceg::BitBoard& board, ceg::Move move) const

@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <chrono>
 
 
 namespace ceg 
 {
 	// lsb = least significant bit
 	int get_bit_index_lsb(uint64_t num);
+	long long get_current_time_in_ms();
 	uint64_t get_lsb(uint64_t num);
 	void reset_lsb(uint64_t& num);
 	bool is_number(char c);
