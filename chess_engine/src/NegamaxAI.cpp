@@ -140,9 +140,8 @@ void ceg::NegamaxAI::eval_multi_threaded(const ceg::BitBoard& board, bool color_
 		ceg::InternalMove move = possible_moves[move_index];
 		ceg::BitBoard copy_board = board;
 		move_generator->make_move_with_auto_promotion(copy_board, move);
-		int val = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
+		move.value = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
 
-		move.value = val;
 		m_mutex.lock();
 		evaluated_moves.push_back(move);
 		move_index = current_index;
@@ -277,16 +276,19 @@ int ceg::NegamaxAI::evaluate_board_negamax(const ceg::BitBoard& board, bool colo
 	}
 
 	std::scoped_lock lock(entry.mut);
-	entry.value = move_value;
-	entry.depth = depth;
-	entry.hash = hash;
-	entry.best_move = best_move;
-	if (move_value <= initial_alpha)
-		entry.type = TTEntry::type::UPPER;
-	else if (move_value >= beta)
-		entry.type = TTEntry::type::LOWER;
-	else
-		entry.type = TTEntry::type::EXACT;
+	if (depth > entry.depth)
+	{
+		entry.value = move_value;
+		entry.depth = depth;
+		entry.hash = hash;
+		entry.best_move = best_move;
+		if (move_value <= initial_alpha)
+			entry.type = TTEntry::type::UPPER;
+		else if (move_value >= beta)
+			entry.type = TTEntry::type::LOWER;
+		else
+			entry.type = TTEntry::type::EXACT;
+	}
 
 	return -move_value;
 }

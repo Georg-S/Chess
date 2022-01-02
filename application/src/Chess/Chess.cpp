@@ -2,16 +2,16 @@
 
 Chess::Chess()
 {
-	board = ceg::BitBoard(initial_board_pos_str);
 	engine = std::make_unique<ceg::ChessEngine>();
+	board = engine->get_initial_board();
 	renderer = std::make_unique<Renderer>(engine.get());
 	render_info = std::make_unique<RenderInformation>(board);
 }
 
 Chess::Chess(std::unique_ptr<SDLHandler> sdl_handler, int player_count, ceg::PieceColor player_color)
 {
-	board = ceg::BitBoard(initial_board_pos_str);
 	engine = std::make_unique<ceg::ChessEngine>();
+	board = engine->get_initial_board();
 	renderer = std::make_unique<Renderer>(engine.get(), std::move(sdl_handler));
 	render_info = std::make_unique<RenderInformation>(board);
 	this->player_count = player_count;

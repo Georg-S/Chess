@@ -172,7 +172,6 @@ namespace ceg
 	 0,  0,  0,  0,  0,  0,  0,  0
 	};
 
-	//TODO invert table above
 	constexpr int black_pawn_table[64] =
 	{
 	0, 0, 0, 0, 0, 0, 0, 0,

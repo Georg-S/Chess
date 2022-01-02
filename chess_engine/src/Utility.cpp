@@ -15,7 +15,7 @@ static constexpr int index64[64] = {
 // @author Charles E. Leiserson, Harald Prokop, Keith H. Randall
 int ceg::get_bit_index_lsb(uint64_t num)
 {
-	const uint64_t debruijn64 = uint64_t(0x07EDD5E59A4E28C2);
+	constexpr uint64_t debruijn64 = uint64_t(0x07EDD5E59A4E28C2);
 	return index64[((num & -num) * debruijn64) >> 58];
 }
 

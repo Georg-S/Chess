@@ -10,7 +10,7 @@ set(HEADER
 	"include/ChessEngine.h"
 	"include/NegamaxAI.h"
 	"include/RNG.h"
-	"include/PieceSquareTable.h"
+	"include/ValueTables.h"
 )
 
 set(SOURCE

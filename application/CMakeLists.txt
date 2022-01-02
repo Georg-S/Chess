@@ -32,9 +32,6 @@ set(SDL_SOURCE
 	"src/SDL/SDLButton.cpp"
 )
 
-set(SOURCES 
-	"src/main.cpp")
-
 set(TEST_FILES
 	"include/Unittest/catch_amalgamated.hpp"
 	"src/Unittest/catch_amalgamated.cpp"
@@ -42,13 +39,10 @@ set(TEST_FILES
 )
 
 source_group("\\Header Files\\Chess" FILES ${CHESS_HEADER})
-source_group("\\Header Files\\Chess\\Pieces" FILES ${PIECES_HEADER})
 source_group("\\Header Files\\SDL" FILES ${SDL_HEADER})
 
 source_group("\\Source Files\\Chess" FILES ${CHESS_SOURCE})
 source_group("\\Source Files\\SDL" FILES ${SDL_SOURCE})
-source_group("\\Source Files\\Chess\\Pieces" FILES ${PIECES_SOURCE})
-source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
 
 
 add_executable(Chess_4.0 "src/main.cpp"
@@ -56,8 +50,6 @@ add_executable(Chess_4.0 "src/main.cpp"
 						${CHESS_HEADER}
 						${SDL_SOURCE}
 						${CHESS_SOURCE}
-						${PIECES_HEADER}
-						${PIECES_SOURCE}
 						)
 
 if	(WIN32)
@@ -92,46 +84,3 @@ if (MSVC)
                         ${SDL2_IMAGE_DLLS}
                         $<TARGET_FILE_DIR:Chess_4.0>)
 endif (MSVC)
-
-
-
-
-
-
-
-
-#[[
-
-add_executable(Unittest ${TEST_FILES}
-						${SDL_HEADER}
-						${CHESS_HEADER}
-						${SDL_SOURCE}
-						${CHESS_SOURCE}
-						${PIECES_HEADER}
-						${PIECES_SOURCE}
-						)
-
-target_include_directories(Unittest PUBLIC include ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
-target_link_libraries(Unittest ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
-
-if (MSVC)
-	add_custom_command(TARGET Unittest
-						POST_BUILD
-						COMMAND ${CMAKE_COMMAND} -E copy_directory
-						"${CMAKE_SOURCE_DIR}/Images"
-						"$<TARGET_FILE_DIR:Unittest>/Images")
-
-    add_custom_command(TARGET Unittest
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        "$ENV{SDL2_BIN}/SDL2.dll"
-                        $<TARGET_FILE_DIR:Unittest>)
-
-    file(GLOB SDL2_IMAGE_DLLS "$ENV{SDL2IMAGE_BIN}/*.dll")
-    add_custom_command(TARGET Unittest
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        ${SDL2_IMAGE_DLLS}
-                        $<TARGET_FILE_DIR:Unittest>)
-endif (MSVC)
-]]

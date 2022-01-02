@@ -6,6 +6,11 @@ ceg::ChessEngine::ChessEngine()
 	ai = std::make_unique<ceg::NegamaxAI>(move_generator.get());
 }
 
+ceg::BitBoard ceg::ChessEngine::get_initial_board() const
+{
+	return get_board_by_FEN_str(initial_board_str);
+}
+
 ceg::PieceColor ceg::ChessEngine::get_next_player(PieceColor color)
 {
 	return (color == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
@@ -195,6 +200,17 @@ std::map<std::string, int>  ceg::ChessEngine::perft_get_map(const std::string& F
 	perft(FEN_str, depth, nullptr, &result_map);
 
 	return result_map;
+}
+
+ceg::BitBoard ceg::ChessEngine::get_board_by_FEN_str(const std::string& FEN_str) const
+{
+	auto splitted = string_split(FEN_str, " ");
+	if (splitted.size() < 4)
+	{
+		assert(!"Invalid FEN input string");
+		return 0;
+	}
+	return 	ceg::BitBoard(splitted[0], splitted[2], splitted[3]);
 }
 
 bool ceg::ChessEngine::to_bool(ceg::PieceColor color)

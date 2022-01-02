@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 #include "RNG.h"
-#include "PieceSquareTable.h"
+#include "ValueTables.h"
 #include "BitBoard.h"
 #include "MoveGenerator.h"
 

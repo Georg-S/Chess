@@ -25,7 +25,6 @@ private:
 	int convert_mouse_position_x_to_board_position(int mouse_x);
 	int convert_mouse_position_y_to_board_position(int mouse_y);
 
-	inline static const std::string initial_board_pos_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	std::unique_ptr<ceg::ChessEngine> engine = nullptr;
 	std::unique_ptr<Renderer> renderer;
 	ceg::BitBoard board;
