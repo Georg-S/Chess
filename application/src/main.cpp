@@ -41,7 +41,6 @@ Chess create_chess_game_by_user_input()
 	return Chess(std::move(handler), player_count, player_color);
 }
 
-/*
 // Use WinMain instead of main, so we can not show the console window
 // With main: the linker throws an error if the application is defined as Subsystem Windows
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
@@ -51,8 +50,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	return 0;
 }
-*/
 
+/*
 void compare_maps(const std::map<std::string, int>& map_1, const std::map<std::string, int>& map_2) 
 {
 	for (const auto& elem : map_1) 
@@ -88,17 +87,7 @@ int main()
 	std::cout << std::endl << std::endl;
 	compare_maps(engine_perft, old);
 #endif
-	/*
-	auto engine_perft = engine.perft_get_set(perft_str, depth);
-	std::cout << "Engine counter: " << engine_perft.size() << std::endl;
-
-	for (auto& elem : boards_set)
-	{
-		if (engine_perft.find(elem) == engine_perft.end())
-			std::cout << elem << std::endl;
-	}
-	*/
-
 
 	return 0;
 }
+*/

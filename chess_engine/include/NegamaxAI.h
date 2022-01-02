@@ -56,7 +56,7 @@ namespace ceg
 		static constexpr int max_value = 10000000;
 		static constexpr int checkmate_value = -100000;
 		uint64_t hashing_table[64][12];
-		static constexpr int max_tt_entries = 5000000;
+		static constexpr int max_tt_entries = 30000000;
 		long long timer;
 		TTEntry* tt_table;
 		ceg::RNG rng;

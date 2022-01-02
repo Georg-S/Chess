@@ -22,6 +22,15 @@ set(SOURCE
 	"src/RNG.cpp"
 )
 
+source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
+
+#Library project
+add_library(Chess_engine STATIC ${HEADER} ${SOURCE})
+target_include_directories(Chess_engine PUBLIC include)
+
+
+
+
 set(TEST_FILES
 	"include/Unittest/catch_amalgamated.hpp"
 	"src/Unittest/catch_amalgamated.cpp"
@@ -32,38 +41,7 @@ set(TEST_FILES
 	"src/Unittest/Current_Test.cpp"
 )
 
-source_group("\\Source Files\\Unit Tests" FILES ${TEST_FILES})
-
-add_library(Chess_engine STATIC ${HEADER} ${SOURCE})
-target_include_directories(Chess_engine PUBLIC include)
-
-
-
-
-
+#Unittest project
 add_executable(Unittest ${TEST_FILES} ${HEADER} ${SOURCE})
 target_include_directories(Unittest PUBLIC include ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
 target_link_libraries(Unittest ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
-
-#[[
-if (MSVC)
-	add_custom_command(TARGET Unittest
-						POST_BUILD
-						COMMAND ${CMAKE_COMMAND} -E copy_directory
-						"${CMAKE_SOURCE_DIR}/Images"
-						"$<TARGET_FILE_DIR:Unittest>/Images")
-
-    add_custom_command(TARGET Unittest
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        "$ENV{SDL2_BIN}/SDL2.dll"
-                        $<TARGET_FILE_DIR:Unittest>)
-
-    file(GLOB SDL2_IMAGE_DLLS "$ENV{SDL2IMAGE_BIN}/*.dll")
-    add_custom_command(TARGET Unittest
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        ${SDL2_IMAGE_DLLS}
-                        $<TARGET_FILE_DIR:Unittest>)
-endif (MSVC)
-]]

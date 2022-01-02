@@ -64,7 +64,7 @@ namespace ceg
 		std::unique_ptr<ceg::MoveGenerator> move_generator = nullptr;
 		std::unique_ptr<NegamaxAI> ai = nullptr;
 		int min_depth = 6;
-		int max_depth = 20;
+		int max_depth = 40;
 		long long max_time_in_milli_seconds = 3000;
 	};
 }
