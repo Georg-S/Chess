@@ -152,11 +152,11 @@ static uint64_t create_number(const std::vector<int>& bit_indices, const std::ve
 
 std::vector<uint64_t> ceg::get_every_bit_combination(const std::vector<int>& bit_indices)
 {
-	if(bit_indices.size() == 0)
-		return std::vector<uint64_t>();
-
 	auto result = std::vector<uint64_t>();
 	result.push_back(0);
+
+	if(bit_indices.size() == 0)
+		return result;
 
 	std::vector<int> values = std::vector<int>(bit_indices.size());
 	bool not_finished = true;

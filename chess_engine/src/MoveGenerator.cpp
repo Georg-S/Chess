@@ -5,7 +5,7 @@ ceg::MoveGenerator::MoveGenerator()
 	init();
 }
 
-ceg::CheckInfo ceg::MoveGenerator::get_check_info(BitBoard board, bool black)
+ceg::CheckInfo ceg::MoveGenerator::get_check_info(BitBoard board, bool black) const
 {
 	Pieces black_pieces = board.black_pieces;
 	Pieces white_pieces = board.white_pieces;
@@ -16,7 +16,7 @@ ceg::CheckInfo ceg::MoveGenerator::get_check_info(BitBoard board, bool black)
 		return get_check_info(&board.black_pieces, &board.white_pieces, board, black_pawn_attack_moves);
 }
 
-std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(const BitBoard& board, bool black)
+std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(const BitBoard& board, bool black) const
 {
 	Pieces black_pieces = board.black_pieces;
 	Pieces white_pieces = board.white_pieces;
@@ -27,7 +27,7 @@ std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(const 
 		return get_all_possible_moves(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, false);
 }
 
-ceg::StateInformation ceg::MoveGenerator::get_state_information(const BitBoard& board, bool black)
+ceg::StateInformation ceg::MoveGenerator::get_state_information(const BitBoard& board, bool black)const
 {
 	Pieces black_pieces = board.black_pieces;
 	Pieces white_pieces = board.white_pieces;
@@ -38,43 +38,43 @@ ceg::StateInformation ceg::MoveGenerator::get_state_information(const BitBoard& 
 		return get_state_information(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, false);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied)const
 {
 	return get_horizontal_moves(index, occupied) | get_vertical_moves(index, occupied);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied)const
 {
 	return get_diagonal_up_moves(index, occupied) | get_diagonal_down_moves(index, occupied);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied)const
 {
 	return get_raw_rook_moves(index, occupied) | get_raw_bishop_moves(index, occupied);
 }
 
-uint64_t ceg::MoveGenerator::get_vertical_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_vertical_moves(int index, uint64_t occupied)const
 {
 	uint64_t vertical = vertical_mask_without_index[index] & occupied;
-	return vertical_with_occupied[index][vertical];
+	return vertical_with_occupied[index].at(vertical);
 }
 
-uint64_t ceg::MoveGenerator::get_horizontal_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_horizontal_moves(int index, uint64_t occupied)const
 {
 	uint64_t horizontal = horizontal_mask_without_index[index] & occupied;
-	return horizontal_with_occupied[index][horizontal];
+	return horizontal_with_occupied[index].at(horizontal);
 }
 
-uint64_t ceg::MoveGenerator::get_diagonal_up_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_diagonal_up_moves(int index, uint64_t occupied)const
 {
 	uint64_t up = diagonal_up_mask_without_index[index] & occupied;
-	return diagonal_up_with_occupied[index][up];
+	return diagonal_up_with_occupied[index].at(up);
 }
 
-uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupied)
+uint64_t ceg::MoveGenerator::get_diagonal_down_moves(int index, uint64_t occupied)const
 {
 	uint64_t down = diagonal_down_mask_without_index[index] & occupied;
-	return  diagonal_down_with_occupied[index][down];
+	return  diagonal_down_with_occupied[index].at(down);
 }
 
 void ceg::MoveGenerator::init()
@@ -91,13 +91,8 @@ void ceg::MoveGenerator::init()
 	init_mask(horizontal_mask_without_index, 1, 0, false);
 	init_mask(diagonal_up_mask_without_index, 1, -1, false);
 	init_mask(diagonal_down_mask_without_index, 1, 1, false);
-	combine_two_masks(rook_mask, horizontal_mask, vertical_mask);
-	combine_two_masks(diagonal_mask, diagonal_up_mask, diagonal_down_mask);
 
 	init_knight_moves();
-	init_rook_moves();
-	init_bishop_moves();
-	init_queen_moves(); // needs to happen after rook and bishop
 	init_king_moves();
 	init_pawn_moves();
 
@@ -109,7 +104,7 @@ void ceg::MoveGenerator::init()
 
 void ceg::MoveGenerator::init_pawn_end_of_board_mask()
 {
-	for (int x = 0; x < 8; x++) 
+	for (int x = 0; x < 8; x++)
 	{
 		set_bit(pawn_end_of_board_mask, x, 0);
 		set_bit(pawn_end_of_board_mask, x, 7);
@@ -119,11 +114,11 @@ void ceg::MoveGenerator::init_pawn_end_of_board_mask()
 
 void ceg::MoveGenerator::init_en_passant_capture_mask()
 {
-	for (int x = 0; x < 8; x++) 
+	for (int x = 0; x < 8; x++)
 	{
-		for (int y = 0; y < 8; y++) 
+		for (int y = 0; y < 8; y++)
 		{
-			if (y == 3) 
+			if (y == 3)
 				set_bit(en_passant_capture_mask, x, y);
 			if (y == 4)
 				set_bit(en_passant_capture_mask, x, y);
@@ -160,13 +155,13 @@ void ceg::MoveGenerator::init_castling_mask()
 	set_bit(white_queen_side_castling_occupied_mask, 1, 7);
 }
 
-void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)
+void ceg::MoveGenerator::combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size)const
 {
 	for (int i = 0; i < size; i++)
 		dest[i] = source_1[i] | source_2[i];
 }
 
-void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index)
+void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index)const
 {
 	for (int i = 0; i < arr_size; i++)
 	{
@@ -187,7 +182,8 @@ static void push_all_moves(std::vector<ceg::InternalMove>& dest, int from_index,
 	}
 }
 
-ceg::StateInformation ceg::MoveGenerator::get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black)
+ceg::StateInformation ceg::MoveGenerator::get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
+	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black)const
 {
 	ceg::Pieces cop_other = *other;
 	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
@@ -197,7 +193,7 @@ ceg::StateInformation ceg::MoveGenerator::get_state_information(Pieces* playing,
 }
 
 std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other,
-	const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black)
+	const BitBoard& board, const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black)const
 {
 	ceg::Pieces cop_other = *other;
 	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
@@ -206,7 +202,8 @@ std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces
 	return std::move(get_all_possible_moves(playing, other, board, pawn_normal_moves, pawn_attack_moves, black, info));
 }
 
-ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves)
+ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board,
+	const uint64_t* pawn_attack_moves)const
 {
 	CheckInfo result;
 	const int other_king_index = get_bit_index_lsb(other->king);
@@ -366,7 +363,8 @@ ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* 
 	return result;
 }
 
-std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board, uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info)
+std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
+	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black, const CheckInfo& info)const
 {
 	const uint64_t attacked_fields_mask = ~(info.attacked_fields);
 	const auto player_king_index = get_bit_index_lsb(playing->king);
@@ -467,7 +465,7 @@ std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces
 	return std::move(result);
 }
 
-void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move)
+void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move)const
 {
 	bool move_made_by_black = false;
 	if (is_bit_set(board.black_pieces.occupied, move.from))
@@ -476,7 +474,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move)
 	make_move(board, move, move_made_by_black);
 }
 
-void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bool black)
+void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bool black)const
 {
 	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
@@ -496,7 +494,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bo
 			int rook_to_index = move.to + 1;
 			board.move_piece(pieces, InternalMove{ rook_from_index, rook_to_index });
 		}
-		
+
 	}
 	else
 	{
@@ -536,7 +534,7 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bo
 	board.update_occupied();
 }
 
-void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const InternalMove& move)
+void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const InternalMove& move)const
 {
 	bool move_made_by_black = false;
 	if (is_bit_set(board.black_pieces.occupied, move.from))
@@ -551,7 +549,7 @@ void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const In
 	queens |= mask;
 }
 
-void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)
+void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)const
 {
 	for (int bit_index = 0; bit_index < 64; bit_index++)
 	{
@@ -597,32 +595,6 @@ void ceg::MoveGenerator::init_knight_moves()
 		const int x = i % 8;
 		const int y = i / 8;
 		knight_moves[i] = get_knight_moves(x, y);
-	}
-}
-
-void ceg::MoveGenerator::init_rook_moves()
-{
-	for (int i = 0; i < arr_size; i++)
-	{
-		rook_moves[i] = vertical_mask[i] | horizontal_mask[i];
-		clear_bit(rook_moves[i], i);
-	}
-}
-
-void ceg::MoveGenerator::init_bishop_moves()
-{
-	for (int i = 0; i < arr_size; i++)
-	{
-		bishop_moves[i] = diagonal_down_mask[i] | diagonal_up_mask[i];
-		clear_bit(bishop_moves[i], i);
-	}
-}
-
-void ceg::MoveGenerator::init_queen_moves()
-{
-	for (int i = 0; i < arr_size; i++)
-	{
-		queen_moves[i] = bishop_moves[i] | rook_moves[i];
 	}
 }
 

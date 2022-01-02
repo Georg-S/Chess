@@ -7,9 +7,9 @@
 
 namespace ceg
 {
-	struct CheckInfo 
+	struct CheckInfo
 	{
-		CheckInfo() 
+		CheckInfo()
 		{
 			std::fill_n(pin_mask, 64, ~uint64_t(0));
 		}
@@ -23,7 +23,7 @@ namespace ceg
 
 	struct StateInformation
 	{
-		StateInformation(int counter, std::vector<ceg::InternalMove>&& moves) 
+		StateInformation(int counter, std::vector<ceg::InternalMove>&& moves)
 		{
 			check_counter = counter;
 			possible_moves = moves;
@@ -37,42 +37,39 @@ namespace ceg
 	{
 	public:
 		MoveGenerator();
-		CheckInfo get_check_info(BitBoard board, bool black);
-		std::vector<InternalMove> get_all_possible_moves(const BitBoard& board, bool black);
-		StateInformation get_state_information(const BitBoard& board, bool black);
+		CheckInfo get_check_info(BitBoard board, bool black) const;
+		std::vector<InternalMove> get_all_possible_moves(const BitBoard& board, bool black) const;
+		StateInformation get_state_information(const BitBoard& board, bool black) const;
 
-		void make_move(BitBoard& board, const InternalMove& move);
-		void make_move(BitBoard& board, const InternalMove& move, bool black);
-		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move);
+		void make_move(BitBoard& board, const InternalMove& move) const;
+		void make_move(BitBoard& board, const InternalMove& move, bool black) const;
+		void make_move_with_auto_promotion(BitBoard& board, const InternalMove& move) const;
 	private:
-		uint64_t get_raw_rook_moves(int index, uint64_t occupied);
-		uint64_t get_raw_bishop_moves(int index, uint64_t occupied);
-		uint64_t get_raw_queen_moves(int index, uint64_t occupied);
-		uint64_t get_vertical_moves(int index, uint64_t occupied);
-		uint64_t get_horizontal_moves(int index, uint64_t occupied);
-		uint64_t get_diagonal_up_moves(int index, uint64_t occupied);
-		uint64_t get_diagonal_down_moves(int index, uint64_t occupied);
+		uint64_t get_raw_rook_moves(int index, uint64_t occupied)const;
+		uint64_t get_raw_bishop_moves(int index, uint64_t occupied)const;
+		uint64_t get_raw_queen_moves(int index, uint64_t occupied)const;
+		uint64_t get_vertical_moves(int index, uint64_t occupied)const;
+		uint64_t get_horizontal_moves(int index, uint64_t occupied)const;
+		uint64_t get_diagonal_up_moves(int index, uint64_t occupied)const;
+		uint64_t get_diagonal_down_moves(int index, uint64_t occupied)const;
 
-		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves);
+		ceg::CheckInfo get_check_info(Pieces* player, const Pieces* other, const BitBoard& board, const uint64_t* pawn_attack_moves)const;
 		StateInformation get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+			const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black)const;
 		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black);
+			const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black)const;
 		std::vector<InternalMove> get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board,
-			uint64_t* pawn_normal_moves, uint64_t* pawn_attack_moves, bool black, const CheckInfo& info);
+			const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black, const CheckInfo& info)const;
 
 		void init();
 		void init_pawn_end_of_board_mask();
 		void init_en_passant_capture_mask();
 		void init_reset_index_mask();
 		void init_castling_mask();
-		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size);
-		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index);
-		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir);
+		void combine_two_masks(uint64_t* dest, uint64_t* source_1, uint64_t* source_2, int size = arr_size) const;
+		void init_mask(uint64_t* mask, int x_dir, int y_dir, bool set_inital_index)const;
+		void init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir)const;
 		void init_knight_moves();
-		void init_rook_moves();
-		void init_bishop_moves();
-		void init_queen_moves();
 		void init_king_moves();
 		void init_pawn_moves();
 
@@ -94,19 +91,14 @@ namespace ceg
 		uint64_t diagonal_up_mask_without_index[arr_size]{};
 		uint64_t diagonal_down_mask[arr_size]{};
 		uint64_t diagonal_down_mask_without_index[arr_size]{};
-		uint64_t diagonal_mask[arr_size]{};
 		uint64_t reset_index_mask[arr_size]{};
 
-		uint64_t rook_mask[arr_size]{};
 		std::unordered_map<uint64_t, uint64_t> horizontal_with_occupied[arr_size]{};
 		std::unordered_map<uint64_t, uint64_t> vertical_with_occupied[arr_size]{};
 		std::unordered_map<uint64_t, uint64_t> diagonal_up_with_occupied[arr_size]{};
 		std::unordered_map<uint64_t, uint64_t> diagonal_down_with_occupied[arr_size]{};
 
 		uint64_t knight_moves[arr_size]{};
-		uint64_t rook_moves[arr_size]{};
-		uint64_t bishop_moves[arr_size]{};
-		uint64_t queen_moves[arr_size]{};
 		uint64_t king_moves[arr_size]{};
 		uint64_t black_pawn_normal_moves[arr_size]{};
 		uint64_t black_pawn_attack_moves[arr_size]{};
