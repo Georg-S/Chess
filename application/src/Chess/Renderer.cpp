@@ -81,7 +81,7 @@ std::string Renderer::get_file_string(char fen_c) const
 	return "Images/" + get_piece_type_string(tolower(fen_c)) + "_" + get_color_string(color) + ".png";
 }
 
-std::string Renderer::get_file_string(uint32_t piece_type, ceg::PieceColor piece_color)
+std::string Renderer::get_file_string(uint32_t piece_type, ceg::PieceColor piece_color) const
 {
 	return "Images/" + get_piece_type_string(piece_type) + "_" + get_color_string(piece_color) + ".png";
 }
@@ -164,12 +164,12 @@ void Renderer::render_previous_move(const ceg::Move& previousMove)
 		, piece_width, piece_height);
 }
 
-int Renderer::getWindowWidth()
+int Renderer::getWindowWidth() const
 {
 	return window_width;
 }
 
-int Renderer::getWindowHeight()
+int Renderer::getWindowHeight() const
 {
 	return window_height;
 }
@@ -192,7 +192,7 @@ void Renderer::render_promotion_selection(ceg::PieceColor color)
 	sdl_handler->update();
 }
 
-bool Renderer::is_quit()
+bool Renderer::is_quit() const
 {
 	return sdl_handler->exit;
 }

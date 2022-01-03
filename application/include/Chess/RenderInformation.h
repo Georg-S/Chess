@@ -16,19 +16,7 @@ struct RenderInformation
 		this->check_mate = false;
 		this->stale_mate = false;
 	}
-
-	RenderInformation(const ceg::BitBoard& board, ceg::Move previousMove)
-	{
-		this->board = board;
-		this->previousMove = previousMove;
-
-		this->selectedPieceX = -1;
-		this->selectedPieceY = -1;
-		this->mousePositionX = 0;
-		this->mousePositionY = 0;
-		this->check_mate = false;
-		this->stale_mate = false;;
-	}
+	RenderInformation(const ceg::BitBoard& board, ceg::Move previousMove) : RenderInformation(board, -1, -1, 0, 0, previousMove) {}
 
 	ceg::BitBoard board;
 	int selectedPieceX;

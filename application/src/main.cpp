@@ -36,6 +36,7 @@ Chess create_chess_game_by_user_input()
 			color_selection.update();
 
 		player_color = color_selection.getSelectedColor();
+		color_selection.destroy();
 	}
 
 	return Chess(std::move(handler), player_count, player_color);

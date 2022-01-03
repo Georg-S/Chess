@@ -135,7 +135,7 @@ ceg::Move Chess::get_human_move()
 	return move;
 }
 
-bool Chess::is_valid_move(const ceg::Move& move)
+bool Chess::is_valid_move(const ceg::Move& move) const
 {
 	if (!is_valid_board_pos(move.from_x, move.from_y) || !is_valid_board_pos(move.to_x, move.to_y))
 		return false;
@@ -145,7 +145,7 @@ bool Chess::is_valid_move(const ceg::Move& move)
 	return engine->is_move_valid(board, move);
 }
 
-bool Chess::is_valid_board_pos(int x, int y)
+bool Chess::is_valid_board_pos(int x, int y) const
 {
 	return (x >= 0) && (x < board_width) && (y >= 0) && (y < board_height);
 }
@@ -176,7 +176,7 @@ void Chess::handle_promo_selection(ceg::BitBoard& board, int posx, int posy)
 	render_info->board = board;
 }
 
-ceg::Piece Chess::get_piece_from_promo_selection(int x, int y)
+ceg::Piece Chess::get_piece_from_promo_selection(int x, int y) const
 {
 	if (x == 0 && y == 0)
 		return ceg::Piece::QUEEN;
@@ -197,12 +197,12 @@ void Chess::handle_game_over()
 		render_info->stale_mate = true;
 }
 
-int Chess::convert_mouse_position_x_to_board_position(int mouse_x)
+int Chess::convert_mouse_position_x_to_board_position(int mouse_x) const
 {
 	return mouse_x / (renderer->getWindowWidth() / board_width);
 }
 
-int Chess::convert_mouse_position_y_to_board_position(int mouse_y)
+int Chess::convert_mouse_position_y_to_board_position(int mouse_y) const
 {
 	return mouse_y / (renderer->getWindowHeight() / board_height);
 }

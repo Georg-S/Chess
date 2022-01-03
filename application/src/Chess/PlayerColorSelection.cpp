@@ -29,7 +29,7 @@ void PlayerColorSelection::update()
 	blackButton->updateButton(mouse.getMousePositionX(), mouse.getMousePositionY(), mouse.isNewLeftClick());
 }
 
-ceg::PieceColor PlayerColorSelection::getSelectedColor()
+ceg::PieceColor PlayerColorSelection::getSelectedColor() const
 {
 	if (whiteButton->wasClicked())
 		return ceg::PieceColor::WHITE;

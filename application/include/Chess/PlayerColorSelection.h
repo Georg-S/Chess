@@ -12,7 +12,7 @@ public:
 	PlayerColorSelection(SDLHandler* sdlHandler);
 	void createColorSelection();
 	bool color_selected() const;
-	ceg::PieceColor getSelectedColor();
+	ceg::PieceColor getSelectedColor() const;
 	void update();
 	void destroy();
 

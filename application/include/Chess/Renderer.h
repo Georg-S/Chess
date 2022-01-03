@@ -13,9 +13,9 @@ public:
 	void render(const RenderInformation& renderInfo);
 	void render_promotion_selection(ceg::PieceColor color);
 	void render_board(const std::string& FEN_board_str);
-	int getWindowWidth();
-	int getWindowHeight();
-	bool is_quit();
+	int getWindowWidth() const;
+	int getWindowHeight() const;
+	bool is_quit() const;
 	void quit();
 
 private:
@@ -29,12 +29,10 @@ private:
 	void render_checkmate();
 	void render_stalemate();
 	std::string get_file_string(char fen_c) const;
-	std::string get_file_string(uint32_t piece_type, ceg::PieceColor piece_color);
+	std::string get_file_string(uint32_t piece_type, ceg::PieceColor piece_color) const;
 	std::string get_color_string(ceg::PieceColor color) const;
 	std::string get_piece_type_string(char fen_c) const;
 
-	static constexpr int board_width = 8;
-	static constexpr int board_height = 8;
 	int piece_width = window_width / board_width;
 	int piece_height = window_height / board_height;
 	std::unique_ptr<SDLHandler> sdl_handler = nullptr;
