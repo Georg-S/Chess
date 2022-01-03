@@ -75,7 +75,7 @@ void ceg::BitBoard::clear_bits_at_position(int bit_index)
 	update_occupied();
 }
 
-uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces* pieces, int bit_index)
+uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces* pieces, int bit_index) const
 {
 	if (ceg::is_bit_set(pieces->pawns, bit_index)) return &(pieces->pawns);
 	if (ceg::is_bit_set(pieces->queens, bit_index)) return &(pieces->queens);
@@ -84,11 +84,11 @@ uint64_t* ceg::BitBoard::get_ptr_to_piece(Pieces* pieces, int bit_index)
 	if (ceg::is_bit_set(pieces->knights, bit_index)) return &(pieces->knights);
 	if (ceg::is_bit_set(pieces->king, bit_index)) return &(pieces->king);
 
-	assert(!"Made an invalid move");
+	assert(!"No piece found at the bit index");
 	return nullptr;
 }
 
-void ceg::BitBoard::print_board_to_console()
+void ceg::BitBoard::print_board_to_console() const
 {
 	for (int y = 0; y < ceg::board_height; y++)
 	{
@@ -180,11 +180,6 @@ std::vector<std::vector<char>> ceg::BitBoard::get_fen_char_representation() cons
 	}
 
 	return result;
-}
-
-bool ceg::BitBoard::is_bit_set(uint64_t num, int x, int y) const
-{
-	return ceg::is_bit_set(num, x + y * ceg::board_width);
 }
 
 bool ceg::BitBoard::is_occupied(int x, int y) const

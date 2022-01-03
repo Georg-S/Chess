@@ -193,6 +193,21 @@ std::map<std::string, int>  ceg::ChessEngine::perft_get_map(const std::string& F
 	return result_map;
 }
 
+void ceg::ChessEngine::set_min_depth(int min_depth)
+{
+	this->min_depth = min_depth;
+}
+
+void ceg::ChessEngine::set_max_depth(int max_depth)
+{
+	this->max_depth = max_depth;
+}
+
+void ceg::ChessEngine::set_max_time_in_ms(long long ms)
+{
+	this->max_time_in_milli_seconds = ms;
+}
+
 ceg::BitBoard ceg::ChessEngine::get_board_by_FEN_str(const std::string& FEN_str) const
 {
 	auto splitted = string_split(FEN_str, " ");
