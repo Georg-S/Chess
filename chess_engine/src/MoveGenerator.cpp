@@ -38,19 +38,19 @@ ceg::StateInformation ceg::MoveGenerator::get_state_information(const BitBoard& 
 		return get_state_information(&white_pieces, &black_pieces, board, white_pawn_normal_moves, white_pawn_attack_moves, false);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_rook_moves(int index, uint64_t occupied) const
+uint64_t ceg::MoveGenerator::get_rook_moves(int index, uint64_t occupied) const
 {
 	return get_horizontal_moves(index, occupied) | get_vertical_moves(index, occupied);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_bishop_moves(int index, uint64_t occupied) const
+uint64_t ceg::MoveGenerator::get_bishop_moves(int index, uint64_t occupied) const
 {
 	return get_diagonal_up_moves(index, occupied) | get_diagonal_down_moves(index, occupied);
 }
 
-uint64_t ceg::MoveGenerator::get_raw_queen_moves(int index, uint64_t occupied) const
+uint64_t ceg::MoveGenerator::get_queen_moves(int index, uint64_t occupied) const
 {
-	return get_raw_rook_moves(index, occupied) | get_raw_bishop_moves(index, occupied);
+	return get_rook_moves(index, occupied) | get_bishop_moves(index, occupied);
 }
 
 uint64_t ceg::MoveGenerator::get_vertical_moves(int index, uint64_t occupied) const
@@ -100,6 +100,395 @@ void ceg::MoveGenerator::init()
 	init_mask_with_occupied(diagonal_down_with_occupied, diagonal_down_mask, 1, 1);
 	init_mask_with_occupied(vertical_with_occupied, vertical_mask, 0, 1);
 	init_mask_with_occupied(horizontal_with_occupied, horizontal_mask, 1, 0);
+}
+
+static void push_all_moves(std::vector<ceg::InternalMove>& dest, int from_index, uint64_t moves)
+{
+	while (moves != 0)
+	{
+		int to_index = ceg::get_bit_index_lsb(moves);
+		dest.push_back(ceg::InternalMove{ from_index, to_index });
+		ceg::reset_lsb(moves);
+	}
+}
+
+ceg::StateInformation ceg::MoveGenerator::get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
+	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black) const
+{
+	ceg::Pieces cop_other = *other;
+	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
+	CheckInfo info = get_check_info(&cop_other, playing, board, other_pawn_attack_moves);
+
+	return StateInformation(info.check_counter, get_all_possible_moves(playing, other, board, pawn_normal_moves, pawn_attack_moves, black, info));
+}
+
+std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other,
+	const BitBoard& board, const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black) const
+{
+	ceg::Pieces cop_other = *other;
+	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
+	CheckInfo info = get_check_info(&cop_other, playing, board, other_pawn_attack_moves);
+
+	return std::move(get_all_possible_moves(playing, other, board, pawn_normal_moves, pawn_attack_moves, black, info));
+}
+
+ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board,
+	const uint64_t* pawn_attack_moves) const
+{
+	CheckInfo result;
+	const int other_king_index = get_bit_index_lsb(other->king);
+	const uint64_t occupied = board.occupied & reset_index_mask[other_king_index];
+
+	// We need to calculate the different attack rays from the attacking pieces and the opposite king, to get the pinned pieces
+	const auto king_vertical = get_vertical_moves(other_king_index, occupied);
+	const auto king_horizontal = get_horizontal_moves(other_king_index, occupied);
+	const auto king_diagonal_up = get_diagonal_up_moves(other_king_index, occupied);
+	const auto king_diagonal_down = get_diagonal_down_moves(other_king_index, occupied);
+	const auto king_bishop_moves = king_diagonal_down | king_diagonal_up;
+	const auto king_rook_moves = king_vertical | king_horizontal;
+	const auto king_mask = king_bishop_moves | king_rook_moves;
+
+	const uint64_t playing_occupied_mask = ~(player->occupied);
+
+	auto add_to_pin_mask = [&result](uint64_t moves, uint64_t king_moves, const uint64_t* mask) -> bool
+	{
+		const uint64_t pin = moves & king_moves;
+		if (pin)
+		{
+			int pinned_piece_index = get_bit_index_lsb(pin);
+			result.pin_mask[pinned_piece_index] = mask[pinned_piece_index];
+			return true;
+		}
+		return false;
+	};
+
+	while (player->rooks != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->rooks);
+		reset_lsb(player->rooks);
+
+		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
+		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
+		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
+			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask))
+			;
+
+		const uint64_t moves = horizontal_moves | vertical_moves;
+		result.attacked_fields |= moves;
+
+		if (moves & other->king)
+		{
+			result.check_counter++;
+			result.check_piece = 0;
+			set_bit(result.check_piece, from_index);
+			// We need to calculate the moves again with get_rook_moves because with the first calculation 
+			// we ignored the king to get every attacked field the king can't go on
+			// With this calculation we get the possible fields to counter a check
+			result.check_mask_with_piece = get_rook_moves(from_index, board.occupied) & king_rook_moves;
+		}
+	}
+
+	while (player->queens != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->queens);
+		reset_lsb(player->queens);
+
+		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
+		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
+		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
+		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
+		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
+			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask)
+			|| add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
+			;
+
+		const uint64_t moves = horizontal_moves | vertical_moves | diagonal_up_moves | diagonal_down_moves;
+		result.attacked_fields |= moves;
+
+		if (moves & other->king)
+		{
+			result.check_piece = 0;
+			set_bit(result.check_piece, from_index);
+			result.check_counter++;
+			uint64_t bishop_moves = get_bishop_moves(from_index, board.occupied);
+			uint64_t rook_moves = get_rook_moves(from_index, board.occupied);
+			uint64_t res = 0;
+
+			if (rook_moves & other->king)
+				res = rook_moves & king_rook_moves;
+			else
+				res = bishop_moves & king_bishop_moves;
+
+			result.check_mask_with_piece = res;
+		}
+	}
+
+	while (player->bishops != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->bishops);
+		reset_lsb(player->bishops);
+
+		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
+		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
+		if (add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
+			;
+
+		const uint64_t moves = diagonal_up_moves | diagonal_down_moves;
+		result.attacked_fields |= moves;
+
+		if (moves & other->king)
+		{
+			result.check_piece = 0;
+			set_bit(result.check_piece, from_index);
+
+			result.check_counter++;
+			result.check_mask_with_piece = get_bishop_moves(from_index, board.occupied) & king_bishop_moves;
+		}
+	}
+
+	while (player->king != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->king);
+		reset_lsb(player->king);
+
+		const uint64_t moves = king_moves[from_index];
+		result.attacked_fields |= moves;
+	}
+
+	while (player->knights != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->knights);
+		reset_lsb(player->knights);
+
+		const uint64_t moves = knight_moves[from_index];
+		result.attacked_fields |= moves;
+
+		if (moves & other->king)
+		{
+			result.check_counter++;
+			result.check_piece = 0;
+			set_bit(result.check_piece, from_index);
+			result.check_mask_with_piece = 0;
+		}
+	}
+
+	while (player->pawns != 0)
+	{
+		const int from_index = get_bit_index_lsb(player->pawns);
+		reset_lsb(player->pawns);
+
+		const uint64_t attack_moves = pawn_attack_moves[from_index];
+		result.attacked_fields |= attack_moves;
+
+		if (attack_moves & other->king)
+		{
+			result.check_counter++;
+			result.check_piece = 0;
+			set_bit(result.check_piece, from_index);
+			result.check_mask_with_piece = 0;
+		}
+	}
+
+	result.check_mask_with_piece |= result.check_piece;
+
+	return result;
+}
+
+std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
+	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black, const CheckInfo& info) const
+{
+	const uint64_t attacked_fields_mask = ~(info.attacked_fields);
+	const int player_king_index = get_bit_index_lsb(playing->king);
+	std::vector<InternalMove> result;
+	result.reserve(40);
+	const uint64_t playing_occupied_mask = ~(playing->occupied);
+
+	while (playing->king != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->king);
+		reset_lsb(playing->king);
+
+		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
+		if (info.check_counter == 0 && playing->castling)
+		{
+			if (black)
+			{
+				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_occupied_mask & board.occupied))
+					&& is_bit_set(playing->castling, black_queen_tower_idx))
+					set_bit(moves, black_queen_castling_move_idx);
+				if (!((black_king_side_castling_mask & info.attacked_fields) | (black_king_side_castling_mask & board.occupied)) 
+					&& is_bit_set(playing->castling, black_king_tower_idx))
+					set_bit(moves, black_king_castling_move_idx);
+			}
+			else
+			{
+				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_occupied_mask & board.occupied)) 
+					&& is_bit_set(playing->castling, white_queen_tower_idx))
+					set_bit(moves, white_queen_castling_move_idx);
+				if (!((white_king_side_castling_mask & info.attacked_fields) | (white_king_side_castling_mask & board.occupied))
+					&& is_bit_set(playing->castling, white_king_tower_idx))
+					set_bit(moves, white_king_castling_move_idx);
+			}
+		}
+		push_all_moves(result, from_index, moves);
+	}
+
+	if (info.check_counter >= 2)
+		return result; // If a player is in double check, the only valid moves are king moves
+
+	while (playing->pawns != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->pawns);
+		reset_lsb(playing->pawns);
+
+		uint64_t normal_moves = 0;
+		int moving = black ? 8 : -8;
+
+		if (!is_bit_set(board.occupied, from_index + moving))
+			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
+		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
+		auto en_passant_moves = pawn_attack_moves[from_index] & board.en_passant_mask;
+		if (en_passant_moves)
+		{
+			// Handle edge case if the two pawns are pinned and en passant can't be made because of that
+			int to_index = get_bit_index_lsb(en_passant_moves);
+			int to_x = to_index % 8;
+			int from_y = from_index / 8;
+			auto occ_buf = board.occupied & horizontal_mask[from_index];
+			clear_bit(occ_buf, from_index);
+			clear_bit(occ_buf, from_y * 8 + to_x);
+
+			if (get_horizontal_moves(player_king_index, occ_buf) & (other->queens | other->rooks))
+				en_passant_moves = 0;
+		}
+		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask_with_piece & info.pin_mask[from_index];
+		if (info.check_piece & en_passant_capture_mask)
+			moves |= en_passant_moves; // Check evasion with en passant
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->bishops != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->bishops);
+		reset_lsb(playing->bishops);
+
+		const uint64_t bishop_moves = get_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
+		push_all_moves(result, from_index, bishop_moves);
+	}
+
+	while (playing->knights != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->knights);
+		reset_lsb(playing->knights);
+
+		const uint64_t moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->queens != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->queens);
+		reset_lsb(playing->queens);
+
+		const uint64_t moves = get_queen_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
+		push_all_moves(result, from_index, moves);
+	}
+
+	while (playing->rooks != 0)
+	{
+		int from_index = get_bit_index_lsb(playing->rooks);
+		reset_lsb(playing->rooks);
+
+		const uint64_t  moves = get_rook_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
+		push_all_moves(result, from_index, moves);
+	}
+
+	return result;
+}
+
+void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move) const
+{
+	bool move_made_by_black = false;
+	if (is_bit_set(board.black_pieces.occupied, move.from))
+		move_made_by_black = true;
+
+	make_move(board, move, move_made_by_black);
+}
+
+void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bool black) const
+{
+	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
+	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
+
+	if (is_bit_set(pieces->king, move.from))
+	{
+		pieces->castling = 0;
+		if ((move.to - move.from) == 2) // King side castling
+		{
+			int rook_from_index = move.from + 3;
+			int rook_to_index = move.to - 1;
+			board.move_piece(pieces, InternalMove{ rook_from_index, rook_to_index });
+		}
+		else if ((move.to - move.from) == -2) // Queen side castling
+		{
+			int rook_from_index = move.from - 4;
+			int rook_to_index = move.to + 1;
+			board.move_piece(pieces, InternalMove{ rook_from_index, rook_to_index });
+		}
+	}
+	else
+	{
+		clear_bit(pieces->castling, move.from);
+		clear_bit(other->castling, move.to);
+	}
+
+	if (is_bit_set(pieces->pawns, move.from))
+	{
+		if (is_bit_set(board.en_passant_mask, move.to))
+		{
+			board.en_passant_mask = 0;
+			board.move_piece(pieces, move);
+			int to_x = move.to % 8;
+			int from_y = move.from / 8;
+
+			board.clear_bit_for_pieces(other, to_x + from_y * 8);
+			board.update_occupied();
+			return;
+		}
+
+		board.en_passant_mask = 0;
+		const int y_distance = move.to - move.from;
+		if (y_distance == 16 || y_distance == -16)
+			set_bit(board.en_passant_mask, move.from + y_distance / 2);
+	}
+	else
+	{
+		board.en_passant_mask = 0;
+	}
+
+	board.move_piece(pieces, move);
+
+	if (is_bit_set(other->occupied, move.to))
+		board.clear_bit_for_pieces(other, move.to);
+
+	board.update_occupied();
+}
+
+void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const InternalMove& move) const
+{
+	bool move_made_by_black = false;
+	if (is_bit_set(board.black_pieces.occupied, move.from))
+		move_made_by_black = true;
+
+	make_move(board, move, move_made_by_black);
+	uint64_t& pawns = move_made_by_black ? board.black_pieces.pawns : board.white_pieces.pawns;
+	uint64_t& queens = move_made_by_black ? board.black_pieces.queens : board.white_pieces.queens;
+
+	auto mask = pawns & pawn_end_of_board_mask;
+	pawns &= pawn_end_of_board_inverted_mask;
+	queens |= mask;
 }
 
 void ceg::MoveGenerator::init_pawn_end_of_board_mask()
@@ -170,383 +559,6 @@ void ceg::MoveGenerator::init_mask(uint64_t* mask, int x_dir, int y_dir, bool se
 
 		mask[i] = set_all_bits_in_direction(x, y, x_dir, y_dir, set_inital_index) | set_all_bits_in_direction(x, y, -x_dir, -y_dir, set_inital_index);
 	}
-}
-
-static void push_all_moves(std::vector<ceg::InternalMove>& dest, int from_index, uint64_t moves)
-{
-	while (moves != 0)
-	{
-		int to_index = ceg::get_bit_index_lsb(moves);
-		dest.push_back(ceg::InternalMove{ from_index, to_index });
-		ceg::reset_lsb(moves);
-	}
-}
-
-ceg::StateInformation ceg::MoveGenerator::get_state_information(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
-	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black) const
-{
-	ceg::Pieces cop_other = *other;
-	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
-	CheckInfo info = get_check_info(&cop_other, playing, board, other_pawn_attack_moves);
-
-	return StateInformation(info.check_counter, get_all_possible_moves(playing, other, board, pawn_normal_moves, pawn_attack_moves, black, info));
-}
-
-std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other,
-	const BitBoard& board, const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black) const
-{
-	ceg::Pieces cop_other = *other;
-	auto other_pawn_attack_moves = black ? white_pawn_attack_moves : black_pawn_attack_moves;
-	CheckInfo info = get_check_info(&cop_other, playing, board, other_pawn_attack_moves);
-
-	return std::move(get_all_possible_moves(playing, other, board, pawn_normal_moves, pawn_attack_moves, black, info));
-}
-
-ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* other, const BitBoard& board,
-	const uint64_t* pawn_attack_moves) const
-{
-	CheckInfo result;
-	const int other_king_index = get_bit_index_lsb(other->king);
-	const uint64_t occupied = board.occupied & reset_index_mask[other_king_index];
-
-	const auto king_vertical = get_vertical_moves(other_king_index, occupied);
-	const auto king_horizontal = get_horizontal_moves(other_king_index, occupied);
-	const auto king_diagonal_up = get_diagonal_up_moves(other_king_index, occupied);
-	const auto king_diagonal_down = get_diagonal_down_moves(other_king_index, occupied);
-	const auto king_bishop_moves = king_diagonal_down | king_diagonal_up;
-	const auto king_rook_moves = king_vertical | king_horizontal;
-	const auto king_mask = king_bishop_moves | king_rook_moves;
-
-	const uint64_t playing_occupied_mask = ~(player->occupied);
-
-	auto add_to_pin_mask = [&result](uint64_t moves, uint64_t king_moves, const uint64_t* mask)
-	{
-		const uint64_t pin = moves & king_moves;
-		if (pin)
-		{
-			int pinned_piece_index = get_bit_index_lsb(pin);
-			result.pin_mask[pinned_piece_index] = mask[pinned_piece_index];
-			return true;
-		}
-		return false;
-	};
-
-	while (player->rooks != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->rooks);
-		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
-		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
-		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
-			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask))
-			;
-
-		uint64_t moves = horizontal_moves | vertical_moves;
-		reset_lsb(player->rooks);
-
-		result.attacked_fields |= moves;
-
-		if (moves & other->king)
-		{
-			result.check_counter++;
-			result.check_piece = 0;
-			set_bit(result.check_piece, from_index);
-
-			result.check_mask_with_piece = get_raw_rook_moves(from_index, board.occupied) & king_rook_moves;
-		}
-	}
-
-	while (player->queens != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->queens);
-		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
-		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
-		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
-		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
-			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask)
-			|| add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
-			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
-			;
-
-		uint64_t moves = horizontal_moves | vertical_moves | diagonal_up_moves | diagonal_down_moves;
-		reset_lsb(player->queens);
-
-		result.attacked_fields |= moves;
-
-		if (moves & other->king)
-		{
-			result.check_piece = 0;
-			set_bit(result.check_piece, from_index);
-			result.check_counter++;
-			uint64_t bishop_moves = get_raw_bishop_moves(from_index, board.occupied);
-			uint64_t rook_moves = get_raw_rook_moves(from_index, board.occupied);
-			uint64_t res = 0;
-
-			if (rook_moves & other->king)
-				res = rook_moves & king_rook_moves;
-			else
-				res = bishop_moves & king_bishop_moves;
-
-			result.check_mask_with_piece = res;
-		}
-	}
-
-	while (player->bishops != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->bishops);
-		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
-		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		if (add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
-			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
-			;
-
-		uint64_t moves = diagonal_up_moves | diagonal_down_moves;
-		reset_lsb(player->bishops);
-
-		result.attacked_fields |= moves;
-
-		if (moves & other->king)
-		{
-			result.check_piece = 0;
-			set_bit(result.check_piece, from_index);
-
-			result.check_counter++;
-			result.check_mask_with_piece = get_raw_bishop_moves(from_index, board.occupied) & king_bishop_moves;
-		}
-	}
-
-	while (player->king != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->king);
-		auto moves = king_moves[from_index];
-		reset_lsb(player->king);
-
-		result.attacked_fields |= moves;
-	}
-
-	while (player->knights != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->knights);
-		auto moves = knight_moves[from_index];
-		reset_lsb(player->knights);
-
-		result.attacked_fields |= moves;
-
-		if (moves & other->king)
-		{
-			result.check_counter++;
-			result.check_piece = 0;
-			set_bit(result.check_piece, from_index);
-			result.check_mask_with_piece = 0;
-		}
-	}
-
-	while (player->pawns != 0)
-	{
-		const int from_index = get_bit_index_lsb(player->pawns);
-		auto attack_moves = pawn_attack_moves[from_index];
-		reset_lsb(player->pawns);
-
-		result.attacked_fields |= attack_moves;
-
-		if (attack_moves & other->king)
-		{
-			result.check_counter++;
-			result.check_piece = 0;
-			set_bit(result.check_piece, from_index);
-			result.check_mask_with_piece = 0;
-		}
-	}
-
-	result.check_mask_with_piece |= result.check_piece;
-
-	return result;
-}
-
-std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces* playing, ceg::Pieces* other, const BitBoard& board, 
-	const uint64_t* pawn_normal_moves, const uint64_t* pawn_attack_moves, bool black, const CheckInfo& info) const
-{
-	const uint64_t attacked_fields_mask = ~(info.attacked_fields);
-	const auto player_king_index = get_bit_index_lsb(playing->king);
-	std::vector<InternalMove> result;
-	result.reserve(40);
-	const auto playing_occupied_mask = ~(playing->occupied);
-
-	while (playing->king != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->king);
-		auto moves = king_moves[from_index] & playing_occupied_mask & attacked_fields_mask;
-		reset_lsb(playing->king);
-		if (info.check_counter == 0 && playing->castling)
-		{
-			if (black)
-			{
-				if (!((black_queen_side_castling_mask & info.attacked_fields) | (black_queen_side_castling_occupied_mask & board.occupied)) && is_bit_set(playing->castling, 0))
-					set_bit(moves, 2);
-				if (!((black_king_side_castling_mask & info.attacked_fields) | (black_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 7))
-					set_bit(moves, 6);
-			}
-			else
-			{
-				if (!((white_queen_side_castling_mask & info.attacked_fields) | (white_queen_side_castling_occupied_mask & board.occupied)) && is_bit_set(playing->castling, 56))
-					set_bit(moves, 58);
-				if (!((white_king_side_castling_mask & info.attacked_fields) | (white_king_side_castling_mask & board.occupied)) && is_bit_set(playing->castling, 63))
-					set_bit(moves, 62);
-			}
-		}
-
-		push_all_moves(result, from_index, moves);
-	}
-
-	if (info.check_counter >= 2)
-		return result;
-
-	while (playing->pawns != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->pawns);
-		uint64_t normal_moves = 0;
-		int moving = black ? 8 : -8;
-
-		if (!is_bit_set(board.occupied, from_index + moving))
-			normal_moves = pawn_normal_moves[from_index] & ~board.occupied;
-		auto attack_moves = pawn_attack_moves[from_index] & other->occupied;
-		auto en_passant_moves = pawn_attack_moves[from_index] & board.en_passant_mask;
-		if (en_passant_moves)
-		{
-			int to_index = get_bit_index_lsb(en_passant_moves);
-			int to_x = to_index % 8;
-			int from_y = from_index / 8;
-			auto occ_buf = board.occupied & horizontal_mask[from_index];
-			clear_bit(occ_buf, from_index);
-			clear_bit(occ_buf, from_y * 8 + to_x);
-
-			if (get_horizontal_moves(player_king_index, occ_buf) & (other->queens | other->rooks))
-				en_passant_moves = 0;
-		}
-		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask_with_piece & info.pin_mask[from_index];
-		if (info.check_piece & en_passant_capture_mask)
-			moves |= en_passant_moves;
-		reset_lsb(playing->pawns);
-		push_all_moves(result, from_index, moves);
-	}
-
-	while (playing->bishops != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->bishops);
-		auto bishop_moves = get_raw_bishop_moves(from_index, board.occupied) & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
-		reset_lsb(playing->bishops);
-		push_all_moves(result, from_index, bishop_moves);
-	}
-
-	while (playing->knights != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->knights);
-		auto moves = knight_moves[from_index] & playing_occupied_mask & info.check_mask_with_piece & info.pin_mask[from_index];
-		reset_lsb(playing->knights);
-		push_all_moves(result, from_index, moves);
-	}
-
-	while (playing->queens != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->queens);
-		auto moves = get_raw_queen_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
-		reset_lsb(playing->queens);
-		push_all_moves(result, from_index, moves);
-	}
-
-	while (playing->rooks != 0)
-	{
-		int from_index = get_bit_index_lsb(playing->rooks);
-		auto moves = get_raw_rook_moves(from_index, board.occupied) & info.check_mask_with_piece & playing_occupied_mask & info.pin_mask[from_index];
-		reset_lsb(playing->rooks);
-		push_all_moves(result, from_index, moves);
-	}
-
-	return std::move(result);
-}
-
-void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move) const
-{
-	bool move_made_by_black = false;
-	if (is_bit_set(board.black_pieces.occupied, move.from))
-		move_made_by_black = true;
-
-	make_move(board, move, move_made_by_black);
-}
-
-void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bool black) const
-{
-	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
-	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
-
-	if (is_bit_set(pieces->king, move.from))
-	{
-		pieces->castling = 0;
-		if (move.to - move.from == 2) // King side castling
-		{
-			int rook_from_index = move.from + 3;
-			int rook_to_index = move.to - 1;
-			board.move_piece(pieces, InternalMove{ rook_from_index, rook_to_index });
-		}
-		else if (move.to - move.from == -2) // Queen side castling
-		{
-			int rook_from_index = move.from - 4;
-			int rook_to_index = move.to + 1;
-			board.move_piece(pieces, InternalMove{ rook_from_index, rook_to_index });
-		}
-
-	}
-	else
-	{
-		clear_bit(pieces->castling, move.from);
-		clear_bit(other->castling, move.to);
-	}
-
-	if (is_bit_set(pieces->pawns, move.from))
-	{
-		if (is_bit_set(board.en_passant_mask, move.to))
-		{
-			board.en_passant_mask = 0;
-			board.move_piece(pieces, move);
-			int to_x = move.to % 8;
-			int from_y = move.from / 8;
-
-			board.clear_bit_for_pieces(other, to_x + from_y * 8);
-			board.update_occupied();
-			return;
-		}
-
-		board.en_passant_mask = 0;
-		const int y_distance = move.to - move.from;
-		if (y_distance == 16 || y_distance == -16)
-			set_bit(board.en_passant_mask, move.from + y_distance / 2);
-	}
-	else
-	{
-		board.en_passant_mask = 0;
-	}
-
-	board.move_piece(pieces, move);
-
-	if (is_bit_set(other->occupied, move.to))
-		board.clear_bit_for_pieces(other, move.to);
-
-	board.update_occupied();
-}
-
-void ceg::MoveGenerator::make_move_with_auto_promotion(BitBoard& board, const InternalMove& move) const
-{
-	bool move_made_by_black = false;
-	if (is_bit_set(board.black_pieces.occupied, move.from))
-		move_made_by_black = true;
-
-	make_move(board, move, move_made_by_black);
-	uint64_t& pawns = move_made_by_black ? board.black_pieces.pawns : board.white_pieces.pawns;
-	uint64_t& queens = move_made_by_black ? board.black_pieces.queens : board.white_pieces.queens;
-
-	auto mask = pawns & pawn_end_of_board_mask;
-	pawns &= pawn_end_of_board_inverted_mask;
-	queens |= mask;
 }
 
 void ceg::MoveGenerator::init_mask_with_occupied(std::unordered_map<uint64_t, uint64_t>* arr, uint64_t* mask, int x_dir, int y_dir) const
