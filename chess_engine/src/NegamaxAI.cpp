@@ -25,6 +25,7 @@ ceg::InternalMove ceg::NegamaxAI::get_move(const ceg::BitBoard& board, bool colo
 
 ceg::InternalMove ceg::NegamaxAI::iterative_deepening(const ceg::BitBoard& board, bool color_is_black, int min_depth, int max_depth, long long max_time_in_ms)
 {
+	assert(min_depth >= 0);
 	auto possible_moves = move_generator->get_all_possible_moves(board, color_is_black);
 	std::vector<ceg::InternalMove> last_fully_evaluated_moves;
 	auto buf_timer = ceg::get_current_time_in_ms() + max_time_in_ms;
