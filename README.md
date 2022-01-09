@@ -18,7 +18,7 @@ Add the following environment variables (pointing to the corresponding folders):
 
 After that, run the cmak_build.bat and now the solution can be oppened in the build folder.
 
-## Engine only
+### Engine only
 
 For only the engine, no library is required.
 Go in the uppermost CMakeLists.txt and comment out the line "add_subdirectory(application)"
