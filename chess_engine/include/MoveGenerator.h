@@ -24,10 +24,9 @@ namespace ceg
 	struct StateInformation
 	{
 		StateInformation(int counter, std::vector<ceg::InternalMove>&& moves)
-		{
-			check_counter = counter;
-			possible_moves = moves;
-		}
+			: check_counter(counter)
+			, possible_moves(std::move(moves))
+		{}
 
 		int check_counter;
 		std::vector<ceg::InternalMove> possible_moves;

@@ -1,6 +1,7 @@
 #include "BitBoard.h"
 
-ceg::BitBoard::BitBoard(const std::string& FEN_str) : BitBoard((string_split(FEN_str, " ")[0]), "","")
+ceg::BitBoard::BitBoard(const std::string& FEN_str) 
+	: BitBoard((string_split(FEN_str, " ").front()), "","")
 {
 }
 

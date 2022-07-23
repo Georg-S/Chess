@@ -169,9 +169,8 @@ ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* 
 
 		const uint64_t horizontal_moves = get_horizontal_moves(from_index, occupied);
 		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
-		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
-			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask))
-			;
+		add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask) // Only one pin can occur at a time
+			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask);
 
 		const uint64_t moves = horizontal_moves | vertical_moves;
 		result.attacked_fields |= moves;
@@ -197,11 +196,10 @@ ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* 
 		const uint64_t vertical_moves = get_vertical_moves(from_index, occupied);
 		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
 		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		if (add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask)
+		add_to_pin_mask(horizontal_moves, king_horizontal, horizontal_mask) // Only one pin can occur at a time
 			|| add_to_pin_mask(vertical_moves, king_vertical, vertical_mask)
 			|| add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
-			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
-			;
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask);
 
 		const uint64_t moves = horizontal_moves | vertical_moves | diagonal_up_moves | diagonal_down_moves;
 		result.attacked_fields |= moves;
@@ -231,9 +229,8 @@ ceg::CheckInfo ceg::MoveGenerator::get_check_info(Pieces* player, const Pieces* 
 
 		const uint64_t diagonal_up_moves = get_diagonal_up_moves(from_index, occupied);
 		const uint64_t diagonal_down_moves = get_diagonal_down_moves(from_index, occupied);
-		if (add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)
-			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask))
-			;
+		add_to_pin_mask(diagonal_up_moves, king_diagonal_up, diagonal_up_mask)	// Only one pin can occur at a time
+			|| add_to_pin_mask(diagonal_down_moves, king_diagonal_down, diagonal_down_mask);
 
 		const uint64_t moves = diagonal_up_moves | diagonal_down_moves;
 		result.attacked_fields |= moves;
