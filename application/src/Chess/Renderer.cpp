@@ -194,7 +194,7 @@ void Renderer::render_promotion_selection(ceg::PieceColor color)
 
 bool Renderer::is_quit() const
 {
-	return sdl_handler->exit;
+	return sdl_handler->isExit();
 }
 
 void Renderer::quit()

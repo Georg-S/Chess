@@ -19,7 +19,7 @@ Chess create_chess_game_by_user_input()
 	selection.createPlayerSelection();
 
 	int player_count = -1;
-	while (!handler->exit && player_count == -1)
+	while (!handler->isExit() && player_count == -1)
 	{
 		player_count = selection.getSelectedPlayerCount();
 	}
@@ -32,7 +32,7 @@ Chess create_chess_game_by_user_input()
 		PlayerColorSelection color_selection = PlayerColorSelection(handler.get());
 		color_selection.createColorSelection();
 
-		while (!handler->exit && !color_selection.color_selected())
+		while (!handler->isExit() && !color_selection.color_selected())
 			color_selection.update();
 
 		player_color = color_selection.getSelectedColor();

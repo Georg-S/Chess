@@ -18,9 +18,8 @@ public:
 private:
 
 	SDLHandler* sdlHandler;
-	std::shared_ptr<RenderingElement> header;
-	SDLButton* onePlayer;
-	SDLButton* twoPlayer;
+	SDLButton* onePlayer = nullptr;
+	SDLButton* twoPlayer = nullptr;
 	Mouse mouse;
 
 	const std::string headerPath = "Images/PlayerCountSelection/Header.png";
