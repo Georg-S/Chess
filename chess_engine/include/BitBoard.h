@@ -46,7 +46,6 @@ namespace ceg
 		BitBoard(const std::string& FEN_str);
 		BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str = "");
 
-		std::string to_FEN_string() const;
 		void move_piece(Pieces* pieces, const InternalMove& move);
 		void clear_bit_for_pieces(Pieces* pieces, int bit_index);
 		void clear_bits_at_position(int bit_index);
@@ -55,6 +54,9 @@ namespace ceg
 		void set_board(const std::string& FEN_pieces_str, const std::string& FEN_castling_str = "", const std::string& FEN_en_passant_str = "");
 		void update_occupied();
 		std::vector<std::vector<char>> get_fen_char_representation() const;
+		std::string getPiecesFENString() const;
+		std::string getCastlingFENString() const;
+		std::string getEnPassantFENString() const;
 
 		Pieces white_pieces;
 		Pieces black_pieces;
@@ -69,4 +71,6 @@ namespace ceg
 		char get_FEN_char(int x, int y) const;
 		void set_piece_by_FEN_char(char c, int x, int y);
 	};
+
+	std::string to_FEN_string(const BitBoard& board, bool currentPlayerBlack);
 }

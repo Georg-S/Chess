@@ -255,12 +255,13 @@ uint64_t ceg::ChessEngine::perft(const ceg::BitBoard& board, bool current_player
 	{
 		ceg::BitBoard copy_board = board;
 		move_generator->make_move(copy_board, move);
+
 		if (out_set)
-			out_set->insert(copy_board.to_FEN_string());
+			out_set->insert(copy_board.getPiecesFENString());
 
 		if (out_map)
 		{
-			std::string fen_str = copy_board.to_FEN_string();
+			std::string fen_str = copy_board.getPiecesFENString();
 			if (out_map->find(fen_str) == out_map->end())
 				out_map->insert({ fen_str, 1 });
 			else

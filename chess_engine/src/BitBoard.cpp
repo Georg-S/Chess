@@ -1,50 +1,21 @@
 #include "BitBoard.h"
 
-ceg::BitBoard::BitBoard(const std::string& FEN_str) 
-	: BitBoard((string_split(FEN_str, " ").front()), "","")
+ceg::BitBoard::BitBoard(const std::string& FEN_str)
 {
+	auto splitted = string_split(FEN_str, " ");
+	assert(!splitted.empty());
+
+	if (splitted.size() == 1)
+		set_board(splitted.front());
+	if (splitted.size() == 3)
+		set_board(splitted.front(), splitted[2]);
+	if (splitted.size() >= 4)
+		set_board(splitted.front(), splitted[2], splitted[3]);
 }
 
 ceg::BitBoard::BitBoard(const std::string& FEN_pieces_str, const std::string& FEN_castling_str, const std::string& FEN_en_passant_str)
 {
 	set_board(FEN_pieces_str, FEN_castling_str, FEN_en_passant_str);
-}
-
-std::string ceg::BitBoard::to_FEN_string() const
-{
-	std::string result = "";
-
-	for (int y = 0; y < 8; y++)
-	{
-		int counter = 0;
-		for (int x = 0; x < 8; x++)
-		{
-			if(!ceg::is_bit_set(occupied, x , y))
-			{
-				counter++;
-				continue;
-			}
-
-			if (counter != 0)
-			{
-				result += std::to_string(counter);
-				counter = 0;
-			}
-
-			char fen_c = get_FEN_char(x, y);
-			result += fen_c;
-		}
-
-		if (counter != 0)
-		{
-			result += std::to_string(counter);
-			counter = 0;
-		}
-
-		if (y != 7)
-			result += "/";
-	}
-	return result;
 }
 
 void ceg::BitBoard::move_piece(Pieces* pieces, const InternalMove& move)
@@ -133,7 +104,7 @@ void ceg::BitBoard::set_board(const std::string& FEN_pieces_str, const std::stri
 
 void ceg::BitBoard::set_castling(const std::string& FEN_castling_str)
 {
-	for (char c : FEN_castling_str) 
+	for (char c : FEN_castling_str)
 	{
 		if (c == 'k')
 			set_bit(black_pieces.castling, 7, 0);
@@ -150,7 +121,7 @@ void ceg::BitBoard::set_en_passant(const std::string& FEN_str)
 {
 	int x = -1;
 	int y = -1;
-	for (char c : FEN_str) 
+	for (char c : FEN_str)
 	{
 		c = tolower(c);
 		if (c >= 'a' && c <= 'h')
@@ -214,6 +185,76 @@ char ceg::BitBoard::get_FEN_char(int x, int y) const
 	return ' ';
 }
 
+std::string ceg::BitBoard::getPiecesFENString() const
+{
+	std::string piecesString;
+	for (int y = 0; y < 8; y++)
+	{
+		int counter = 0;
+		for (int x = 0; x < 8; x++)
+		{
+			if (!ceg::is_bit_set(occupied, x, y))
+			{
+				counter++;
+				continue;
+			}
+
+			if (counter != 0)
+			{
+				piecesString += std::to_string(counter);
+				counter = 0;
+			}
+
+			char fen_c = get_FEN_char(x, y);
+			piecesString += fen_c;
+		}
+
+		if (counter != 0)
+		{
+			piecesString += std::to_string(counter);
+			counter = 0;
+		}
+
+		if (y != 7)
+			piecesString += "/";
+	}
+
+	return piecesString;
+}
+
+std::string ceg::BitBoard::getCastlingFENString() const
+{
+	std::string castlingString;
+	if (is_bit_set(white_pieces.castling, 7, 7))
+		castlingString += 'K';
+	if (is_bit_set(white_pieces.castling, 0, 7))
+		castlingString += 'Q';
+	if (is_bit_set(black_pieces.castling, 7, 0))
+		castlingString += 'k';
+	if (is_bit_set(black_pieces.castling, 0, 0))
+		castlingString += 'q';
+
+	if (castlingString.empty())
+		return "-";
+
+	return castlingString;
+}
+
+std::string ceg::BitBoard::getEnPassantFENString() const
+{
+	if (en_passant_mask == 0)
+		return "-";
+
+	int index = get_bit_index_lsb(en_passant_mask);
+	int x = index % 8;
+	int y = index / 8;
+
+	char column = 'a' + x;
+	std::string rowStr = std::to_string(y + 1);
+
+	return column + rowStr;
+}
+
 void ceg::BitBoard::set_piece_by_FEN_char(char c, int x, int y)
 {
 	bool black = islower(c);
@@ -221,11 +262,10 @@ void ceg::BitBoard::set_piece_by_FEN_char(char c, int x, int y)
 	switch (c)
 	{
 	case 'p':
-		if (black) 
+		if (black)
 			set_bit(black_pieces.pawns, x, y);
-		else 
+		else
 			set_bit(white_pieces.pawns, x, y);
-
 		break;
 	case 'n':
 		if (black)
@@ -261,4 +301,22 @@ void ceg::BitBoard::set_piece_by_FEN_char(char c, int x, int y)
 		assert(!"Invalid character for FEN string");
 		return;
 	}
+}
+
+std::string ceg::to_FEN_string(const BitBoard& board, bool currentPlayerBlack)
+{
+	auto piecesString = board.getPiecesFENString();
+	auto castlingString = board.getCastlingFENString();
+	auto enPassantString = board.getEnPassantFENString();
+
+	auto result = piecesString;
+	if (currentPlayerBlack)
+		result += " b";
+	else
+		result += " w";
+
+	result += " " + castlingString;
+	result += " " + enPassantString;
+
+	return result;
 }
