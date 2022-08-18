@@ -27,7 +27,7 @@ namespace ceg
 		int to_y = 0;
 	};
 
-	enum class PieceColor { BLACK, WHITE };
+	enum class PieceColor { NONE = 0, BLACK, WHITE };
 	enum class Piece { PAWN, BISHOP, KNIGHT, ROOK, QUEEN, KING };
 
 	class ChessEngine
@@ -36,7 +36,9 @@ namespace ceg
 		ChessEngine();
 		BitBoard get_initial_board() const;
 		static PieceColor get_next_player(PieceColor color);
+		std::vector<ceg::Move> get_all_possible_moves(const ceg::BitBoard& board, ceg::PieceColor playerColor) const;
 		std::vector<ceg::Move> get_all_possible_moves_for_piece(const ceg::BitBoard& board, int piece_x, int piece_y) const;
+		std::pair<ceg::PieceColor, ceg::BitBoard> get_player_and_board_from_fen_string(const std::string& fen_string) const;
 		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color, int depth); // depth is used for min and max depth, no timer termination will happen
 		ceg::Move get_ai_move(const ceg::BitBoard& board, PieceColor color);
 		void make_move(ceg::BitBoard& board, ceg::Move move) const;
@@ -63,7 +65,7 @@ namespace ceg
 		uint64_t perft(const std::string& FEN_str, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map) const;
 		uint64_t perft(const ceg::BitBoard& board, bool current_player_black, int depth, std::set<std::string>* out_set, std::map<std::string, int>* out_map) const;
 
-		inline static const std::string initial_board_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		inline static const std::string initial_board_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 		std::unique_ptr<ceg::MoveGenerator> move_generator = nullptr;
 		std::unique_ptr<NegamaxAI> ai = nullptr;
 		int min_depth = 6;

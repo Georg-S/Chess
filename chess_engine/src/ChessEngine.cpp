@@ -16,6 +16,18 @@ ceg::PieceColor ceg::ChessEngine::get_next_player(PieceColor color)
 	return (color == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
 }
 
+std::vector<ceg::Move> ceg::ChessEngine::get_all_possible_moves(const ceg::BitBoard& board, ceg::PieceColor playerColor) const
+{
+	auto moves = move_generator->get_all_possible_moves(board, playerColor == PieceColor::BLACK);
+	auto result = std::vector<ceg::Move>();
+	result.reserve(moves.size());
+	
+	for (const auto& move : moves)
+		result.emplace_back(move);
+
+	return result;
+}
+
 std::vector<ceg::Move> ceg::ChessEngine::get_all_possible_moves_for_piece(const ceg::BitBoard& board, int piece_x, int piece_y) const
 {
 	const int index = to_linear_idx(piece_x, piece_y);
@@ -36,6 +48,24 @@ std::vector<ceg::Move> ceg::ChessEngine::get_all_possible_moves_for_piece(const 
 	}
 
 	return result;
+}
+
+std::pair<ceg::PieceColor, ceg::BitBoard> ceg::ChessEngine::get_player_and_board_from_fen_string(const std::string& fen_string) const
+{
+	auto splitted = string_split(fen_string, " ");
+	assert(splitted.size() > 1);
+
+	ceg::PieceColor color = ceg::PieceColor::NONE;
+	if (splitted[1] == "w")
+		color = ceg::PieceColor::WHITE;
+	else if(splitted[1] == "b")
+		color = ceg::PieceColor::BLACK;
+
+	assert(color != ceg::PieceColor::NONE);
+	
+	ceg::BitBoard board(fen_string);
+
+	return { color, board };
 }
 
 ceg::Move ceg::ChessEngine::get_ai_move(const ceg::BitBoard& board, bool current_player_black, int min_depth, int max_depth, long long max_time_in_ms)
