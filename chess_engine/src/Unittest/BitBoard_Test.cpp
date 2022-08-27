@@ -41,6 +41,14 @@ TEST_CASE("fen_string_test_en_passant_2", "BitBoard")
 	REQUIRE(board_initial_str == ceg::to_FEN_string(board, true));
 }
 
+TEST_CASE("fen_string_test_en_passant_3", "BitBoard")
+{
+	const std::string board_initial_str = "rnbqkbnr/ppp1ppp1/7p/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6";
+	ceg::BitBoard board = ceg::BitBoard(board_initial_str);
+
+	REQUIRE(ceg::is_bit_set(board.en_passant_mask, 3, 2));
+}
+
 TEST_CASE("fen_string_test_castling", "BitBoard")
 {
 	const std::string board_initial_str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kq -";
