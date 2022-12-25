@@ -1,4 +1,3 @@
-#pragma once
 // We need to define SDL_MAIN_HANDLED, to be able to execute the main function (WinMain works without this define)
 #define SDL_MAIN_HANDLED
 #include <SDL.h>

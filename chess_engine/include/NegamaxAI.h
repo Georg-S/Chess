@@ -18,7 +18,7 @@ namespace ceg
 		uint64_t hash = 0;
 		int value = 0;
 		int depth = 0;
-		ceg::InternalMove best_move;
+		ceg::InternalMove best_move = {};
 	};
 
 	class NegamaxAI
