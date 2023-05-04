@@ -412,6 +412,9 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bo
 {
 	Pieces* pieces = black ? &(board.black_pieces) : &(board.white_pieces);
 	Pieces* other = black ? &(board.white_pieces) : &(board.black_pieces);
+	
+	// At the destination location no castling can be possible anymore, no matter which piece is being moved
+	clear_bit(other->castling, move.to); 
 
 	if (is_bit_set(pieces->king, move.from))
 	{
@@ -432,7 +435,6 @@ void ceg::MoveGenerator::make_move(BitBoard& board, const InternalMove& move, bo
 	else
 	{
 		clear_bit(pieces->castling, move.from);
-		clear_bit(other->castling, move.to);
 	}
 
 	if (is_bit_set(pieces->pawns, move.from))
