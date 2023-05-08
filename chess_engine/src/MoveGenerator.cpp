@@ -350,8 +350,8 @@ std::vector<ceg::InternalMove> ceg::MoveGenerator::get_all_possible_moves(Pieces
 				en_passant_moves = 0;
 		}
 		auto moves = (normal_moves | attack_moves | en_passant_moves) & info.check_mask_with_piece & info.pin_mask[from_index];
-		if (info.check_piece & en_passant_capture_mask)
-			moves |= en_passant_moves; // Check evasion with en passant
+		if (info.check_piece & en_passant_capture_mask )
+			moves |= (en_passant_moves & info.pin_mask[from_index]); // Check evasion with en passant (not allowed if pawn is pinned)
 		push_all_moves(result, from_index, moves);
 	}
 
