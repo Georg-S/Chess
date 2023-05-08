@@ -104,7 +104,7 @@ static void push_all_moves(std::vector<ceg::InternalMove>& dest, int from_index,
 	while (moves != 0)
 	{
 		int to_index = ceg::get_bit_index_lsb(moves);
-		dest.push_back(ceg::InternalMove{ from_index, to_index });
+		dest.emplace_back(ceg::InternalMove{ from_index, to_index });
 		ceg::reset_lsb(moves);
 	}
 }

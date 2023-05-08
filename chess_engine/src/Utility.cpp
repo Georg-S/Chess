@@ -68,10 +68,10 @@ std::vector<std::string> ceg::string_split(std::string str, const std::string& d
 	size_t pos = 0;
 	while ((pos = str.find(delimiter)) != std::string::npos)
 	{
-		result.push_back(str.substr(0, pos));
+		result.emplace_back(str.substr(0, pos));
 		str.erase(0, pos + delimiter.length());
 	}
-	result.push_back(str);
+	result.emplace_back(str);
 
 	return result;
 }
@@ -159,7 +159,7 @@ static uint64_t create_number(const std::vector<int>& bit_indices, const std::ve
 std::vector<uint64_t> ceg::get_every_bit_combination(const std::vector<int>& bit_indices)
 {
 	auto result = std::vector<uint64_t>();
-	result.push_back(0);
+	result.emplace_back(0);
 
 	if(bit_indices.size() == 0)
 		return result;
@@ -173,7 +173,7 @@ std::vector<uint64_t> ceg::get_every_bit_combination(const std::vector<int>& bit
 		{
 			values[index] = 1;
 			index = 0;
-			result.push_back(create_number(bit_indices, values));
+			result.emplace_back(create_number(bit_indices, values));
 		}
 		else if (values[index] == 1) 
 		{
@@ -191,7 +191,7 @@ std::vector<int> ceg::get_bit_indices(uint64_t num)
 
 	while (num != 0) 
 	{
-		result.push_back(ceg::get_bit_index_lsb(num));
+		result.emplace_back(ceg::get_bit_index_lsb(num));
 		ceg::reset_lsb(num);
 	}
 	return result;

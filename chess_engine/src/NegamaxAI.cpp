@@ -113,7 +113,7 @@ std::vector<ceg::InternalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::Bi
 		move_generator->make_move_with_auto_promotion(copy_board, move);
 
 		move.value = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
-		evaluated_moves.push_back(move);
+		evaluated_moves.emplace_back(move);
 	}
 	return evaluated_moves;
 }
@@ -134,7 +134,7 @@ std::vector<ceg::InternalMove> ceg::NegamaxAI::get_evaluated_moves(const ceg::Bi
 	current_index = 0;
 
 	for (int i = 0; i < thread_count; i++)
-		thread_pool.push_back(std::thread(&NegamaxAI::eval_multi_threaded, this, board, color_is_black, possible_moves, depth));
+		thread_pool.emplace_back(std::thread(&NegamaxAI::eval_multi_threaded, this, board, color_is_black, possible_moves, depth));
 
 	for (auto& thread : thread_pool)
 		thread.join();
@@ -157,7 +157,7 @@ void ceg::NegamaxAI::eval_multi_threaded(const ceg::BitBoard& board, bool color_
 		move.value = evaluate_board_negamax(copy_board, get_next_player(color_is_black), depth, min_value, max_value);
 
 		m_mutex.lock();
-		evaluated_moves.push_back(move);
+		evaluated_moves.emplace_back(move);
 		move_index = current_index;
 		current_index++;
 		m_mutex.unlock();
@@ -423,7 +423,7 @@ std::vector<ceg::InternalMove> ceg::NegamaxAI::get_best_moves(const std::vector<
 	for (const auto& eval_move : moves)
 	{
 		if (eval_move.value == highest_value)
-			best_moves.push_back(eval_move);
+			best_moves.emplace_back(eval_move);
 	}
 
 	return best_moves;
