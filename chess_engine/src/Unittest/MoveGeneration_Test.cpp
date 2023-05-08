@@ -621,4 +621,27 @@ TEST_CASE("white_castling_not_possible_after_king_beats_rook", "MoveGeneration")
 
 	REQUIRE(perft_result == 5);
 }
+
+TEST_CASE("black_en_passant_must_not_be_possible_because_of_pinned_pawn", "MoveGeneration")
+{
+	const std::string test_board_str = "8/3k4/8/8/3p4/8/2P5/3R1K2 w - - 0 1";
+	ceg::BitBoard board = ceg::BitBoard(test_board_str);
+	engine.make_move(board, ceg::Move(2, 6, 2, 4));
+	const std::string peft_str = ceg::to_FEN_string(board, true);
+	uint64_t perft_result = engine.perft(peft_str, 1);
+
+	REQUIRE(perft_result == 9);
+}
+
+TEST_CASE("white_en_passant_must_not_be_possible_because_of_pinned_pawn")
+{
+	const std::string test_board_str = "8/1k2rp2/8/4P3/8/8/8/4K3 b - - 0 1";
+	ceg::BitBoard board = ceg::BitBoard(test_board_str);
+	engine.make_move(board, ceg::Move(5, 1, 5, 3));
+	const std::string peft_str = ceg::to_FEN_string(board, false);
+	uint64_t perft_result = engine.perft(peft_str, 1);
+
+	REQUIRE(perft_result == 6);
+}
+
 #endif
